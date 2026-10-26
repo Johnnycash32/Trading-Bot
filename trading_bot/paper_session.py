@@ -18,17 +18,49 @@ class PaperExecutionSession:
     strategy: MovingAverageCrossStrategy = field(default_factory=MovingAverageCrossStrategy)
     exchange: PaperExchange = field(default_factory=PaperExchange)
     orders: list[dict[str, object]] = field(default_factory=list)
+    history: list[dict[str, object]] = field(default_factory=list)
+    positions: list[dict[str, object]] = field(default_factory=list)
     _last_order_signal: dict[str, Signal] = field(default_factory=dict)
+
+    def _mark_positions(self, symbol: str, mark_price: float) -> list[dict[str, object]]:
+        closed: list[dict[str, object]] = []
+        for position in self.positions:
+            if position["symbol"] != symbol or position["status"] != "open":
+                continue
+            side = position["side"]
+            stop_hit = mark_price <= position["stop_loss"] if side == Side.LONG.value else mark_price >= position["stop_loss"]
+            target_hit = mark_price >= position["take_profit"] if side == Side.LONG.value else mark_price <= position["take_profit"]
+            if not (stop_hit or target_hit):
+                position["mark_price"] = mark_price
+                position["unrealized_pnl"] = self._pnl(position, mark_price)
+                continue
+            position["status"] = "closed"
+            position["exit_price"] = position["take_profit"] if target_hit else position["stop_loss"]
+            position["realized_pnl"] = self._pnl(position, position["exit_price"])
+            self.account_equity += position["realized_pnl"]
+            self.history.append(dict(position))
+            closed.append(dict(position))
+        return closed
+
+    @staticmethod
+    def _pnl(position: dict[str, object], price: float) -> float:
+        direction = 1 if position["side"] == Side.LONG.value else -1
+        return float(position["quantity"]) * (price - float(position["entry_price"])) * direction
+
+    def snapshot(self, symbol: str | None = None, mark_price: float | None = None) -> dict[str, object]:
+        positions = [position for position in self.positions if position["status"] == "open" and (symbol is None or position["symbol"] == symbol)]
+        return {"equity": self.account_equity, "open_positions": positions, "history": self.history[-20:]}
 
     def evaluate(self, exchange: str, symbol: str, candles: list[Candle]) -> dict[str, object]:
         if not candles:
             return {"status": "hold", "reason": "No candles were supplied."}
 
+        closed = self._mark_positions(symbol, candles[-1].close)
         signal = self.strategy.signal(candles)
         if signal is Signal.HOLD:
-            return {"status": "hold", "signal": signal.value, "reason": "No moving-average crossover."}
+            return {"status": "hold", "signal": signal.value, "reason": "No moving-average crossover.", "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
         if self._last_order_signal.get(symbol) is signal:
-            return {"status": "hold", "signal": signal.value, "reason": "Duplicate signal already simulated."}
+            return {"status": "hold", "signal": signal.value, "reason": "Duplicate signal already simulated.", "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
 
         entry = candles[-1].close
         recent = candles[-min(14, len(candles)):]
@@ -56,7 +88,7 @@ class PaperExecutionSession:
         )
         decision = self.risk_engine.validate(proposal)
         if isinstance(decision, Rejection):
-            return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason}
+            return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason, "closed_positions": closed, **self.snapshot(symbol, entry)}
 
         order = self.exchange.submit_paper_order(proposal, decision.quantity)
         self._last_order_signal[symbol] = signal
@@ -73,4 +105,5 @@ class PaperExecutionSession:
             "risk_reward_ratio": decision.risk_reward_ratio,
         }
         self.orders.append(record)
-        return {"status": "simulated", "signal": signal.value, "order": record}
+        self.positions.append({**record, "status": "open", "mark_price": entry, "unrealized_pnl": 0.0})
+        return {"status": "simulated", "signal": signal.value, "order": record, "closed_positions": closed, **self.snapshot(symbol, entry)}

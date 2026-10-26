@@ -30,6 +30,16 @@ class PaperSessionTests(unittest.TestCase):
         self.assertEqual(result["status"], "hold")
         self.assertEqual(len(session.orders), 1)
 
+    def test_target_closes_open_paper_position(self) -> None:
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+        entry_values = [100, 100, 100, 100, 80, 80, 80, 110]
+        session.evaluate("bybit", "SOLUSDT", candles(entry_values))
+        exit_values = [100, 100, 100, 100, 80, 80, 80, 117]
+        result = session.evaluate("bybit", "SOLUSDT", candles(exit_values))
+        self.assertEqual(result["closed_positions"][0]["status"], "closed")
+        self.assertGreater(result["equity"], 10_000.0)
+        self.assertEqual(result["open_positions"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

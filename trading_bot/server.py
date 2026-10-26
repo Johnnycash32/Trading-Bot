@@ -85,6 +85,12 @@ class AppHandler(BaseHTTPRequestHandler):
                 message = json.dumps({"error": f"Paper evaluation unavailable: {exc}"}).encode()
                 self._send(502, message, "application/json; charset=utf-8")
             return
+        if request.path == "/api/paper/state":
+            query = parse_qs(request.query)
+            symbol = query.get("symbol", [None])[0]
+            payload = PAPER_SESSION.snapshot(symbol)
+            self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
+            return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 
     def log_message(self, format: str, *args: object) -> None:
