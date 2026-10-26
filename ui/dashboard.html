@@ -162,6 +162,19 @@
       note.textContent = behavior.reasons?.[0] || 'All behavioral gates passed for paper evaluation.';
       gates.innerHTML = (behavior.agents || []).map(agent => `<span class="behavior-gate ${agent.state === 'blocked' ? 'block' : agent.state === 'alerting' ? 'warn' : ''}" title="${agent.note}">${agent.name}: ${agent.state}</span>`).join('');
     }
+    async function loadCopyCandidates() {
+      const intelligence = document.getElementById('intelligence');
+      if (!intelligence || document.getElementById('copy-lab')) return;
+      try {
+        const response = await fetch('/api/copy/candidates');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Copy research unavailable');
+        const card = document.createElement('article');
+        card.className = 'card wide'; card.id = 'copy-lab';
+        card.innerHTML = '<div class="panel-title"><h3>Copy strategy lab</h3><span>Paper research only</span></div><div class="feed">' + data.candidates.map(item => { const p = item.profile, a = item.assessment; const color = a.eligible ? 'positive' : 'negative'; return `<div class="risk-row"><div class="risk-head"><span>${p.display_name} · ${p.profile_id}</span><b class="${color}">${a.eligible ? 'eligible' : 'blocked'}</b></div><div class="small">Evidence ${a.evidence_score}/100 · MDD ${p.max_drawdown_percent}% · Sharpe ${p.sharpe_ratio} · ${p.closed_trades} trades</div><div class="small">${a.reasons[0] || 'Paper approval required before any future live mode.'}</div></div>`; }).join('') + '</div>';
+        intelligence.parentNode.insertBefore(card, intelligence.nextSibling);
+      } catch (_) {}
+    }
     async function evaluatePaper(symbol) {
       const badge = document.getElementById('paper-signal');
       const asset = findAsset(symbol);
@@ -219,7 +232,7 @@
     document.querySelectorAll('.drawing-tools button').forEach(button => button.addEventListener('click', () => { const title = button.title; if (title === 'Delete drawings') { drawings = []; renderDrawings(); document.getElementById('chart-tool-status').textContent = 'Drawings cleared'; return; } if (title === 'Toggle visibility') { drawingsVisible = !drawingsVisible; drawingCanvas.style.opacity = drawingsVisible ? '1' : '0'; document.getElementById('chart-tool-status').textContent = drawingsVisible ? 'Drawings visible' : 'Drawings hidden'; return; } if (title === 'Lock drawings') { drawingsLocked = !drawingsLocked; document.getElementById('chart-tool-status').textContent = drawingsLocked ? 'Drawings locked' : 'Drawings unlocked'; return; } drawingTool = title; document.querySelectorAll('.drawing-tools button').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.getElementById('chart-tool-status').textContent = title + ' selected'; }));
     document.querySelector('.drawing-tools button').classList.add('active');
     document.querySelectorAll('.chart-bottom-tools button').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
-    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); loadPaperStatus(); refreshMarkets(); loadPaperState(); setInterval(loadPaperState, 5000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
+    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); loadPaperStatus(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); setInterval(loadPaperState, 5000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
   </script>
 </body>
 </html>

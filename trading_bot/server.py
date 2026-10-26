@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
+from .copy_trading import CopySettings, CopyStrategyLab, demo_profiles
 from .market_data import BinanceMarketData, BybitMarketData
 from .paper_session import PaperExecutionSession
 
@@ -14,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
 PAPER_SESSION = PaperExecutionSession()
+COPY_LAB = CopyStrategyLab()
 
 
 def history_end_ms(value: str | None) -> int | None:
@@ -103,6 +105,13 @@ class AppHandler(BaseHTTPRequestHandler):
             symbol = query.get("symbol", [None])[0]
             payload = PAPER_SESSION.snapshot(symbol)
             self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/copy/candidates":
+            candidates = []
+            for profile in demo_profiles():
+                assessment = COPY_LAB.assess(profile, CopySettings(preferred_symbols=("BTCUSDT", "ETHUSDT", "SOLUSDT")))
+                candidates.append({"profile": profile.__dict__, "assessment": assessment.as_dict()})
+            self._send(200, json.dumps({"mode": "paper", "candidates": candidates}).encode(), "application/json; charset=utf-8")
             return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 
