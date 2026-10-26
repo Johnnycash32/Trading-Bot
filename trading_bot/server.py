@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from .copy_trading import CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
+from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .market_data import BinanceMarketData, BybitMarketData
 from .paper_session import PaperExecutionSession
 
@@ -17,6 +17,31 @@ MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
 PAPER_SESSION = PaperExecutionSession()
 COPY_LAB = CopyStrategyLab()
 COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_action": "Monitoring remains active; new paper copies are paused."}
+PAPER_AVAILABLE_BALANCE = 8_420.50
+
+
+def live_copy_accounts() -> tuple[list[ActiveCopyAccount], float]:
+    """Return demo copy positions marked against public prices and total unrealized P&L."""
+
+    accounts: list[ActiveCopyAccount] = []
+    total_unrealized = 0.0
+    for account in demo_active_accounts():
+        exchange = "binance" if "binance" in account.exchange.lower() else "bybit"
+        client = MARKET_CLIENTS[exchange]
+        positions: list[ActivePosition] = []
+        for position in account.positions:
+            mark_price = position.mark_price
+            unrealized_pnl = position.unrealized_pnl
+            try:
+                mark_price = client.ticker(position.symbol).last
+                direction = 1 if position.side == "long" else -1
+                unrealized_pnl = position.quantity * (mark_price - position.entry_price) * direction
+            except Exception:
+                pass
+            total_unrealized += unrealized_pnl
+            positions.append(ActivePosition(position.symbol, position.side, position.entry_price, mark_price, position.quantity, unrealized_pnl, position.stop_loss, position.take_profit))
+        accounts.append(ActiveCopyAccount(account.profile_id, account.display_name, account.exchange, account.status, account.copy_mode, tuple(positions)))
+    return accounts, total_unrealized
 
 
 def history_end_ms(value: str | None) -> int | None:
@@ -115,7 +140,13 @@ class AppHandler(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"mode": "paper", "candidates": candidates}).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/copy/active":
-            self._send(200, json.dumps({"mode": "paper", "control": COPY_CONTROL, "accounts": [account.as_dict() for account in demo_active_accounts()]}).encode(), "application/json; charset=utf-8")
+            accounts, unrealized_pnl = live_copy_accounts()
+            self._send(200, json.dumps({"mode": "paper", "control": COPY_CONTROL, "accounts": [account.as_dict() for account in accounts], "account_summary": {"starting_balance": 10_000.0, "available_balance": PAPER_AVAILABLE_BALANCE + unrealized_pnl, "equity": 10_000.0 + unrealized_pnl, "unrealized_pnl": unrealized_pnl, "realized_pnl": 0.0}}).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/account/summary":
+            _, unrealized_pnl = live_copy_accounts()
+            payload = {"starting_balance": 10_000.0, "available_balance": PAPER_AVAILABLE_BALANCE + unrealized_pnl, "equity": 10_000.0 + unrealized_pnl, "unrealized_pnl": unrealized_pnl, "realized_pnl": 0.0}
+            self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
             return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 
