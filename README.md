@@ -11,6 +11,7 @@ This first implementation is deliberately paper-only. It provides:
 - Independent risk validation and conservative limits.
 - Position sizing based on account equity and stop distance.
 - Read-only Bybit and Binance ticker/candle adapters.
+- Optional public WebSocket candle transport with heartbeat/reconnect behavior; REST remains the fallback.
 - A transparent moving-average crossover backtest with fees and slippage.
 - No API keys, private endpoints, live orders, wallet scraping, or exchange credentials.
 

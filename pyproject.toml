@@ -7,7 +7,7 @@ name = "trading-bot"
 version = "0.1.0"
 description = "Paper-first, risk-controlled trading application foundation"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["websocket-client>=1.8"]
 
 [tool.setuptools.packages.find]
 where = ["."]
