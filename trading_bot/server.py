@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlsplit
 from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .market_data import BinanceMarketData, BybitMarketData
 from .paper_session import PaperExecutionSession
+from .private_accounts import private_account_snapshot
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -147,6 +148,9 @@ class AppHandler(BaseHTTPRequestHandler):
             _, unrealized_pnl = live_copy_accounts()
             payload = {"starting_balance": 10_000.0, "available_balance": PAPER_AVAILABLE_BALANCE + unrealized_pnl, "equity": 10_000.0 + unrealized_pnl, "unrealized_pnl": unrealized_pnl, "realized_pnl": 0.0}
             self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/private/positions":
+            self._send(200, json.dumps(private_account_snapshot()).encode(), "application/json; charset=utf-8")
             return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 

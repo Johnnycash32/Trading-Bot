@@ -17,7 +17,7 @@ This first implementation is deliberately paper-only. It provides:
 - Approval-aware paper behavior for large trades, auto-trading-off state, duplicate signals, position capacity, and risk gates.
 - An active-copy tab showing synthetic lead accounts, positions, entry/mark prices, size, unrealized P&L, and stop/target levels.
 - A stateful auto-copy control: turning it off pauses new copies and creates a close-request event while monitoring remains active.
-- No API keys, private endpoints, live orders, wallet scraping, or exchange credentials.
+- Optional read-only Bybit private-position monitoring with Lion-policy filtering; no live orders, transfers, withdrawals, or wallet scraping.
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.
 
@@ -33,6 +33,17 @@ The application will remain in paper mode until:
 4. Live mode is explicitly enabled by the owner with least-privilege API keys.
 
 Never grant withdrawal permission to trading API keys. Never put secrets in frontend code or commit them to GitHub.
+
+## Optional private Bybit paper monitor
+
+The private monitor uses only official authenticated read endpoints. It requires a separate Bybit API key configured as read-only, with no order, transfer, or withdrawal permissions. Set these variables locally; do not commit them:
+
+~~~powershell
+$env:BYBIT_READONLY_API_KEY = "your-read-only-key"
+$env:BYBIT_READONLY_API_SECRET = "your-read-only-secret"
+~~~
+
+The dashboard reads private open positions, marks them against public prices, applies the Lion risk policy, and displays only approved positions as paper-copy candidates. It never sends an order. If the key is missing, not read-only, expired, or unavailable, the monitor remains disabled or reports the error without exposing the secret.
 
 ## Run the paper demo
 
