@@ -17,7 +17,8 @@
     @media(max-width:800px){.top-actions .button{display:none}.content{padding:0 10px 70px}.intro{margin:0 -10px;padding:13px 10px}.intro-note{display:none}.metrics{margin:0 -10px 8px;padding:9px 5px}.metrics .card{padding:4px 8px}.metric-label{font-size:.65rem}.metric-value{font-size:1rem}.dashboard{display:flex;flex-direction:column}.dashboard .chart-card{order:1}.order-panel{order:2}.dashboard #positions{order:3}.dashboard #agents{order:4}.dashboard #intelligence,.dashboard #activity{order:5}.chart{min-height:280px}.order-panel{grid-column:auto;grid-row:auto}.agents{grid-template-columns:repeat(2,1fr)}.topbar{padding:12px 10px}}
     @media(max-width:480px){.metrics{grid-template-columns:repeat(2,1fr)}.metrics .card+ .card{border-left:0}.metrics .card:nth-child(n+3){border-top:1px solid #292930;padding-top:9px}.agents{grid-template-columns:1fr 1fr}.animal{height:40px;width:40px}.agent h4{font-size:.75rem}.agent p{font-size:.65rem}}
     .market-quote{align-items:baseline;display:flex;gap:12px;padding:0 0 10px}.market-quote strong{color:#f5f5f7;font-size:1.35rem}.market-quote span{color:#8e8e99;font-size:.72rem}.market-quote .positive{color:#16b979}.market-quote .negative{color:#ed4053}.timeframe{background:transparent;border:0;color:#858591;font-size:.7rem;padding:3px 5px}.timeframe.active{color:#f5f5f7;font-weight:800}.chart canvas{height:100%;position:absolute;width:100%;z-index:1}.chart-grid{display:grid;gap:10px;grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr))}.chart-grid .chart-card{min-width:0}.order-panel{grid-column:1/-1;grid-row:auto}.chart-label{color:#858591;font-size:.7rem}
-    @media(max-width:800px){.chart-grid{grid-template-columns:1fr}.chart-grid .chart-card{grid-column:auto}}
+    .market-toolbar{align-items:center;background:#111116;border:1px solid #292930;border-radius:5px;display:flex;gap:12px;grid-column:1/-1;padding:8px}.symbol-search{align-items:center;background:#1a1a20;border:1px solid #2e2e37;border-radius:4px;display:flex}.symbol-search input{background:transparent;border:0;color:#f5f5f7;min-width:105px;outline:0;padding:8px}.symbol-search button{background:#292930;border:0;color:#d9d9df;padding:8px 10px}.toolbar-icon{color:#858591;padding-left:9px}.asset-tabs{display:flex;gap:4px;overflow:auto}.asset-tab{background:transparent;border:0;border-radius:4px;color:#8e8e99;font-size:.72rem;padding:8px 10px;white-space:nowrap}.asset-tab:hover,.asset-tab.active{background:#292930;color:#fff}.exchange-picker{color:#858591;font-size:.7rem;margin-left:auto;white-space:nowrap}.exchange-picker select{background:#1a1a20;border:1px solid #2e2e37;border-radius:4px;color:#eee;padding:7px}.chart-grid{grid-column:1/-1}.chart-grid .chart-card{grid-column:auto}
+    @media(max-width:800px){.chart-grid{grid-template-columns:1fr}.chart-grid .chart-card{grid-column:auto}.market-toolbar{align-items:stretch;flex-wrap:wrap}.symbol-search{flex:1}.exchange-picker{margin-left:0}.asset-tabs{order:3;width:100%}}
   </style>
 </head>
 <body>
@@ -36,6 +37,7 @@
         <div class="intro"><div><div class="eyebrow">Paper command centre</div><h2>Observe. Validate. Protect.</h2><p>A safe visual foundation for your future Bybit and Binance trading platform.</p></div><div class="intro-note">Paper values only. Exchange adapters, risk engine and execution services are not connected in this design.</div></div>
         <section class="metrics"><article class="card"><div class="metric-label">Paper equity</div><div class="metric-value">$10,000.00</div><div class="small neutral">Starting balance</div></article><article class="card"><div class="metric-label">Available balance</div><div class="metric-value">$8,420.50</div><div class="small">15.8% allocated</div></article><article class="card"><div class="metric-label">Paper P&L</div><div class="metric-value positive">+$184.20</div><div class="small positive">+1.84% this session</div></article><article class="card"><div class="metric-label">Drawdown</div><div class="metric-value">2.1%</div><div class="small">Within 10% limit</div></article></section>
         <section class="dashboard" id="markets">
+          <div class="market-toolbar"><div class="symbol-search"><span class="toolbar-icon">⌕</span><input id="symbol-search" value="SOLUSDT" aria-label="Search market symbol" placeholder="Search symbol" /><button id="search-symbol" type="button">Load</button></div><div class="asset-tabs" aria-label="Popular assets"><button class="asset-tab active" data-symbol="SOLUSDT">SOLUSDT</button><button class="asset-tab" data-symbol="BTCUSDT">BTCUSDT</button><button class="asset-tab" data-symbol="ETHUSDT">ETHUSDT</button><button class="asset-tab" data-symbol="XRPUSDT">XRPUSDT</button></div><label class="exchange-picker">Feed <select id="exchange-select"><option value="bybit">Bybit public</option><option value="binance">Binance public</option></select></label></div>
           <div class="chart-grid">
             <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span>Bybit Perpetual</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button></span></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="market-updated"></span></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public SOLUSDT candlestick chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Prices and candles come from a public read-only Bybit feed.</div></article>
             <article class="card chart-card"><div class="panel-title"><h3><span id="btc-symbol">BTCUSDT</span> ▾ <span>Bybit Perpetual</span></h3><span><span class="chart-label">Live comparison</span></span></div><div class="market-quote"><strong id="btc-price">Loading…</strong><span id="btc-change">Public candle feed</span><span id="btc-updated"></span></div><div class="chart"><div class="grid-lines"></div><canvas id="btc-chart" aria-label="Live public BTCUSDT candlestick chart"></canvas></div><div class="warning" id="btc-status">Paper orders only. Live public Bybit candles.</div></article>
@@ -63,6 +65,8 @@
       }
     }
     let selectedInterval = '1';
+    let primarySymbol = 'SOLUSDT';
+    let selectedExchange = 'bybit';
     function formatPrice(value) { return Number(value).toLocaleString(undefined, {maximumFractionDigits: 4}); }
     function drawCandles(canvas, candles) {
       const chartBox = canvas.parentElement;
@@ -85,7 +89,7 @@
     async function loadMarket(symbol, prefix) {
       const status = document.getElementById(prefix + '-status');
       try {
-        const response = await fetch('/api/market?exchange=bybit&symbol=' + symbol + '&interval=' + selectedInterval);
+        const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=' + selectedInterval);
         const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Feed unavailable');
         const ticker = data.ticker;
         document.getElementById(prefix + '-symbol').textContent = data.symbol;
@@ -96,8 +100,13 @@
         drawCandles(document.getElementById(prefix === 'market' ? 'price-chart' : 'btc-chart'), data.candles); status.textContent = 'Paper orders only. Live public Bybit candles · refreshed just now.';
       } catch (error) { status.textContent = error.message + ' Paper dashboard remains available.'; }
     }
-    function refreshMarkets() { loadMarket('SOLUSDT', 'market'); loadMarket('BTCUSDT', 'btc'); }
+    function refreshMarkets() { loadMarket(primarySymbol, 'market'); loadMarket('BTCUSDT', 'btc'); }
     document.querySelectorAll('.timeframe').forEach(button => button.addEventListener('click', () => { selectedInterval = button.dataset.interval; document.querySelectorAll('.timeframe').forEach(item => item.classList.toggle('active', item.dataset.interval === selectedInterval)); refreshMarkets(); }));
+    function selectAsset(symbol) { primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; document.querySelectorAll('.asset-tab').forEach(item => item.classList.toggle('active', item.dataset.symbol === symbol)); refreshMarkets(); }
+    document.querySelectorAll('.asset-tab').forEach(button => button.addEventListener('click', () => selectAsset(button.dataset.symbol)));
+    document.getElementById('search-symbol').addEventListener('click', () => { const symbol = document.getElementById('symbol-search').value.trim().toUpperCase(); if (/^[A-Z0-9]{5,15}$/.test(symbol)) selectAsset(symbol); });
+    document.getElementById('symbol-search').addEventListener('keydown', event => { if (event.key === 'Enter') document.getElementById('search-symbol').click(); });
+    document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; refreshMarkets(); });
     window.addEventListener('resize', refreshMarkets); loadPaperStatus(); refreshMarkets(); setInterval(refreshMarkets, 30000);
   </script>
 </body>
