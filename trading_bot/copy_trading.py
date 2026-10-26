@@ -55,6 +55,31 @@ class CopyAssessment:
         }
 
 
+@dataclass(frozen=True)
+class ActivePosition:
+    symbol: str
+    side: str
+    entry_price: float
+    mark_price: float
+    quantity: float
+    unrealized_pnl: float
+    stop_loss: float
+    take_profit: float
+
+
+@dataclass(frozen=True)
+class ActiveCopyAccount:
+    profile_id: str
+    display_name: str
+    exchange: str
+    status: str
+    copy_mode: str
+    positions: tuple[ActivePosition, ...]
+
+    def as_dict(self) -> dict[str, object]:
+        return {"profile_id": self.profile_id, "display_name": self.display_name, "exchange": self.exchange, "status": self.status, "copy_mode": self.copy_mode, "positions": [position.__dict__ for position in self.positions]}
+
+
 class CopyStrategyLab:
     """Research copy settings without reproducing private exchange endpoints."""
 
@@ -119,4 +144,13 @@ def demo_profiles() -> list[LeadTraderProfile]:
     return [
         LeadTraderProfile("paper-trend-01", "Trend Research Alpha", 28.4, 2840.0, 12.8, 125000.0, 184, 1.12, 214, 96, 61.0, ("BTCUSDT", "ETHUSDT", "SOLUSDT"), 72, True, True),
         LeadTraderProfile("paper-momentum-02", "Momentum Lab Beta", 46.2, 4620.0, 29.4, 84000.0, 97, 0.38, 180, 41, 68.0, ("BTCUSDT", "XRPUSDT"), 0, True, False),
+    ]
+
+
+def demo_active_accounts() -> list[ActiveCopyAccount]:
+    """Synthetic active positions for the local paper copy-trading tab."""
+
+    return [
+        ActiveCopyAccount("paper-trend-01", "Trend Research Alpha", "Bybit public", "active", "fixed_amount", (ActivePosition("BTCUSDT", "long", 80100.0, 80420.0, 0.002, 0.64, 78500.0, 83300.0), ActivePosition("SOLUSDT", "long", 104.20, 104.56, 0.4, 0.14, 102.10, 108.40))),
+        ActiveCopyAccount("paper-mean-03", "Mean Reversion Gamma", "Binance public", "active", "fixed_ratio", (ActivePosition("ETHUSDT", "short", 2335.0, 2326.0, 0.03, 0.27, 2381.7, 2241.6),)),
     ]

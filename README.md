@@ -15,6 +15,8 @@ This first implementation is deliberately paper-only. It provides:
 - A transparent moving-average crossover backtest with fees and slippage.
 - An explainable behavioral decision layer with evidence, signal, chart, risk, paper-execution, and notification agents.
 - Approval-aware paper behavior for large trades, auto-trading-off state, duplicate signals, position capacity, and risk gates.
+- An active-copy tab showing synthetic lead accounts, positions, entry/mark prices, size, unrealized P&L, and stop/target levels.
+- A stateful auto-copy control: turning it off pauses new copies and creates a close-request event while monitoring remains active.
 - No API keys, private endpoints, live orders, wallet scraping, or exchange credentials.
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.

@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from .copy_trading import CopySettings, CopyStrategyLab, demo_profiles
+from .copy_trading import CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .market_data import BinanceMarketData, BybitMarketData
 from .paper_session import PaperExecutionSession
 
@@ -16,6 +16,7 @@ UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
 PAPER_SESSION = PaperExecutionSession()
 COPY_LAB = CopyStrategyLab()
+COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_action": "Monitoring remains active; new paper copies are paused."}
 
 
 def history_end_ms(value: str | None) -> int | None:
@@ -113,7 +114,27 @@ class AppHandler(BaseHTTPRequestHandler):
                 candidates.append({"profile": profile.__dict__, "assessment": assessment.as_dict()})
             self._send(200, json.dumps({"mode": "paper", "candidates": candidates}).encode(), "application/json; charset=utf-8")
             return
+        if request.path == "/api/copy/active":
+            self._send(200, json.dumps({"mode": "paper", "control": COPY_CONTROL, "accounts": [account.as_dict() for account in demo_active_accounts()]}).encode(), "application/json; charset=utf-8")
+            return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
+
+    def do_POST(self) -> None:  # noqa: N802
+        request = urlsplit(self.path)
+        if request.path != "/api/copy/control":
+            self._send(404, b"Not found", "text/plain; charset=utf-8")
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            payload = json.loads(self.rfile.read(length) or b"{}")
+            enabled = bool(payload.get("enabled"))
+        except (ValueError, json.JSONDecodeError):
+            self._send(400, b'{"error":"Invalid control payload"}', "application/json; charset=utf-8")
+            return
+        COPY_CONTROL["auto_trade_enabled"] = enabled
+        COPY_CONTROL["close_request"] = not enabled
+        COPY_CONTROL["last_action"] = "New paper copies enabled." if enabled else "Close request created for active copied positions; monitoring remains active."
+        self._send(200, json.dumps({"mode": "paper", "control": COPY_CONTROL}).encode(), "application/json; charset=utf-8")
 
     def log_message(self, format: str, *args: object) -> None:
         print(f"[Trading Bot] {format % args}")
