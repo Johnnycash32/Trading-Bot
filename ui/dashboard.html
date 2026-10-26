@@ -208,14 +208,17 @@
         intelligence.parentNode.insertBefore(card, intelligence.nextSibling);
       } catch (_) {}
     }
-    async function loadActiveCopy() {
+    async function loadActiveCopy(force = false) {
       const anchor = document.getElementById('copy-lab') || document.getElementById('intelligence');
-      if (!anchor || document.getElementById('active-copy')) return;
+      if (!anchor || (!force && document.getElementById('active-copy'))) return;
       try {
         const response = await fetch('/api/copy/active');
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Active copy data unavailable');
         const control = data.control;
+        const copiedTrade = data.accounts.flatMap(account => account.positions.map(position => ({account, position})))[0];
+        if (control.auto_trade_enabled && copiedTrade) displayCopiedTrade(copiedTrade.account, copiedTrade.position);
+        document.getElementById('active-copy')?.remove();
         const card = document.createElement('article');
         card.className = 'card wide'; card.id = 'active-copy';
         const rows = data.accounts.flatMap(account => account.positions.map(position => { const pnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'copy-long' : 'copy-short'; return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
@@ -227,9 +230,19 @@
           const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop and a close request will be created for active copied positions. Monitoring will continue.';
           if (!window.confirm(message)) return;
           const update = await fetch('/api/copy/control', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
-          if (update.ok) { const result = await update.json(); document.getElementById('copy-notice').textContent = result.control.last_action; document.getElementById('copy-toggle').classList.toggle('on', enabled); document.getElementById('copy-toggle').textContent = enabled ? 'Disable auto-copy' : 'Enable auto-copy'; document.querySelector('#active-copy .copy-control span').textContent = enabled ? 'Auto-copy ON' : 'Auto-copy OFF'; addNotification(enabled ? 'Auto-copy enabled' : 'Close request created', result.control.last_action, enabled ? 'warn' : 'alert'); }
+          if (update.ok) { const result = await update.json(); addNotification(enabled ? 'Auto-copy enabled' : 'Close request created', result.control.last_action, enabled ? 'warn' : 'alert'); await loadActiveCopy(true); }
         });
       } catch (_) {}
+    }
+    function displayCopiedTrade(account, position) {
+      const symbol = String(position.symbol || '').toUpperCase();
+      if (!symbol) return;
+      const exchangeName = String(account.exchange || '').toLowerCase();
+      const exchange = exchangeName.includes('binance') ? 'binance' : exchangeName.includes('bybit') ? 'bybit' : selectedExchange;
+      if (exchange !== selectedExchange) { selectedExchange = exchange; document.getElementById('exchange-select').value = exchange; }
+      if (symbol !== primarySymbol) selectAsset(symbol); else refreshMarkets();
+      document.getElementById('chart-tool-status').textContent = `Auto-copy chart: ${symbol} ${String(position.side || '').toUpperCase()}`;
+      addNotification('Chart focused on copied trade', `${symbol} ${String(position.side || '').toUpperCase()} · ${account.display_name}`, 'info');
     }
     async function evaluatePaper(symbol) {
       const badge = document.getElementById('paper-signal');
