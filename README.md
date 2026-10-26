@@ -10,6 +10,8 @@ This first implementation is deliberately paper-only. It provides:
 - Explicit paper-trading models.
 - Independent risk validation and conservative limits.
 - Position sizing based on account equity and stop distance.
+- Read-only Bybit and Binance ticker/candle adapters.
+- A transparent moving-average crossover backtest with fees and slippage.
 - No API keys, private endpoints, live orders, wallet scraping, or exchange credentials.
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.
@@ -43,9 +45,9 @@ C:/Users/Hp/AppData/Roaming/uv/python/cpython-3.15.1-windows-x86_64-none/python.
 
 ## Planned layers
 
-1. Core models and risk engine — current phase.
-2. Public market-data adapters for Bybit and Binance.
-3. Backtesting and paper execution with realistic costs.
+1. Core models and risk engine — complete.
+2. Public market-data adapters for Bybit and Binance — complete.
+3. Backtesting with realistic costs — current phase.
 4. Demo/testnet account adapters, reconciliation, and audit logs.
 5. FastAPI service for phone and computer clients.
 6. React/TypeScript responsive dashboard with a separate Three.js/R3F animal-agent scene.
