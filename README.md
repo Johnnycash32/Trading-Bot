@@ -13,6 +13,8 @@ This first implementation is deliberately paper-only. It provides:
 - Read-only Bybit and Binance ticker/candle adapters.
 - Optional public WebSocket candle transport with heartbeat/reconnect behavior; REST remains the fallback.
 - A transparent moving-average crossover backtest with fees and slippage.
+- An explainable behavioral decision layer with evidence, signal, chart, risk, paper-execution, and notification agents.
+- Approval-aware paper behavior for large trades, auto-trading-off state, duplicate signals, position capacity, and risk gates.
 - No API keys, private endpoints, live orders, wallet scraping, or exchange credentials.
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.
@@ -49,10 +51,21 @@ C:/Users/Hp/AppData/Roaming/uv/python/cpython-3.15.1-windows-x86_64-none/python.
 1. Core models and risk engine — complete.
 2. Public market-data adapters for Bybit and Binance — complete.
 3. Backtesting with realistic costs — current phase.
-4. Demo/testnet account adapters, reconciliation, and audit logs.
-5. FastAPI service for phone and computer clients.
-6. React/TypeScript responsive dashboard with a separate Three.js/R3F animal-agent scene.
-7. Manual approvals, live mode, and exchange-specific protective-order validation.
+4. Copy-trading research controls: fixed amount/ratio sizing, symbol allowlists, slippage caps, independent TP/SL, and portfolio stop-loss.
+5. Demo/testnet account adapters, reconciliation, and audit logs.
+6. FastAPI service for phone and computer clients.
+7. React/TypeScript responsive dashboard with a separate Three.js/R3F animal-agent scene.
+8. Manual approvals, live mode, and exchange-specific protective-order validation.
+
+## Behavioral decision contract
+
+Every paper evaluation returns a decision from the behavioral layer:
+
+- `monitor`: no actionable signal; continue observing.
+- `reject`: a signal exists, but evidence or a hard risk gate failed.
+- `paper_simulate`: the signal passed the paper gates and may be simulated; it still requires approval for any future live mode.
+
+The animal roles are intentionally observable: Raccoon collects public evidence, Eagle dispatches the strategy signal, Hawk examines chart structure, Lion enforces limits, Cheetah represents paper execution, and Hare delivers the decision. Confidence is a transparent research score, not a probability of profit.
 
 ## Research references
 

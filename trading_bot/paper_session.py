@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .behavior import BehaviorEngine
 from .market_data import Candle
 from .models import Rejection, Side, TradeProposal
 from .risk import RiskEngine
@@ -21,6 +22,7 @@ class PaperExecutionSession:
     history: list[dict[str, object]] = field(default_factory=list)
     positions: list[dict[str, object]] = field(default_factory=list)
     _last_order_signal: dict[str, Signal] = field(default_factory=dict)
+    behavior_engine: BehaviorEngine = field(default_factory=BehaviorEngine)
 
     def _mark_positions(self, symbol: str, mark_price: float) -> list[dict[str, object]]:
         closed: list[dict[str, object]] = []
@@ -58,9 +60,11 @@ class PaperExecutionSession:
         closed = self._mark_positions(symbol, candles[-1].close)
         signal = self.strategy.signal(candles)
         if signal is Signal.HOLD:
-            return {"status": "hold", "signal": signal.value, "reason": "No moving-average crossover.", "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, open_positions=len(self._open_positions()))
+            return {"status": "hold", "signal": signal.value, "reason": "No moving-average crossover.", "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
         if self._last_order_signal.get(symbol) is signal:
-            return {"status": "hold", "signal": signal.value, "reason": "Duplicate signal already simulated.", "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, open_positions=len(self._open_positions()))
+            return {"status": "hold", "signal": signal.value, "reason": "Duplicate signal already simulated.", "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, candles[-1].close)}
 
         entry = candles[-1].close
         recent = candles[-min(14, len(candles)):]
@@ -81,14 +85,17 @@ class PaperExecutionSession:
             stop_loss=stop_loss,
             take_profit=take_profit,
             account_equity=self.account_equity,
-            open_positions=len(self.orders),
+            open_positions=len(self._open_positions()),
             leverage=1.0,
             estimated_fee=entry * 0.0006,
             estimated_slippage=entry * 0.0005,
         )
         decision = self.risk_engine.validate(proposal)
         if isinstance(decision, Rejection):
-            return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason, "closed_positions": closed, **self.snapshot(symbol, entry)}
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, open_positions=len(self._open_positions()), risk_approved=False, risk_reason=decision.reason)
+            return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, entry)}
+
+        behavior = self.behavior_engine.assess(signal, candles, risk_reward_ratio=decision.risk_reward_ratio, notional=decision.notional, account_equity=self.account_equity, open_positions=len(self._open_positions()))
 
         order = self.exchange.submit_paper_order(proposal, decision.quantity)
         self._last_order_signal[symbol] = signal
@@ -103,7 +110,12 @@ class PaperExecutionSession:
             "stop_loss": order.stop_loss,
             "take_profit": order.take_profit,
             "risk_reward_ratio": decision.risk_reward_ratio,
+            "confidence": behavior.confidence,
+            "behavior_decision": behavior.decision,
         }
         self.orders.append(record)
         self.positions.append({**record, "status": "open", "mark_price": entry, "unrealized_pnl": 0.0})
-        return {"status": "simulated", "signal": signal.value, "order": record, "closed_positions": closed, **self.snapshot(symbol, entry)}
+        return {"status": "simulated", "signal": signal.value, "order": record, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, entry)}
+
+    def _open_positions(self) -> list[dict[str, object]]:
+        return [position for position in self.positions if position["status"] == "open"]
