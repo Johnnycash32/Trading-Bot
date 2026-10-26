@@ -30,6 +30,9 @@
   <style>
     .behavior-summary{border-top:1px solid #292930;margin-top:14px;padding-top:12px}.behavior-summary-head{align-items:center;display:flex;gap:10px;justify-content:space-between}.behavior-summary-head strong{color:#f5f5f7;font-size:.78rem}.behavior-summary-head span{color:#16b979;font-size:.68rem;font-weight:800;text-transform:uppercase}.behavior-summary p{color:#a5a5af;font-size:.7rem;margin:7px 0}.behavior-gates{display:flex;flex-wrap:wrap;gap:6px}.behavior-gate{background:#1a1a20;border:1px solid #2e2e37;border-radius:99px;color:#c4c4cc;font-size:.63rem;padding:4px 7px}.behavior-gate.warn{border-color:#765a2d;color:#e2b85c}.behavior-gate.block{border-color:#713640;color:#ef7d8b}.copy-control{align-items:center;display:flex;gap:9px}.copy-toggle{background:#262630;border:1px solid #3b3b47;border-radius:4px;color:#d8d8df;font-size:.68rem;font-weight:800;padding:7px 10px}.copy-toggle.on{background:#155a49;border-color:#16b979}.copy-notice{color:#d8ae5d;font-size:.68rem;margin:8px 0}.active-copy-table{overflow:auto}.active-copy-table table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.active-copy-table th{color:#858591;font-weight:600;text-align:left}.active-copy-table td,.active-copy-table th{border-bottom:1px solid #292930;padding:9px 7px;white-space:nowrap}.active-copy-table td strong{color:#f5f5f7}.active-copy-table .positive{color:#16b979}.active-copy-table .negative{color:#ed4053}
   </style>
+  <style>
+    .copy-toggle{color:#e7c873}.copy-toggle.on{color:#b9f1d8}.active-copy-table .copy-profile{color:#d9a8ff}.active-copy-table .copy-exchange{color:#6fd7e8}.active-copy-table .copy-mode{color:#e7c873}.active-copy-table .copy-long{color:#16b979;font-weight:800}.active-copy-table .copy-short{color:#ed4053;font-weight:800}.hare-notifications{display:grid;gap:12px}.notification-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between}.notification-toggle{background:#22222a;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.67rem;padding:6px 9px}.notification-list{display:grid;gap:7px}.notification-item{background:#17171e;border-left:3px solid #6aa8ff;border-radius:3px;color:#c9c9d2;font-size:.72rem;padding:8px 10px}.notification-item.warn{border-left-color:#e7c873}.notification-item.alert{border-left-color:#ed4053}.notification-item time{color:#858591;display:block;font-size:.62rem;margin-top:3px}.notification-toast{background:#17171e;border:1px solid #4a4a57;border-left:4px solid #6aa8ff;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.45);color:#f5f5f7;max-width:330px;padding:12px 14px;position:fixed;right:20px;top:20px;z-index:20}.notification-toast.warn{border-left-color:#e7c873}.notification-toast.alert{border-left-color:#ed4053}.notification-toast strong{display:block;font-size:.75rem}.notification-toast span{color:#c9c9d2;display:block;font-size:.7rem;margin-top:3px}
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -41,7 +44,7 @@
       </nav>
       <div class="mode"><strong>Paper trading mode</strong>Live market data concept · No real orders are being placed.</div>
     </aside>
-    <main class="main">
+    <main class="main"><div id="notification-toast" class="notification-toast" hidden></div>
       <header class="topbar"><h1>Good morning, John</h1><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><button class="button danger" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')">Emergency stop</button></div></header>
       <div class="content" id="overview">
         <div class="intro"><div><div class="eyebrow">Paper command centre</div><h2>Observe. Validate. Protect.</h2><p>A safe visual foundation for your future Bybit and Binance trading platform.</p></div><div class="intro-note">Public market feeds and the risk engine are connected. Execution remains paper-only and approval-gated.</div></div>
@@ -148,6 +151,34 @@
       const assets = [['SOLUSDT','watch-sol','watch-sol-change'],['BTCUSDT','watch-btc','watch-btc-change'],['ETHUSDT','watch-eth','watch-eth-change'],['XRPUSDT','watch-xrp','watch-xrp-change']];
       await Promise.all(assets.map(async ([symbol, priceId, changeId]) => { try { const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=1'); const data = await response.json(); if (!response.ok) return; document.getElementById(priceId).textContent = formatPrice(data.ticker.last); const change = data.ticker.change_percent; const element = document.getElementById(changeId); element.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%'; element.className = change >= 0 ? 'positive' : 'negative'; } catch (_) {} }));
     }
+    let popupNotificationsEnabled = localStorage.getItem('trading-bot-popup-notifications') !== 'false';
+    const seenNotifications = new Set();
+    function addNotification(title, message, level = 'info') {
+      const list = document.getElementById('notification-list');
+      if (!list) return;
+      const key = `${title}:${message}`;
+      if (seenNotifications.has(key)) return;
+      seenNotifications.add(key);
+      const item = document.createElement('div'); item.className = `notification-item ${level}`;
+      item.innerHTML = `<strong>${title}</strong> · ${message}<time>Hare · ${new Date().toLocaleTimeString()}</time>`;
+      list.prepend(item);
+      while (list.children.length > 8) list.lastElementChild.remove();
+      const toast = document.getElementById('notification-toast');
+      if (popupNotificationsEnabled && toast) { toast.className = `notification-toast ${level}`; toast.innerHTML = `<strong>${title}</strong><span>${message}</span>`; toast.hidden = false; clearTimeout(window.notificationToastTimer); window.notificationToastTimer = setTimeout(() => { toast.hidden = true; }, 5000); }
+    }
+    function renderNotificationSetting() {
+      const button = document.getElementById('notification-toggle');
+      if (button) { button.textContent = popupNotificationsEnabled ? 'Corner popups: ON' : 'Corner popups: OFF'; button.setAttribute('aria-pressed', String(popupNotificationsEnabled)); }
+    }
+    function addNotificationSection() {
+      if (document.getElementById('hare-notifications')) return;
+      const agents = document.getElementById('agents'); if (!agents) return;
+      const card = document.createElement('article'); card.className = 'card wide'; card.id = 'hare-notifications';
+      card.innerHTML = '<div class="panel-title"><h3>Hare notifications</h3><span>Alert center</span></div><div class="hare-notifications"><div class="notification-toolbar"><span class="small">Alerts remain here when corner popups are off.</span><button class="notification-toggle" id="notification-toggle" type="button"></button></div><div class="notification-list" id="notification-list"></div></div>';
+      agents.parentNode.insertBefore(card, agents.nextSibling);
+      document.getElementById('notification-toggle').addEventListener('click', () => { popupNotificationsEnabled = !popupNotificationsEnabled; localStorage.setItem('trading-bot-popup-notifications', String(popupNotificationsEnabled)); renderNotificationSetting(); addNotification('Popup setting changed', popupNotificationsEnabled ? 'Corner alerts are enabled.' : 'Corner alerts are off; alerts remain in this notification bar.', 'warn'); });
+      addNotification('Hare ready', 'Notifications will appear here.', 'info'); renderNotificationSetting();
+    }
     function renderBehavior(behavior) {
       const summary = document.getElementById('behavior-summary');
       if (!summary || !behavior) return;
@@ -161,6 +192,8 @@
       state.className = behavior.decision === 'reject' ? 'block' : behavior.approval_required ? 'warn' : '';
       note.textContent = behavior.reasons?.[0] || 'All behavioral gates passed for paper evaluation.';
       gates.innerHTML = (behavior.agents || []).map(agent => `<span class="behavior-gate ${agent.state === 'blocked' ? 'block' : agent.state === 'alerting' ? 'warn' : ''}" title="${agent.note}">${agent.name}: ${agent.state}</span>`).join('');
+      const alertAgent = (behavior.agents || []).find(agent => agent.name === 'Hare' && agent.state === 'alerting');
+      if (alertAgent) addNotification('Behavior gate update', behavior.reasons?.[0] || alertAgent.note, behavior.decision === 'reject' ? 'alert' : 'warn');
     }
     async function loadCopyCandidates() {
       const intelligence = document.getElementById('intelligence');
@@ -185,13 +218,16 @@
         const control = data.control;
         const card = document.createElement('article');
         card.className = 'card wide'; card.id = 'active-copy';
-        const rows = data.accounts.flatMap(account => account.positions.map(position => { const pnl = Number(position.unrealized_pnl); return `<tr><td><strong>${account.display_name}</strong><br><span class="small">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td>${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
+        const rows = data.accounts.flatMap(account => account.positions.map(position => { const pnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'copy-long' : 'copy-short'; return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
         card.innerHTML = `<div class="panel-title"><h3>Active copy traders</h3><div class="copy-control"><span>${control.auto_trade_enabled ? 'Auto-copy ON' : 'Auto-copy OFF'}</span><button class="copy-toggle ${control.auto_trade_enabled ? 'on' : ''}" id="copy-toggle" type="button">${control.auto_trade_enabled ? 'Turn off' : 'Turn on'}</button></div></div><div class="copy-notice" id="copy-notice">${control.last_action}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody>${rows || '<tr><td colspan="8">No active copied positions.</td></tr>'}</tbody></table></div>`;
         anchor.parentNode.insertBefore(card, anchor.nextSibling);
+        const copyToggle = document.getElementById('copy-toggle'); copyToggle.textContent = control.auto_trade_enabled ? 'Disable auto-copy' : 'Enable auto-copy'; copyToggle.title = control.auto_trade_enabled ? 'Pause new copies and request closing active copied positions' : 'Enable new paper copies after confirmation'; copyToggle.setAttribute('aria-label', copyToggle.title);
         document.getElementById('copy-toggle').addEventListener('click', async () => {
           const enabled = !document.getElementById('copy-toggle').classList.contains('on');
+          const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop and a close request will be created for active copied positions. Monitoring will continue.';
+          if (!window.confirm(message)) return;
           const update = await fetch('/api/copy/control', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
-          if (update.ok) { const result = await update.json(); document.getElementById('copy-notice').textContent = result.control.last_action; document.getElementById('copy-toggle').classList.toggle('on', enabled); document.getElementById('copy-toggle').textContent = enabled ? 'Turn off' : 'Turn on'; document.querySelector('#active-copy .copy-control span').textContent = enabled ? 'Auto-copy ON' : 'Auto-copy OFF'; }
+          if (update.ok) { const result = await update.json(); document.getElementById('copy-notice').textContent = result.control.last_action; document.getElementById('copy-toggle').classList.toggle('on', enabled); document.getElementById('copy-toggle').textContent = enabled ? 'Disable auto-copy' : 'Enable auto-copy'; document.querySelector('#active-copy .copy-control span').textContent = enabled ? 'Auto-copy ON' : 'Auto-copy OFF'; addNotification(enabled ? 'Auto-copy enabled' : 'Close request created', result.control.last_action, enabled ? 'warn' : 'alert'); }
         });
       } catch (_) {}
     }
@@ -252,7 +288,7 @@
     document.querySelectorAll('.drawing-tools button').forEach(button => button.addEventListener('click', () => { const title = button.title; if (title === 'Delete drawings') { drawings = []; renderDrawings(); document.getElementById('chart-tool-status').textContent = 'Drawings cleared'; return; } if (title === 'Toggle visibility') { drawingsVisible = !drawingsVisible; drawingCanvas.style.opacity = drawingsVisible ? '1' : '0'; document.getElementById('chart-tool-status').textContent = drawingsVisible ? 'Drawings visible' : 'Drawings hidden'; return; } if (title === 'Lock drawings') { drawingsLocked = !drawingsLocked; document.getElementById('chart-tool-status').textContent = drawingsLocked ? 'Drawings locked' : 'Drawings unlocked'; return; } drawingTool = title; document.querySelectorAll('.drawing-tools button').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.getElementById('chart-tool-status').textContent = title + ' selected'; }));
     document.querySelector('.drawing-tools button').classList.add('active');
     document.querySelectorAll('.chart-bottom-tools button').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
-    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); loadPaperStatus(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
+    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); loadPaperStatus(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
   </script>
 </body>
 </html>
