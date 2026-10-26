@@ -6,11 +6,13 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from .market_data import BinanceMarketData, BybitMarketData
+from .paper_session import PaperExecutionSession
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
+PAPER_SESSION = PaperExecutionSession()
 
 
 class AppHandler(BaseHTTPRequestHandler):
@@ -62,6 +64,25 @@ class AppHandler(BaseHTTPRequestHandler):
                 self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
             except Exception as exc:  # public feed failures should not crash the paper app
                 message = json.dumps({"error": f"Public market feed unavailable: {exc}"}).encode()
+                self._send(502, message, "application/json; charset=utf-8")
+            return
+        if request.path == "/api/paper/evaluate":
+            query = parse_qs(request.query)
+            exchange = query.get("exchange", ["bybit"])[0].lower()
+            symbol = query.get("symbol", ["SOLUSDT"])[0].upper()
+            interval = query.get("interval", ["1"])[0]
+            client = MARKET_CLIENTS.get(exchange)
+            if client is None:
+                self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
+                return
+            try:
+                candles = client.candles(symbol, interval, 120)
+                result = PAPER_SESSION.evaluate(exchange, symbol, candles)
+                result["symbol"] = symbol
+                result["exchange"] = exchange
+                self._send(200, json.dumps(result).encode(), "application/json; charset=utf-8")
+            except Exception as exc:
+                message = json.dumps({"error": f"Paper evaluation unavailable: {exc}"}).encode()
                 self._send(502, message, "application/json; charset=utf-8")
             return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
