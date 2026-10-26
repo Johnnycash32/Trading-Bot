@@ -56,8 +56,11 @@ class BybitMarketData(PublicMarketDataClient):
         row = payload["result"]["list"][0]
         return Ticker(self.exchange, symbol, float(row["lastPrice"]), float(row["bid1Price"]), float(row["ask1Price"]), float(row["price24hPcnt"]) * 100, int(payload.get("time", 0)) or None)
 
-    def candles(self, symbol: str = "BTCUSDT", interval: str = "60", limit: int = 100) -> list[Candle]:
-        payload = self._get(self.base_url, "/v5/market/kline", {"category": "linear", "symbol": symbol, "interval": interval, "limit": str(limit)})
+    def candles(self, symbol: str = "BTCUSDT", interval: str = "60", limit: int = 100, end_ms: int | None = None) -> list[Candle]:
+        params = {"category": "linear", "symbol": symbol, "interval": interval, "limit": str(limit)}
+        if end_ms is not None:
+            params["end"] = str(end_ms)
+        payload = self._get(self.base_url, "/v5/market/kline", params)
         rows = reversed(payload["result"]["list"])
         return [Candle(int(row[0]), float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])) for row in rows]
 
@@ -72,6 +75,9 @@ class BinanceMarketData(PublicMarketDataClient):
         ask = payload.get("askPrice")
         return Ticker(self.exchange, symbol, float(payload["lastPrice"]), float(bid) if bid else None, float(ask) if ask else None, float(payload["priceChangePercent"]), int(payload.get("closeTime", 0)) or None)
 
-    def candles(self, symbol: str = "BTCUSDT", interval: str = "1h", limit: int = 100) -> list[Candle]:
-        payload = self._load(f"{self.base_url}/fapi/v1/klines?{urlencode({'symbol': symbol, 'interval': interval, 'limit': str(limit)})}")
+    def candles(self, symbol: str = "BTCUSDT", interval: str = "1h", limit: int = 100, end_ms: int | None = None) -> list[Candle]:
+        params = {"symbol": symbol, "interval": interval, "limit": str(limit)}
+        if end_ms is not None:
+            params["endTime"] = str(end_ms)
+        payload = self._load(f"{self.base_url}/fapi/v1/klines?{urlencode(params)}")
         return [Candle(int(row[0]), float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])) for row in payload]

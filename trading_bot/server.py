@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -13,6 +14,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
 PAPER_SESSION = PaperExecutionSession()
+
+
+def history_end_ms(value: str | None) -> int | None:
+    if not value:
+        return None
+    try:
+        end = datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        return int((end.replace(hour=23, minute=59, second=59, microsecond=999000)).timestamp() * 1000)
+    except ValueError:
+        return None
 
 
 class AppHandler(BaseHTTPRequestHandler):
@@ -47,13 +58,14 @@ class AppHandler(BaseHTTPRequestHandler):
             exchange = query.get("exchange", ["bybit"])[0].lower()
             symbol = query.get("symbol", ["SOLUSDT"])[0].upper()
             interval = query.get("interval", ["1"])[0]
+            end_ms = history_end_ms(query.get("history_date", [None])[0])
             client = MARKET_CLIENTS.get(exchange)
             if client is None:
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
                 return
             try:
                 ticker = client.ticker(symbol)
-                candles = client.candles(symbol, interval, 120)
+                candles = client.candles(symbol, interval, 120, end_ms)
                 payload = {
                     "exchange": exchange,
                     "symbol": symbol,
@@ -71,12 +83,13 @@ class AppHandler(BaseHTTPRequestHandler):
             exchange = query.get("exchange", ["bybit"])[0].lower()
             symbol = query.get("symbol", ["SOLUSDT"])[0].upper()
             interval = query.get("interval", ["1"])[0]
+            end_ms = history_end_ms(query.get("history_date", [None])[0])
             client = MARKET_CLIENTS.get(exchange)
             if client is None:
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
                 return
             try:
-                candles = client.candles(symbol, interval, 120)
+                candles = client.candles(symbol, interval, 120, end_ms)
                 result = PAPER_SESSION.evaluate(exchange, symbol, candles)
                 result["symbol"] = symbol
                 result["exchange"] = exchange
