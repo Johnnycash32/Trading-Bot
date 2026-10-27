@@ -34,6 +34,7 @@ class PaperExecutionSession:
     balance_history: list[dict[str, object]] = field(default_factory=list)
     events: list[dict[str, object]] = field(default_factory=list)
     _last_order_candle: dict[str, int] = field(default_factory=dict)
+    _last_evaluated_candle: dict[str, int] = field(default_factory=dict)
     behavior_engine: BehaviorEngine = field(default_factory=BehaviorEngine)
 
     def __post_init__(self) -> None:
@@ -63,6 +64,145 @@ class PaperExecutionSession:
             "change": change,
         })
 
+    def submit_manual_order(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        quantity: float,
+        entry_price: float,
+        stop_loss: float,
+        take_profit: float,
+        leverage: float,
+        candle_timestamp_ms: int,
+        order_type: str = "market",
+    ) -> dict[str, object]:
+        if side not in {Side.LONG.value, Side.SHORT.value}:
+            raise ValueError("Choose Long or Short.")
+        if order_type not in {"market", "limit"}:
+            raise ValueError("Choose a supported paper order type.")
+        if not all(isfinite(value) for value in (quantity, entry_price, stop_loss, take_profit, leverage)):
+            raise ValueError("Order values must be finite numbers.")
+        if quantity <= 0:
+            raise ValueError("Order quantity must be greater than zero.")
+        if any(position["symbol"] == symbol for position in self._open_positions()):
+            raise ValueError("A paper position for this symbol is already open.")
+        if any(order["symbol"] == symbol and order["status"] == "pending" for order in self.orders):
+            raise ValueError("A paper limit order for this symbol is already pending.")
+        if any(position.get("monitoring_status") == "data_gap" for position in self._open_positions()) or any(
+            order.get("status") == "data_gap" for order in self.orders
+        ):
+            raise ValueError("New paper entries are halted until the unresolved market-data gap is reconciled.")
+
+        trade_side = Side(side)
+        proposal = TradeProposal(
+            exchange=exchange,
+            symbol=symbol,
+            side=trade_side,
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            account_equity=self.account_equity,
+            current_daily_loss=self._current_daily_loss(),
+            open_positions=len(self._open_positions()),
+            leverage=leverage,
+            estimated_fee=entry_price * self.FEE_RATE * 2,
+            estimated_slippage=entry_price * self.SLIPPAGE_RATE * 2,
+        )
+        decision = self.risk_engine.validate(proposal)
+        if isinstance(decision, Rejection):
+            self._record_event("paper_rejected", symbol=symbol, side=side, code=decision.code, reason=decision.reason)
+            raise ValueError(decision.reason)
+        if quantity > decision.quantity:
+            raise ValueError(
+                f"Quantity exceeds the risk-approved maximum of {decision.quantity:.8f} for the selected stop and leverage."
+            )
+
+        paper_order = self.exchange.submit_paper_order(proposal, quantity)
+        created_at = self._timestamp()
+        record: dict[str, object] = {
+            "order_id": paper_order.order_id,
+            "status": "pending" if order_type == "limit" else "simulated",
+            "order_type": order_type,
+            "created_at": created_at,
+            "exchange": exchange,
+            "symbol": symbol,
+            "side": side,
+            "quantity": quantity,
+            "entry_price": entry_price,
+            "stop_loss": stop_loss,
+            "take_profit": take_profit,
+            "initial_stop_loss": stop_loss,
+            "initial_stop_distance": abs(entry_price - stop_loss),
+            "leverage": leverage,
+            "signal_source": "manual_paper_ticket",
+            "risk_reward_ratio": decision.risk_reward_ratio,
+            "maximum_loss": quantity * (abs(entry_price - stop_loss) + proposal.estimated_fee + proposal.estimated_slippage),
+        }
+        self.orders.append(record)
+        self._last_evaluated_candle[symbol] = max(
+            self._last_evaluated_candle.get(symbol, candle_timestamp_ms),
+            candle_timestamp_ms,
+        )
+        self._record_event(
+            "paper_order_created",
+            symbol=symbol,
+            side=side,
+            order_id=record["order_id"],
+            order_type=order_type,
+            status=record["status"],
+            quantity=quantity,
+        )
+        if order_type == "market":
+            self._open_manual_position(record, entry_price, candle_timestamp_ms)
+        return deepcopy(record)
+
+    def cancel_pending_order(self, order_id: str) -> dict[str, object] | None:
+        order = next((item for item in self.orders if item["order_id"] == order_id), None)
+        if order is None or order["status"] not in {"pending", "data_gap"}:
+            return None
+        order["status"] = "cancelled"
+        order["cancelled_at"] = self._timestamp()
+        self._record_event("paper_order_cancelled", order_id=order_id, symbol=order["symbol"])
+        return deepcopy(order)
+
+    def _open_manual_position(self, order: dict[str, object], entry_price: float, candle_timestamp_ms: int) -> None:
+        order["entry_price"] = entry_price
+        position = {
+            **order,
+            "status": "open",
+            "mark_price": entry_price,
+            "unrealized_pnl": 0.0,
+            "opened_at": order["created_at"],
+            "opened_candle_timestamp_ms": candle_timestamp_ms,
+            "trailing_stop_active": False,
+        }
+        self.positions.append(position)
+        self._record_event(
+            "position_opened",
+            symbol=position["symbol"],
+            side=position["side"],
+            order_id=position["order_id"],
+            entry_price=entry_price,
+            quantity=position["quantity"],
+        )
+
+    def _fill_pending_orders(self, symbol: str, candle: Candle) -> None:
+        for order in self.orders:
+            if order["symbol"] != symbol or order["status"] != "pending":
+                continue
+            side = order["side"]
+            touched = candle.low <= float(order["entry_price"]) if side == Side.LONG.value else candle.high >= float(order["entry_price"])
+            if not touched:
+                continue
+            limit_price = float(order["entry_price"])
+            fill_price = limit_price
+            order["status"] = "simulated"
+            order["filled_at"] = self._timestamp()
+            order["filled_candle_timestamp_ms"] = candle.timestamp_ms
+            order["fill_price"] = fill_price
+            self._open_manual_position(order, fill_price, candle.timestamp_ms)
+
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
@@ -75,6 +215,7 @@ class PaperExecutionSession:
             "balance_history": self.balance_history,
             "events": self.events,
             "last_order_candle": self._last_order_candle,
+            "last_evaluated_candle": self._last_evaluated_candle,
         }
         temporary_path = path.with_suffix(path.suffix + ".tmp")
         temporary_path.write_text(json.dumps(payload, allow_nan=False, indent=2), encoding="utf-8")
@@ -97,7 +238,8 @@ class PaperExecutionSession:
         if any(not isinstance(record, dict) for key in list_fields for record in payload[key]):
             raise ValueError(f"Invalid paper state record in {path}")
         order_candles = payload.get("last_order_candle", {})
-        if not isinstance(order_candles, dict):
+        evaluated_candles = payload.get("last_evaluated_candle", {})
+        if not isinstance(order_candles, dict) or not isinstance(evaluated_candles, dict):
             raise ValueError(f"Invalid paper order candle state in {path}")
         try:
             session = cls(
@@ -109,6 +251,7 @@ class PaperExecutionSession:
                 balance_history=payload["balance_history"],
                 events=payload["events"],
                 _last_order_candle={str(symbol): int(timestamp) for symbol, timestamp in order_candles.items()},
+                _last_evaluated_candle={str(symbol): int(timestamp) for symbol, timestamp in evaluated_candles.items()},
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"Invalid paper state values in {path}: {exc}") from exc
@@ -333,12 +476,72 @@ class PaperExecutionSession:
             "analytics": analytics,
         }
 
-    def evaluate(self, exchange: str, symbol: str, candles: list[Candle]) -> dict[str, object]:
+    def evaluate(self, exchange: str, symbol: str, candles: list[Candle], interval_ms: int | None = None) -> dict[str, object]:
         if not candles:
             return {"status": "hold", "reason": "No candles were supplied."}
+        if interval_ms is not None and interval_ms <= 0:
+            raise ValueError("Candle interval must be a positive number of milliseconds.")
 
-        current_candle = candles[-1]
-        closed = self._mark_positions(symbol, current_candle)
+        ordered_candles = sorted({candle.timestamp_ms: candle for candle in candles}.values(), key=lambda candle: candle.timestamp_ms)
+        current_candle = ordered_candles[-1]
+        open_for_symbol = [position for position in self._open_positions() if position["symbol"] == symbol]
+        pending_for_symbol = [order for order in self.orders if order["symbol"] == symbol and order["status"] in {"pending", "data_gap"}]
+        last_evaluated = self._last_evaluated_candle.get(symbol)
+        if last_evaluated is None and open_for_symbol:
+            opened_timestamps = [
+                int(position["opened_candle_timestamp_ms"])
+                for position in open_for_symbol
+                if position.get("opened_candle_timestamp_ms") is not None
+            ]
+            if len(opened_timestamps) != len(open_for_symbol):
+                return self._halt_for_unverifiable_gap(symbol, open_for_symbol, ordered_candles[0].timestamp_ms, None)
+            last_evaluated = min(opened_timestamps)
+        if last_evaluated is None:
+            self._last_evaluated_candle[symbol] = current_candle.timestamp_ms
+            new_candles = [current_candle]
+        else:
+            new_candles = [candle for candle in ordered_candles if candle.timestamp_ms > last_evaluated]
+
+        expected_interval_ms = interval_ms or self._candle_interval_ms(ordered_candles)
+        if open_for_symbol or pending_for_symbol:
+            if any(position.get("monitoring_status") == "data_gap" for position in open_for_symbol) or any(
+                order.get("status") == "data_gap" for order in pending_for_symbol
+            ):
+                if not open_for_symbol:
+                    return self._halt_pending_orders_for_gap(symbol, pending_for_symbol, ordered_candles[0].timestamp_ms, last_evaluated, record_event=False)
+                return self._halt_for_unverifiable_gap(
+                    symbol,
+                    open_for_symbol,
+                    ordered_candles[0].timestamp_ms,
+                    last_evaluated,
+                    record_event=False,
+                )
+            previous_timestamp = last_evaluated
+            for candle in new_candles:
+                if previous_timestamp is not None and candle.timestamp_ms - previous_timestamp != expected_interval_ms:
+                    if not open_for_symbol:
+                        return self._halt_pending_orders_for_gap(symbol, pending_for_symbol, ordered_candles[0].timestamp_ms, previous_timestamp)
+                    return self._halt_for_unverifiable_gap(
+                        symbol,
+                        open_for_symbol,
+                        ordered_candles[0].timestamp_ms,
+                        previous_timestamp,
+                    )
+                previous_timestamp = candle.timestamp_ms
+
+        closed: list[dict[str, object]] = []
+        if open_for_symbol:
+            for candle in new_candles:
+                self._fill_pending_orders(symbol, candle)
+                closed.extend(self._mark_positions(symbol, candle))
+                self._last_evaluated_candle[symbol] = candle.timestamp_ms
+                if closed:
+                    self._last_evaluated_candle[symbol] = current_candle.timestamp_ms
+                    break
+        elif any(order["symbol"] == symbol and order["status"] == "pending" for order in self.orders):
+            for candle in new_candles:
+                self._fill_pending_orders(symbol, candle)
+                self._last_evaluated_candle[symbol] = candle.timestamp_ms
         if closed:
             behavior = self.behavior_engine.assess(
                 Signal.HOLD,
@@ -355,6 +558,7 @@ class PaperExecutionSession:
                 "closed_positions": closed,
                 **self.snapshot(symbol, current_candle.close),
             }
+        self._last_evaluated_candle[symbol] = current_candle.timestamp_ms
         open_for_symbol = [position for position in self._open_positions() if position["symbol"] == symbol]
         if open_for_symbol:
             return {
@@ -362,6 +566,27 @@ class PaperExecutionSession:
                 "signal": Signal.HOLD.value,
                 "reason": "A paper position for this symbol is already open.",
                 "closed_positions": [],
+                **self.snapshot(symbol, current_candle.close),
+            }
+        pending_for_symbol = [order for order in self.orders if order["symbol"] == symbol and order["status"] == "pending"]
+        if pending_for_symbol:
+            return {
+                "status": "hold",
+                "signal": Signal.HOLD.value,
+                "reason": "A paper limit order is waiting for its entry price.",
+                "closed_positions": [],
+                **self.snapshot(symbol, current_candle.close),
+            }
+        if any(position.get("monitoring_status") == "data_gap" for position in self._open_positions()) or any(
+            order.get("status") == "data_gap" for order in self.orders
+        ):
+            reason = "New paper entries are halted while an open position has an unresolved market-data gap."
+            return {
+                "status": "halted",
+                "signal": Signal.HOLD.value,
+                "reason": reason,
+                "closed_positions": [],
+                "monitoring_gap": True,
                 **self.snapshot(symbol, current_candle.close),
             }
         signal = self.strategy.signal(candles)
@@ -448,6 +673,77 @@ class PaperExecutionSession:
         self.positions.append(position)
         self._record_event("position_opened", symbol=symbol, side=record["side"], order_id=record["order_id"], entry_price=entry, quantity=order.quantity)
         return {"status": "simulated", "signal": signal.value, "order": record, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, entry)}
+
+    @staticmethod
+    def _candle_interval_ms(candles: list[Candle]) -> int:
+        differences = [
+            later.timestamp_ms - earlier.timestamp_ms
+            for earlier, later in zip(candles, candles[1:])
+            if later.timestamp_ms > earlier.timestamp_ms
+        ]
+        return min(differences) if differences else 60_000
+
+    def _halt_for_unverifiable_gap(
+        self,
+        symbol: str,
+        positions: list[dict[str, object]],
+        earliest_available_ms: int,
+        last_processed_ms: int | None,
+        *,
+        record_event: bool = True,
+    ) -> dict[str, object]:
+        reason = "Required market candles are missing. Position monitoring is halted; review and reconcile the open position before any further evaluation."
+        for position in positions:
+            position["monitoring_status"] = "data_gap"
+            position["monitoring_warning"] = reason
+        if record_event:
+            self._record_event(
+                "market_data_gap",
+                symbol=symbol,
+                order_ids=[position["order_id"] for position in positions],
+                last_processed_candle_ms=last_processed_ms,
+                earliest_available_candle_ms=earliest_available_ms,
+                reason=reason,
+            )
+        return {
+            "status": "halted",
+            "signal": Signal.HOLD.value,
+            "reason": reason,
+            "closed_positions": [],
+            "monitoring_gap": True,
+            **self.snapshot(symbol),
+        }
+
+    def _halt_pending_orders_for_gap(
+        self,
+        symbol: str,
+        orders: list[dict[str, object]],
+        earliest_available_ms: int,
+        last_processed_ms: int | None,
+        *,
+        record_event: bool = True,
+    ) -> dict[str, object]:
+        reason = "Required market candles are missing. Pending limit orders are halted; cancel or reconcile them before placing further paper orders."
+        for order in orders:
+            order["status"] = "data_gap"
+            order["monitoring_warning"] = reason
+        if record_event:
+            self._record_event(
+                "market_data_gap",
+                symbol=symbol,
+                order_ids=[order["order_id"] for order in orders],
+                last_processed_candle_ms=last_processed_ms,
+                earliest_available_candle_ms=earliest_available_ms,
+                reason=reason,
+            )
+        return {
+            "status": "halted",
+            "signal": Signal.HOLD.value,
+            "reason": reason,
+            "closed_positions": [],
+            "monitoring_gap": True,
+            **self.snapshot(symbol),
+        }
 
     def _open_positions(self) -> list[dict[str, object]]:
         return [position for position in self.positions if position["status"] == "open"]

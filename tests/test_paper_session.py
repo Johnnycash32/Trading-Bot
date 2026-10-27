@@ -28,6 +28,75 @@ class PaperSessionTests(unittest.TestCase):
         self.assertEqual(result["order"]["status"], "simulated")
         self.assertEqual(len(session.orders), 1)
 
+    def test_manual_market_ticket_creates_risk_checked_paper_position(self) -> None:
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+
+        order = session.submit_manual_order(
+            "bybit", "SOLUSDT", "long", 0.01, 100, 99.5, 101, 1, 60_000, "market"
+        )
+
+        self.assertEqual(order["status"], "simulated")
+        self.assertEqual(order["signal_source"], "manual_paper_ticket")
+        self.assertEqual(session.positions[0]["quantity"], 0.01)
+        self.assertEqual(session.positions[0]["opened_candle_timestamp_ms"], 60_000)
+
+    def test_manual_ticket_rejects_quantity_above_risk_approved_maximum(self) -> None:
+        session = PaperExecutionSession()
+
+        with self.assertRaisesRegex(ValueError, "risk-approved maximum"):
+            session.submit_manual_order(
+                "bybit", "SOLUSDT", "long", 10_000, 100, 99.5, 101, 1, 60_000
+            )
+
+        self.assertEqual(session.orders, [])
+        self.assertEqual(session.positions, [])
+
+    def test_limit_ticket_waits_for_price_touch_then_fills_on_candle(self) -> None:
+        session = PaperExecutionSession()
+        pending = session.submit_manual_order(
+            "bybit", "SOLUSDT", "long", 0.01, 100, 99, 102, 1, 60_000, "limit"
+        )
+        previous = candles([100, 101])[-1]
+        fill = Candle(120_000, 101, 102, 99, 100.5, 75)
+
+        result = session.evaluate("bybit", "SOLUSDT", [previous, fill])
+
+        self.assertEqual(pending["status"], "pending")
+        self.assertEqual(session.orders[0]["status"], "simulated")
+        self.assertEqual(session.orders[0]["filled_candle_timestamp_ms"], fill.timestamp_ms)
+        self.assertEqual(session.positions[0]["entry_price"], 100)
+        self.assertEqual(result["open_positions"][0]["status"], "open")
+
+    def test_pending_limit_ticket_can_be_cancelled(self) -> None:
+        session = PaperExecutionSession()
+        order = session.submit_manual_order(
+            "bybit", "SOLUSDT", "short", 0.01, 100, 101, 98, 1, 60_000, "limit"
+        )
+
+        cancelled = session.cancel_pending_order(str(order["order_id"]))
+
+        self.assertEqual(cancelled["status"], "cancelled")
+        self.assertIsNone(session.cancel_pending_order(str(order["order_id"])))
+        self.assertEqual(session.positions, [])
+
+    def test_pending_limit_is_halted_when_candle_history_has_a_gap(self) -> None:
+        session = PaperExecutionSession()
+        order = session.submit_manual_order(
+            "bybit", "SOLUSDT", "long", 0.01, 100, 99, 102, 1, 60_000, "limit"
+        )
+        distant = Candle(240_000, 100, 101, 99, 100, 50)
+
+        result = session.evaluate("bybit", "SOLUSDT", [distant])
+
+        self.assertEqual(result["status"], "halted")
+        self.assertTrue(result["monitoring_gap"])
+        self.assertEqual(session.orders[0]["status"], "data_gap")
+        with self.assertRaisesRegex(ValueError, "unresolved market-data gap"):
+            session.submit_manual_order(
+                "bybit", "BTCUSDT", "long", 0.001, 100, 99, 102, 1, 240_000
+            )
+        self.assertEqual(session.cancel_pending_order(str(order["order_id"]))["status"], "cancelled")
+
     def test_duplicate_signal_is_not_repeated(self) -> None:
         values = [100, 100, 100, 100, 80, 80, 80, 110]
         session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
@@ -94,6 +163,56 @@ class PaperSessionTests(unittest.TestCase):
 
         self.assertEqual(result["closed_positions"][0]["exit_reason"], "stop_loss")
         self.assertLess(result["closed_positions"][0]["realized_pnl"], 0)
+
+    def test_replays_missed_candles_and_closes_at_the_first_crossed_stop(self) -> None:
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+        entry = candles([100, 100, 100, 100, 120, 120, 120, 90])
+        opened = session.evaluate("bybit", "SOLUSDT", entry)
+        position = session.positions[0]
+        self.assertEqual(opened["order"]["side"], "short")
+        position["stop_loss"] = 92.5
+        position["take_profit"] = 80
+        stop_candle = next_candle(entry[-1], open_price=95, high=96, low=90, close=91)
+        recovery_candle = next_candle(stop_candle, open_price=91, high=92, low=89, close=90)
+
+        result = session.evaluate("bybit", "SOLUSDT", [*entry, stop_candle, recovery_candle])
+
+        closed = result["closed_positions"][0]
+        self.assertEqual(closed["exit_reason"], "stop_loss")
+        self.assertEqual(closed["exit_price"], 95)
+        self.assertEqual(closed["closed_candle_timestamp_ms"], stop_candle.timestamp_ms)
+        self.assertEqual(session._last_evaluated_candle["SOLUSDT"], recovery_candle.timestamp_ms)
+
+    def test_missing_candles_halt_open_position_without_fabricating_an_exit(self) -> None:
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+        entry = candles([100, 100, 100, 100, 80, 80, 80, 110])
+        session.evaluate("bybit", "SOLUSDT", entry)
+        unavailable_gap = next_candle(
+            next_candle(entry[-1], open_price=110, high=111, low=109, close=110),
+            open_price=110,
+            high=111,
+            low=109,
+            close=110,
+        )
+
+        result = session.evaluate("bybit", "SOLUSDT", [unavailable_gap])
+
+        self.assertEqual(result["status"], "halted")
+        self.assertTrue(result["monitoring_gap"])
+        self.assertEqual(len(result["open_positions"]), 1)
+        self.assertEqual(result["open_positions"][0]["monitoring_status"], "data_gap")
+        self.assertFalse(any(event["type"] == "position_closed" for event in session.events))
+        self.assertEqual(sum(event["type"] == "market_data_gap" for event in session.events), 1)
+        repeated = session.evaluate("bybit", "SOLUSDT", [unavailable_gap])
+        self.assertEqual(repeated["status"], "halted")
+        self.assertEqual(sum(event["type"] == "market_data_gap" for event in session.events), 1)
+        other_symbol_signal = session.evaluate(
+            "bybit",
+            "BTCUSDT",
+            candles([100, 100, 100, 100, 80, 80, 80, 110]),
+        )
+        self.assertEqual(other_symbol_signal["status"], "halted")
+        self.assertEqual(len(session.orders), 1)
 
     def test_manual_close_updates_order_history_balance_and_activity(self) -> None:
         session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
@@ -189,6 +308,7 @@ class PaperSessionTests(unittest.TestCase):
             self.assertEqual(len(restored.snapshot()["orders"]), 1)
             self.assertEqual(restored.snapshot()["open_positions"][0]["order_id"], "PAPER-000001")
             self.assertEqual(len(restored.snapshot()["balance_history"]), 1)
+            self.assertEqual(restored._last_evaluated_candle["SOLUSDT"], entry_candles[-1].timestamp_ms)
 
             result = restored.evaluate("bybit", "SOLUSDT", candles(entry_values))
             self.assertEqual(result["status"], "hold")

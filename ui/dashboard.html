@@ -33,13 +33,22 @@
     @media(max-width:600px){.agent-consult{grid-template-columns:1fr}.agent-consult [role=status],.agent-consult-privacy,.agent-consult-result{grid-column:1}}
   </style>
   <style>
-    .copy-toggle{color:#e7c873}.copy-toggle.on{color:#b9f1d8}.active-copy-table{max-height:340px;overflow:auto}.active-copy-table .copy-profile{color:#d9a8ff}.active-copy-table .copy-exchange{color:#6fd7e8}.active-copy-table .copy-mode{color:#e7c873}.active-copy-table .copy-long{color:#16b979;font-weight:800}.active-copy-table .copy-short{color:#ed4053;font-weight:800}.copy-table-tools{align-items:center;display:flex;gap:5px;margin-left:auto}.copy-tool-button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.72rem;padding:6px 8px}.copy-tool-button.active{background:#303044;color:#fff}.copy-search{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px 8px;width:145px}.copy-search.visible{display:block}.copy-sort{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px}.copy-sort.visible{display:block}.lion-qualified{color:#16b979;font-size:.65rem;font-weight:800}.hare-notifications{display:grid;gap:12px}.notification-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between}.notification-toggle{background:#22222a;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.67rem;padding:6px 9px}.notification-list{display:grid;gap:7px}.notification-item{background:#17171e;border-left:3px solid #6aa8ff;border-radius:3px;color:#c9c9d2;font-size:.72rem;padding:8px 10px}.notification-item.warn{border-left-color:#e7c873}.notification-item.alert{border-left-color:#ed4053}.notification-item time{color:#858591;display:block;font-size:.62rem;margin-top:3px}.notification-toast{background:#17171e;border:1px solid #4a4a57;border-left:4px solid #6aa8ff;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.45);color:#f5f5f7;max-width:330px;padding:12px 14px;position:fixed;right:20px;top:20px;z-index:20}.notification-toast.warn{border-left-color:#e7c873}.notification-toast.alert{border-left-color:#ed4053}.notification-toast strong{display:block;font-size:.75rem}.notification-toast span{color:#c9c9d2;display:block;font-size:.7rem;margin-top:3px}
+    .copy-toggle{color:#e7c873}.copy-toggle.on{color:#b9f1d8}.active-copy-table{max-height:340px;overflow:auto}.active-copy-table .copy-profile{color:#d9a8ff}.active-copy-table .copy-exchange{color:#6fd7e8}.active-copy-table .copy-mode{color:#e7c873}.active-copy-table .copy-long{color:#16b979;font-weight:800}.active-copy-table .copy-short{color:#ed4053;font-weight:800}.copy-table-tools{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin:0 0 8px}.copy-tool-button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.72rem;padding:6px 8px}.copy-tool-button.active{background:#303044;color:#fff}.copy-search{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px 8px;width:180px}.copy-search.visible{display:block}.copy-sort{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;max-width:min(210px,100%);padding:6px}.copy-sort.visible{display:block}.lion-qualified{color:#16b979;font-size:.65rem;font-weight:800}.hare-notifications{display:grid;gap:12px}.notification-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between}.notification-toggle{background:#22222a;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.67rem;padding:6px 9px}.notification-list{display:grid;gap:7px}.notification-item{background:#17171e;border-left:3px solid #6aa8ff;border-radius:3px;color:#c9c9d2;font-size:.72rem;padding:8px 10px}.notification-item.warn{border-left-color:#e7c873}.notification-item.alert{border-left-color:#ed4053}.notification-item time{color:#858591;display:block;font-size:.62rem;margin-top:3px}.notification-toast{background:#17171e;border:1px solid #4a4a57;border-left:4px solid #6aa8ff;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.45);color:#f5f5f7;max-width:330px;padding:12px 14px;position:fixed;right:20px;top:20px;z-index:20}.notification-toast.warn{border-left-color:#e7c873}.notification-toast.alert{border-left-color:#ed4053}.notification-toast strong{display:block;font-size:.75rem}.notification-toast span{color:#c9c9d2;display:block;font-size:.7rem;margin-top:3px}
     .hare-corner-toggle{align-items:center;background:#17171d;border:1px solid #383842;border-radius:50%;color:#e8e8ed;display:inline-flex;font-size:1rem;height:34px;justify-content:center;position:relative;width:34px}.hare-corner-toggle:hover,.hare-corner-toggle[aria-expanded=true]{background:#292932;border-color:#626274}.hare-corner-badge{align-items:center;background:#ed4053;border:2px solid #0b0b0f;border-radius:99px;color:#fff;display:flex;font-size:.57rem;font-weight:900;height:17px;justify-content:center;min-width:17px;padding:0 4px;position:absolute;right:-5px;top:-5px}.hare-corner-badge[hidden]{display:none}.hare-corner-panel{background:#111116;border:1px solid #383842;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.55);display:none;max-height:min(70vh,560px);overflow:hidden;position:fixed;right:16px;top:60px;width:min(350px,calc(100vw - 24px));z-index:30}.hare-corner-panel.open{display:flex;flex-direction:column}.hare-corner-head{align-items:center;border-bottom:1px solid #292930;display:flex;gap:10px;padding:10px 12px}.hare-corner-head>strong{font-size:.77rem;margin-right:auto}.hare-notification-setting{align-items:center;display:flex;gap:8px;min-width:0}.hare-notification-setting-copy{display:grid;gap:1px;min-width:0}.hare-notification-setting-copy strong{color:#e1e1e7;font-size:.61rem;font-weight:700;line-height:1.2}.hare-notification-setting-copy span{color:#858591;font-size:.55rem;line-height:1.25;max-width:145px}.notification-switch-wrap{align-items:center;display:flex;gap:5px;flex-shrink:0}.notification-switch-state{color:#92929d;font-size:.55rem;font-weight:800;min-width:19px;text-align:right}.notification-switch{background:#37373f;border:1px solid #51515b;border-radius:99px;cursor:pointer;display:inline-flex;height:22px;padding:2px;transition:background .18s ease,border-color .18s ease;width:40px}.notification-switch-track{align-items:center;border-radius:99px;display:flex;height:100%;width:100%}.notification-switch-thumb{background:#c1c1c8;border-radius:50%;box-shadow:0 1px 3px #0008;height:14px;transform:translateX(0);transition:background .18s ease,transform .18s ease;width:14px}.notification-switch[aria-checked=true]{background:#167c58;border-color:#20a875}.notification-switch[aria-checked=true] .notification-switch-thumb{background:#fff;transform:translateX(18px)}.notification-switch-wrap:has(.notification-switch[aria-checked=true]) .notification-switch-state{color:#46d39a}.notification-switch:hover{border-color:#8b8b98}.notification-switch:focus-visible{outline:2px solid #6aa8ff;outline-offset:3px}.hare-feed-tabs{border-bottom:1px solid #292930;display:flex;gap:5px;padding:8px 10px}.hare-feed-tab{background:#202027;border:0;border-radius:12px;color:#aaaab4;font-size:.63rem;padding:5px 9px}.hare-feed-tab.active{background:#eeeef1;color:#17171d}.hare-feed-view{display:none;min-height:0;overflow:auto;overscroll-behavior:contain;padding:8px}.hare-feed-view.active{display:grid;gap:6px}.hare-feed-empty{color:#858591;font-size:.68rem;padding:12px 8px}    .hare-activity-item{background:#17171e;border:0;border-left:2px solid #6aa8ff;border-radius:3px;color:#c9c9d2;cursor:pointer;font-size:.66rem;line-height:1.4;padding:7px 8px;text-align:left;width:100%}.hare-activity-item:hover,.hare-activity-item:focus{background:#22222b;outline:1px solid #555563}.hare-activity-item.position_closed,.hare-activity-item.paper_rejected,.hare-activity-item.agent_analysis.failed{border-left-color:#e7c873}.hare-activity-title{color:#eeeef1;font-weight:800}.hare-activity-meta{color:#858591;font-size:.59rem;margin-top:3px}.notification-toast{max-width:min(330px,calc(100vw - 24px));right:12px;top:60px}
     .private-position-table{max-height:250px;overflow:auto}.private-position-table table{border-collapse:collapse;font-size:.68rem;min-width:720px;width:100%}.private-position-table td,.private-position-table th{border-bottom:1px solid #292930;padding:8px;text-align:left;white-space:nowrap}.private-position-table th{color:#858591}.private-monitor-note{color:#9c9ca7;font-size:.7rem;margin:0 0 10px}.private-monitor-note strong{color:#e7c873}
+    .broker-directory-note,.broker-connection-status{color:#9c9ca7;font-size:.7rem;margin:0 0 10px}.broker-directory-note strong{color:#e7c873}.broker-directory-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));margin:12px 0}.broker-directory-item{background:#17171d;border:1px solid #30303a;border-radius:5px;display:grid;gap:5px;min-height:84px;padding:10px}.broker-directory-item strong{color:#eeeef1;font-size:.72rem}.broker-directory-item span{color:#858591;font-size:.62rem}.broker-directory-item button,.broker-request-open,.broker-request-form button,.broker-test-order button,.broker-test-order select,.broker-test-order input,.broker-request-form input,.broker-request-form select,.broker-request-form textarea,.broker-setup-guide button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#eeeef1;font-size:.65rem;padding:7px}.broker-directory-item button,.broker-request-open,.broker-request-form button,.broker-test-order button,.broker-setup-guide button{cursor:pointer;font-weight:700}.broker-directory-item button:hover,.broker-request-open:hover,.broker-request-form button:hover,.broker-test-order button:hover,.broker-setup-guide button:hover{border-color:#6aa8ff}.broker-directory-item button:disabled,.broker-request-form button:disabled,.broker-test-order button:disabled,.broker-setup-guide button:disabled{cursor:wait;opacity:.5}.broker-testnet-pill{color:#46d39a!important;font-weight:800}.broker-request-open{margin:0 0 10px}.broker-request-list{border-top:1px solid #292930;display:grid;gap:5px;padding-top:8px}.broker-request-list h4{color:#d8d8df;font-size:.68rem;margin:0 0 3px}.broker-request-entry{background:#17171d;border-left:2px solid #e7c873;color:#d0d0d8;font-size:.64rem;padding:7px 8px}.broker-request-entry span{color:#858591;display:block;font-size:.59rem;margin-top:2px}.broker-test-order{border-top:1px solid #292930;display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:12px;padding-top:12px}.broker-test-order[hidden]{display:none}.broker-test-order label{color:#a7a7b2;display:grid;font-size:.62rem;gap:4px}.broker-test-order .broker-test-confirm{align-items:center;display:flex;gap:6px;grid-column:1/-1}.broker-test-order .broker-test-confirm input{accent-color:#18a873}.broker-test-order .broker-test-submit{background:#155a49;border-color:#18765e}.broker-request-dialog,.broker-setup-dialog{background:#111116;border:1px solid #454550;border-radius:8px;color:#eeeef1;max-height:min(85vh,760px);max-width:560px;overflow:auto;padding:0;width:calc(100% - 32px)}.broker-request-dialog::backdrop,.broker-setup-dialog::backdrop{background:rgba(0,0,0,.72)}.broker-request-form,.broker-setup-guide{display:grid;gap:10px;padding:16px}.broker-request-form h3,.broker-setup-guide h3{margin:0}.broker-request-form p,.broker-setup-guide p,.broker-setup-guide li{color:#b0b0ba;font-size:.68rem;margin:0}.broker-setup-guide ol{display:grid;gap:9px;margin:0;padding-left:22px}.broker-setup-guide li strong{color:#eeeef1}.broker-setup-guide a{color:#6fd7e8;text-decoration:underline}.broker-setup-guide pre{background:#08080b;border:1px solid #30303a;border-radius:4px;color:#c2f0d7;font-size:.66rem;overflow:auto;padding:10px;white-space:pre-wrap}.broker-setup-warning{background:#211b11;border-left:3px solid #e7c873;color:#e5cc91!important;padding:9px}.broker-setup-actions{display:flex;flex-wrap:wrap;gap:7px}.broker-setup-guide [role=status]{color:#e7c873;font-size:.66rem;min-height:1em}
+    @media(max-width:600px){.broker-test-order{grid-template-columns:1fr 1fr}.broker-test-order .broker-test-confirm{align-items:flex-start}.broker-setup-actions button{flex:1}}
     .paper-dock{background:#0d0d10;border:1px solid #292930;border-radius:7px;grid-column:1/-1;overflow:hidden}.paper-dock.collapsed .paper-dock-body{display:none}.paper-dock-head{align-items:center;background:#151519;border-bottom:1px solid #292930;display:flex;gap:12px;padding:10px 12px}.paper-dock-title{align-items:center;display:flex;gap:8px;margin-right:auto}.paper-dock-title h3{font-size:.82rem;margin:0}.paper-dock-live{color:#16b979;font-size:.64rem;font-weight:800}.paper-dock-toggle{background:#25252d;border:1px solid #444451;border-radius:4px;color:#e7c873;font-size:.68rem;font-weight:800;padding:6px 11px}.paper-dock-account{align-items:center;background:#18181e;border-bottom:1px solid #292930;display:flex;gap:20px;overflow:auto;padding:10px 12px;white-space:nowrap}.paper-dock-account span{color:#9696a2;font-size:.66rem}.paper-dock-account strong{color:#eee;font-size:.72rem;margin-left:5px}.paper-dock-account .positive{color:#16b979}.paper-dock-account .negative{color:#ed4053}.paper-dock-tabs{display:flex;gap:5px;padding:10px 12px 0}.paper-dock-tab{background:#202027;border:0;border-radius:14px;color:#b7b7c2;font-size:.68rem;padding:7px 11px}.paper-dock-tab.active{background:#f1f1f3;color:#111116}.paper-dock-panel{max-height:min(42vh,360px);min-height:115px;overflow:auto;overscroll-behavior:contain;padding:8px 12px 14px}.paper-dock-panel table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.paper-dock-panel th{color:#858591;font-weight:600;text-align:left}.paper-dock-panel td,.paper-dock-panel th{border-bottom:1px solid #24242a;padding:8px 7px;white-space:nowrap}.paper-dock-empty{color:#858591;font-size:.72rem;padding:16px 4px}.paper-dock-note{color:#9c9ca7;font-size:.68rem;margin:7px 4px}.paper-dock-symbol{color:#6fd7e8;font-weight:800}.paper-dock-long{color:#16b979;font-weight:800}.paper-dock-short{color:#ed4053;font-weight:800}
     @media(max-width:600px){.hare-corner-panel{right:8px;top:54px;width:min(350px,calc(100vw - 16px))}.hare-corner-toggle{height:32px;width:32px}.hare-corner-panel{max-height:75vh}}
     .paper-detail-row{cursor:pointer}.paper-detail-row:hover,.paper-detail-row:focus{background:#1b1b22;outline:1px solid #565667;outline-offset:-1px}.paper-detail-button{align-items:center;background:#17171d;border:1px solid #292930;border-radius:4px;color:#eeeef1;cursor:pointer;display:flex;font-size:.72rem;justify-content:space-between;padding:10px;width:100%}.paper-detail-button:hover,.paper-detail-button:focus{background:#22222b;outline:1px solid #6aa8ff}.paper-detail-dialog{background:#111116;border:1px solid #454550;border-radius:8px;color:#eeeef1;max-height:min(80vh,700px);max-width:620px;padding:0;width:calc(100% - 32px)}.paper-detail-dialog::backdrop{background:rgba(0,0,0,.72)}.paper-detail-head{align-items:center;border-bottom:1px solid #292930;display:flex;justify-content:space-between;padding:14px 18px}.paper-detail-head h3{font-size:.9rem;margin:0}.paper-detail-close{background:#262630;border:1px solid #3b3b47;border-radius:4px;color:#eeeef1;padding:5px 9px}.paper-detail-content{max-height:calc(80vh - 60px);overflow:auto;padding:8px 18px 16px}.paper-detail-content dl{display:grid;grid-template-columns:minmax(120px, .7fr) 1.3fr;margin:0}.paper-detail-content dt,.paper-detail-content dd{border-bottom:1px solid #26262d;font-size:.72rem;margin:0;padding:9px 5px;overflow-wrap:anywhere}.paper-detail-content dt{color:#9696a2}.paper-detail-content dd{color:#f1f1f4;white-space:pre-wrap}
-    .paper-position-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between;margin:0 0 8px}.paper-close-button{background:#292027;border:1px solid #713640;border-radius:4px;color:#ff9da7;font-size:.67rem;font-weight:800;padding:6px 9px}.paper-close-button:hover:not(:disabled){background:#46232b}.paper-close-button:disabled{cursor:not-allowed;opacity:.42}.paper-close-all{background:#48252d}.paper-close-note{color:#92929d;font-size:.66rem}
+    .copy-control{align-items:center;display:flex;gap:9px}.copy-switch-setting{display:grid;gap:2px}.copy-switch-setting strong{color:#eeeef1;font-size:.66rem}.copy-switch-setting span{color:#858591;font-size:.58rem;max-width:250px}.copy-switch-wrap{align-items:center;display:flex;gap:6px}.copy-switch-state{color:#92929d;font-size:.58rem;font-weight:800;min-width:20px;text-align:right}.copy-switch{background:#37373f;border:1px solid #51515b;border-radius:99px;cursor:pointer;display:inline-flex;height:22px;padding:2px;transition:background .18s ease,border-color .18s ease;width:40px}.copy-switch-track{align-items:center;border-radius:99px;display:flex;height:100%;width:100%}.copy-switch-thumb{background:#c1c1c8;border-radius:50%;box-shadow:0 1px 3px #0008;height:14px;transform:translateX(0);transition:background .18s ease,transform .18s ease;width:14px}.copy-switch[aria-checked=true]{background:#167c58;border-color:#20a875}.copy-switch[aria-checked=true] .copy-switch-thumb{background:#fff;transform:translateX(18px)}.copy-switch-wrap:has(.copy-switch[aria-checked=true]) .copy-switch-state{color:#46d39a}.copy-switch:hover{border-color:#8b8b98}.copy-switch:focus-visible{outline:2px solid #6aa8ff;outline-offset:3px}.negative{color:#ed4053!important}.paper-dock-account .negative strong{color:#ed4053!important}.paper-position-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between;margin:0 0 8px}.paper-close-button{background:#292027;border:1px solid #713640;border-radius:4px;color:#ff9da7;font-size:.67rem;font-weight:800;padding:6px 9px}.paper-close-button:hover:not(:disabled){background:#46232b}.paper-close-button:disabled{cursor:not-allowed;opacity:.42}.paper-close-all{background:#48252d}.paper-close-note{color:#92929d;font-size:.66rem}
+  </style>
+  <style>
+    .chart-grid{align-items:stretch;grid-template-columns:minmax(0,1fr) 270px;grid-template-rows:auto auto}.chart-card{grid-column:1;grid-row:1 / span 2}.watchlist-card{grid-column:2;grid-row:1}.order-panel{grid-column:2;grid-row:2;min-width:0}.chart{height:clamp(360px,55vh,720px);min-height:360px}.indicator-pane{height:92px}.indicator-pane.oscillator{height:112px}.volume-pane{height:90px!important}.chart-axis-date{color:#8e8e99;font:10px Arial,sans-serif}.chart canvas{touch-action:pan-y}.position-overlay{height:calc(100% - 22px)!important;pointer-events:none;position:absolute;top:0;width:calc(100% - 70px)!important;z-index:3}.price-chart-canvas{z-index:1!important}.chart .overlay{z-index:2}.chart .drawing-overlay{height:100%;pointer-events:auto;position:absolute;right:0;top:0;width:100%;z-index:4}.volume-bars{background:none;bottom:auto;height:100%;left:0;opacity:1;position:absolute;right:0;top:0}.volume-canvas{height:100%;position:absolute;width:100%;z-index:1}.indicator-pane>span{background:#0d0d11d9;border-radius:2px;padding:1px 4px}.indicator-pane canvas{pointer-events:none}
+    .order-panel .panel-title{align-items:flex-start}.order-panel .panel-title h3{margin:0}.ticket-mode-badge{background:#172820;border:1px solid #235d46;border-radius:99px;color:#52d399;font-size:.58rem;font-weight:800;padding:3px 7px}.paper-ticket-form{display:grid;gap:8px}.paper-ticket-grid{display:grid;gap:7px;grid-template-columns:1fr 1fr}.paper-ticket-field{display:grid;gap:3px;min-width:0}.paper-ticket-field.wide{grid-column:1/-1}.paper-ticket-field label{color:#aaaab4;font-size:.62rem}.paper-ticket-field input,.paper-ticket-field select{background:#19191f;border:1px solid #363640;border-radius:4px;color:#f2f2f4;font-size:.72rem;min-width:0;padding:8px;width:100%}.paper-ticket-field input:focus,.paper-ticket-field select:focus{border-color:#6aa8ff;outline:2px solid #6aa8ff44}.ticket-summary{background:#18181e;border:1px solid #303039;border-radius:4px;color:#a9a9b3;font-size:.62rem;line-height:1.45;padding:7px}.ticket-summary b{color:#e7e7ec}.ticket-actions{display:grid;gap:7px;grid-template-columns:1fr 1fr}.ticket-actions button{border:0;border-radius:4px;color:#fff;font-size:.7rem;font-weight:800;padding:10px}.ticket-actions .long{background:#11784f}.ticket-actions .short{background:#a52f40}.ticket-actions button:disabled{cursor:wait;opacity:.6}.ticket-status{color:#aaaab4;font-size:.65rem;min-height:1.25em}.ticket-status.error{color:#ff7180}.ticket-status.success{color:#52d399}.ticket-safety{color:#858591;font-size:.59rem;line-height:1.45;margin:0}.ticket-limit-price[hidden]{display:none}
+    .watchlist-card{align-self:start;max-height:clamp(390px,55vh,720px);overflow:auto}.watchlist-card .asset-summary{margin-top:8px;padding-top:8px}.watchlist-row{padding:7px 4px}.history-control input[type=date]{min-width:112px}.chart-date-readable{color:#dddde3;font:600 .64rem ui-monospace,Consolas,monospace;white-space:nowrap}.volume-label-source{color:#8e8e99;font-size:.57rem;margin-left:4px}
+    @media(max-width:800px){.chart-grid{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto}.chart-card{grid-column:1/-1;grid-row:1}.watchlist-card{grid-column:1;grid-row:2;max-height:370px;min-width:0}.order-panel{grid-column:2;grid-row:2;min-width:0;order:3}.chart{height:clamp(330px,52vh,560px);min-height:330px}.paper-ticket-grid{grid-template-columns:1fr}.paper-ticket-field.wide{grid-column:auto}.ticket-actions{grid-template-columns:1fr}.watchlist-row{font-size:.62rem;gap:3px;grid-template-columns:1.1fr .9fr .7fr;padding:6px 2px}.watchlist-tabs{gap:7px}.asset-summary strong{font-size:.9rem}.paper-ticket-field input,.paper-ticket-field select{font-size:.65rem;padding:7px}.ticket-actions button{font-size:.62rem;padding:8px}.order-panel.card,.watchlist-card.card{padding:10px}.order-panel .panel-title{margin:-10px -10px 8px;padding:9px 10px}.chart .drawing-overlay{pointer-events:none}.drawing-tools{pointer-events:auto}.chart-axis-date{font-size:9px}}
+    @media(max-width:390px){.chart-grid{gap:5px}.watchlist-card.card,.order-panel.card{padding:7px}.watchlist-card .panel-title,.order-panel .panel-title{margin:-7px -7px 7px;padding:8px 7px}.watchlist-row{font-size:.57rem}.watchlist-row em{font-size:.54rem}.ticket-safety{font-size:.55rem}.paper-ticket-field label{font-size:.58rem}.ticket-actions button{font-size:.57rem;padding:7px 4px}.chart{height:330px;min-height:330px}.chart-bottom-tools button{padding:0 4px}.chart-tool-status{display:none}}
   </style>
 </head>
 <body>
@@ -63,7 +72,7 @@
             <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span>Bybit Perpetual</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button><button class="indicator-button" id="indicator-button" type="button">Indicators</button></span><div class="indicator-menu" id="indicator-menu"><div class="indicator-menu-title">Indicators, metrics, and strategies</div><div class="indicator-menu-grid" id="indicator-menu-grid"></div></div></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="market-updated"></span><span id="chart-refresh-status" class="chart-refresh">Auto refresh: starting</span><span id="paper-signal">Paper signal: waiting</span></div><div class="chart-shell"><div class="drawing-tools"><button title="Crosshair" aria-label="Crosshair">＋</button><button title="Trend line" aria-label="Trend line">╱</button><button title="Horizontal line" aria-label="Horizontal line">━</button><button title="Parallel channel" aria-label="Parallel channel">☷</button><button title="Fibonacci retracement" aria-label="Fibonacci retracement">⌁</button><button title="Brush" aria-label="Brush">◒</button><button title="Text note" aria-label="Text note">T</button><button title="Emoji marker" aria-label="Emoji marker">☺</button><button title="Measure" aria-label="Measure">⌑</button><button title="Zoom" aria-label="Zoom">⊕</button><button title="Magnet mode" aria-label="Magnet mode">♧</button><button title="Lock drawings" aria-label="Lock drawings">▣</button><button title="Toggle visibility" aria-label="Toggle visibility">◉</button><button title="Delete drawings" aria-label="Delete drawings">⌫</button></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public SOLUSDT candlestick chart"></canvas><canvas id="sma-overlay" class="overlay"></canvas><canvas id="ema-overlay" class="overlay"></canvas><canvas id="bollinger-overlay" class="overlay"></canvas><canvas id="vwap-overlay" class="overlay"></canvas><canvas id="drawing-overlay" class="drawing-overlay" aria-label="Interactive chart drawing layer"></canvas></div></div><div class="chart-bottom-tools"><button title="Chart settings" aria-label="Chart settings">⚙</button><button title="Compare symbols" aria-label="Compare symbols">⊕ Compare</button><button title="Log scale" aria-label="Log scale">⌁ Log</button><button title="Auto scale" aria-label="Auto scale">↕ Auto</button><button title="Fullscreen" aria-label="Fullscreen">⛶</button><label class="history-control" title="Historical chart date"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01"/></svg><input id="history-date" type="date" aria-label="Historical chart date" /></label><span id="chart-tool-status" class="chart-tool-status">Crosshair selected</span></div><div class="indicator-pane" data-indicator="volume"><span>Volume</span><div class="volume-bars"></div></div><div class="indicator-pane oscillator" data-indicator="stoch"><span>Stoch RSI</span><canvas id="stoch-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="rsi"><span>RSI 14</span><canvas id="rsi-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="macd"><span>MACD 12 26 9</span><canvas id="macd-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="atr"><span>ATR 14</span><canvas id="atr-chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Prices and candles come from a public read-only Bybit feed.</div></article>
             <article class="card watchlist-card"><div class="panel-title"><h3>Watchlist</h3><span>Assets</span></div><div class="watchlist-tabs"><b>Crypto</b><span>Forex</span><span>Stocks</span></div><div class="watchlist-row header"><span>Symbol</span><span>Last</span><span>24h</span></div><button class="watchlist-row asset-row active" data-symbol="SOLUSDT"><span>SOLUSDT</span><strong id="watch-sol">—</strong><em id="watch-sol-change">—</em></button><button class="watchlist-row asset-row" data-symbol="BTCUSDT"><span>BTCUSDT</span><strong id="watch-btc">—</strong><em id="watch-btc-change">—</em></button><button class="watchlist-row asset-row" data-symbol="ETHUSDT"><span>ETHUSDT</span><strong id="watch-eth">—</strong><em id="watch-eth-change">—</em></button><button class="watchlist-row asset-row" data-symbol="XRPUSDT"><span>XRPUSDT</span><strong id="watch-xrp">—</strong><em id="watch-xrp-change">—</em></button><div class="asset-summary"><span>Selected asset</span><strong id="watch-selected">SOLUSDT</strong><small>Public market data · Paper mode</small></div></article>
           </div>
-          <article class="card order-panel"><div class="panel-title"><h3>Trade ticket</h3><span>Auto-trading OFF</span></div><div class="order-form"><div class="order-tabs"><span class="active">Limit</span><span>Market</span><span>Conditional</span></div><div class="order-input">Available <strong>0.0034 USDT</strong></div><div class="order-input">Price (USDT) <strong>104.420</strong></div><div class="order-input">Order value <strong>USDT ⇄</strong></div><div class="checks"><label><input type="checkbox" /> TP/SL</label><label><input type="checkbox" /> Post-Only</label><label><input type="checkbox" /> Reduce-Only</label></div><div class="trade-buttons"><button class="long" type="button" onclick="alert('Paper approval required. No live order was submitted.')">Long</button><button class="short" type="button" onclick="alert('Paper approval required. No live order was submitted.')">Short</button></div><div class="order-note">The Python risk engine must approve a paper order before a future exchange adapter can act. Large trades will require separate approval.</div></div></article>
+          <article class="card order-panel"><div class="state-empty">Loading the paper-only trade ticket…</div></article>
           <article class="card" id="positions"><div class="panel-title"><h3>Risk commander</h3><span>Policy status</span></div><div class="risk-row"><div class="risk-head"><span>Daily loss limit</span><b>18%</b></div><div class="bar"><span class="safe" style="width:18%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Open-position risk</span><b>34%</b></div><div class="bar"><span style="width:34%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Margin utilisation</span><b>42%</b></div><div class="bar"><span class="warn" style="width:42%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Auto-trading</span><b class="neutral">OFF</b></div><div class="small">Analysis and monitoring can continue.</div></div></article>
           <article class="card paper-state" id="paper-state"><div class="panel-title"><h3>Paper execution state</h3><span id="paper-equity-value">$10,000.00 equity</span></div><div class="state-grid"><div><div class="small">Open positions · live paper P&amp;L</div><div class="state-list" id="open-positions-list"><div class="state-empty">No open paper positions.</div></div></div><div><div class="small">Closed paper trades · realized P&amp;L</div><div class="state-list" id="paper-history-list"><div class="state-empty">No closed paper trades.</div></div></div></div></article>
           <article class="card wide" id="agents"><div class="panel-title"><h3>Animal agent room</h3><span>Event-driven service states</span></div><div class="agents"><div class="agent"><div class="animal">🦝</div><div><h4>Raccoon · Evidence scout</h4><p>Collecting public evidence</p><span class="status">● Working</span></div></div><div class="agent"><div class="animal">🦅</div><div><h4>Eagle · Signal dispatcher</h4><p>Waiting for confirmation</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦉</div><div><h4>Hawk · Chart examiner</h4><p>Reviewing structure and momentum</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦁</div><div><h4>Lion · Risk commander</h4><p>Hard limits enforced</p><span class="status">● Supervising</span></div></div><div class="agent"><div class="animal">🐆</div><div><h4>Cheetah · Paper execution</h4><p>No live orders permitted</p><span class="status">● Standby</span></div></div><div class="agent"><div class="animal">🐇</div><div><h4>Hare · Notifications</h4><p>All alerts delivered</p><span class="status">● Ready</span></div></div></div><section class="agent-consult" aria-label="On-demand agent review"><label for="agent-consult-select">Review with</label><select id="agent-consult-select"><option value="local">Local paper agents · read-only</option><option value="gemini">Gemini AI · on-demand</option></select><button id="agent-consult-button" type="button">Run review</button><span id="agent-consult-status" role="status">Select an agent to review the current public-market chart.</span><p class="agent-consult-privacy">Gemini receives only the selected symbol, interval, public ticker, and recent public candles when you press Run review. No API key, account details, or orders are sent.</p><div id="agent-consult-result" class="agent-consult-result" aria-live="polite" hidden></div></section><div class="behavior-summary" id="behavior-summary"><div class="behavior-summary-head"><strong>Behavior gate</strong><span>Monitoring</span></div><p>Waiting for the next public-candle evaluation.</p><div class="behavior-gates"></div></div></article>
@@ -149,28 +158,89 @@
     let primarySymbol = 'SOLUSDT';
     let selectedExchange = 'bybit';
     let selectedAssetClass = 'crypto';
+    const coinbaseOption=document.createElement('option');coinbaseOption.value='coinbase';coinbaseOption.textContent='Coinbase public spot';document.getElementById('exchange-select').appendChild(coinbaseOption);
+    const volumePane=document.querySelector('.indicator-pane[data-indicator="volume"]');volumePane.classList.add('volume-pane');volumePane.innerHTML='<span id="volume-label">Volume · base units · waiting for feed</span><canvas id="volume-chart" class="volume-canvas" aria-label="Actual candle volume by time"></canvas>';
+    const chartBottomTools=document.querySelector('.chart-bottom-tools');const chartDateLabel=document.createElement('span');chartDateLabel.id='chart-date-readable';chartDateLabel.className='chart-date-readable';chartDateLabel.textContent='UTC date —';chartBottomTools.insertBefore(chartDateLabel,document.getElementById('chart-tool-status'));
+    document.getElementById('history-date').setAttribute('lang','en-CA');
+    function updateChartDate(candles){
+      const selectedDate=document.getElementById('history-date').value;
+      const candle=candles[candles.length-1],timestamp=Number(candle?.timestamp_ms);
+      const date=Number.isFinite(timestamp)?new Date(timestamp).toISOString().slice(0,16).replace('T',' '):'—';
+      chartDateLabel.textContent=selectedDate?`Historical · ${selectedDate}`:`UTC · ${date}`;
+      chartDateLabel.title='Dates are displayed as YYYY-MM-DD in UTC.';
+    }
     function findAsset(symbol) { return Object.values(assetCatalog).flat().find(asset => asset[0] === symbol); }
     function renderAssetCatalog(category) { selectedAssetClass = category; const select = document.getElementById('asset-symbol-select'); select.innerHTML = ''; assetCatalog[category].forEach(([symbol,name,supported]) => { const option = document.createElement('option'); option.value = symbol; option.textContent = `${symbol} · ${name}${supported ? '' : ' · catalog'}`; option.title = supported ? `${name} · public paper feed` : `${name} · dedicated feed adapter pending`; select.appendChild(option); }); select.value = assetCatalog[category].some(asset => asset[0] === primarySymbol) ? primarySymbol : assetCatalog[category][0][0]; }
     renderAssetCatalog('crypto');
     function formatPrice(value) { return Number(value).toLocaleString(undefined, {maximumFractionDigits: 4}); }
+    const PRICE_AXIS_WIDTH = 70;
+    const TIME_AXIS_HEIGHT = 23;
+    function chartTimestampLabel(timestamp, interval) {
+      const date = new Date(Number(timestamp));
+      const datePart = date.toISOString().slice(0, 10);
+      const timePart = date.toISOString().slice(11, 16);
+      return interval === 'D' || interval === 'W' || interval === 'M' ? datePart : `${datePart} ${timePart}`;
+    }
     function drawCandles(canvas, candles) {
       const chartBox = canvas.parentElement;
       const width = chartBox.clientWidth, height = chartBox.clientHeight;
+      if (!width || !height || !candles.length) return;
       const scale = window.devicePixelRatio || 1;
+      canvas.classList.add('price-chart-canvas');
       canvas.width = width * scale; canvas.height = height * scale;
       canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
       const ctx = canvas.getContext('2d'); ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.clearRect(0, 0, width, height);
-      const prices = candles.flatMap(c => [c.high, c.low]);
-      const max = Math.max(...prices), min = Math.min(...prices), range = max - min || 1;
-      const y = price => height - 16 - ((price - min) / range) * (height - 32);
-      const step = width / candles.length, body = Math.max(2, step * .58);
-      if (chartStyle !== 'candles') { ctx.strokeStyle = '#42b7d5'; ctx.fillStyle = chartStyle === 'area' ? 'rgba(66,183,213,.16)' : 'transparent'; ctx.beginPath(); candles.forEach((c, i) => { const x = i * step + step / 2, point = y(c.close); i ? ctx.lineTo(x, point) : ctx.moveTo(x, point); }); if (chartStyle === 'area') { ctx.lineTo(width, height); ctx.lineTo(0, height); ctx.closePath(); ctx.fill(); } ctx.stroke(); return; }
-      candles.forEach((c, i) => { const x = i * step + step / 2, rising = c.close >= c.open;
-        ctx.strokeStyle = rising ? '#16b979' : '#ed4053'; ctx.fillStyle = ctx.strokeStyle;
-        ctx.beginPath(); ctx.moveTo(x, y(c.high)); ctx.lineTo(x, y(c.low)); ctx.stroke();
-        const top = y(Math.max(c.open, c.close)), bottom = y(Math.min(c.open, c.close));
-        ctx.fillRect(x - body / 2, top, body, Math.max(1, bottom - top));
-      });
+      const plotWidth = Math.max(1, width - PRICE_AXIS_WIDTH), plotHeight = Math.max(1, height - TIME_AXIS_HEIGHT);
+      const prices = candles.flatMap(c => [Number(c.high), Number(c.low)]);
+      let max = Math.max(...prices), min = Math.min(...prices);
+      const pad = (max - min || max * 0.002 || 1) * 0.06;
+      max += pad; min -= pad;
+      const range = max - min || 1;
+      const y = price => plotHeight - ((price - min) / range) * plotHeight;
+      const step = plotWidth / candles.length, body = Math.max(1, Math.min(12, step * .58));
+      ctx.fillStyle = '#0c0c10'; ctx.fillRect(plotWidth, 0, PRICE_AXIS_WIDTH, height);
+      ctx.fillStyle = '#0d0d11'; ctx.fillRect(0, plotHeight, plotWidth, TIME_AXIS_HEIGHT);
+      ctx.font = '10px Arial'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (let tick = 0; tick <= 5; tick++) {
+        const price = max - (range * tick / 5), py = plotHeight * tick / 5;
+        ctx.strokeStyle = '#23232b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(plotWidth, py); ctx.stroke();
+        ctx.fillStyle = '#a1a1ac'; ctx.fillText(formatPrice(price), width - 7, py);
+      }
+      if (chartStyle !== 'candles') {
+        ctx.strokeStyle = '#42b7d5'; ctx.lineWidth = 1.4;
+        ctx.fillStyle = chartStyle === 'area' ? 'rgba(66,183,213,.16)' : 'transparent';
+        ctx.beginPath();
+        candles.forEach((c, i) => { const x = i * step + step / 2, point = y(Number(c.close)); i ? ctx.lineTo(x, point) : ctx.moveTo(x, point); });
+        if (chartStyle === 'area') { ctx.lineTo(plotWidth, plotHeight); ctx.lineTo(0, plotHeight); ctx.closePath(); ctx.fill(); }
+        ctx.beginPath();
+        candles.forEach((c, i) => { const x = i * step + step / 2, point = y(Number(c.close)); i ? ctx.lineTo(x, point) : ctx.moveTo(x, point); });
+        ctx.stroke();
+      } else {
+        candles.forEach((c, i) => {
+          const x = i * step + step / 2, rising = Number(c.close) >= Number(c.open);
+          ctx.strokeStyle = rising ? '#16b979' : '#ed4053'; ctx.fillStyle = ctx.strokeStyle;
+          ctx.beginPath(); ctx.moveTo(x, y(Number(c.high))); ctx.lineTo(x, y(Number(c.low))); ctx.stroke();
+          const top = y(Math.max(Number(c.open), Number(c.close))), bottom = y(Math.min(Number(c.open), Number(c.close)));
+          ctx.fillRect(x - body / 2, top, body, Math.max(1, bottom - top));
+        });
+      }
+      ctx.font = '9px Arial'; ctx.fillStyle = '#8e8e99'; ctx.textBaseline = 'top';
+      const labelCount = Math.max(2, Math.floor(plotWidth / 135));
+      for (let i = 0; i <= labelCount; i++) {
+        const candleIndex = Math.min(candles.length - 1, Math.round(i * (candles.length - 1) / labelCount));
+        const x = i * plotWidth / labelCount;
+        const label = chartTimestampLabel(candles[candleIndex].timestamp_ms, selectedInterval);
+        ctx.textAlign = i === 0 ? 'left' : i === labelCount ? 'right' : 'center';
+        ctx.fillText(label, x, plotHeight + 5);
+      }
+      const lastClose = Number(candles[candles.length - 1].close), lastY = y(lastClose);
+      ctx.strokeStyle = '#e2b85c'; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(0, lastY); ctx.lineTo(plotWidth, lastY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#c99024'; ctx.fillRect(plotWidth, Math.max(0, lastY - 9), PRICE_AXIS_WIDTH, 18);
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(formatPrice(lastClose), width - 7, lastY);
+      const overlays = document.querySelectorAll('.chart .overlay');
+      overlays.forEach(item => { item.style.width = plotWidth + 'px'; item.style.height = plotHeight + 'px'; });
+      const positionOverlay = document.getElementById('position-overlay');
+      if (positionOverlay) { positionOverlay.style.width = plotWidth + 'px'; positionOverlay.style.height = plotHeight + 'px'; }
     }
     const drawingCanvas = document.getElementById('drawing-overlay');
     const drawingContext = drawingCanvas.getContext('2d');
@@ -202,10 +272,20 @@
       } catch (_) {}
       return null;
     }
+    let lastMarketCandles = [];
+    let lastOpenPositions = [];
+    let lastPendingOrders = [];
     function renderMarketChart(data) {
       if (!Array.isArray(data.candles) || !data.candles.length) throw new Error('The market feed returned no chart candles.');
+      lastMarketCandles = data.candles;
       drawCandles(document.getElementById('price-chart'), data.candles);
       drawIndicators(data.candles);
+      drawVolumeChart(data.candles);
+      renderPositionOverlay([...lastOpenPositions,...lastPendingOrders]);
+      document.getElementById('volume-label').textContent = `Volume · base units · ${data.market_data?.candle_source || data.exchange}`;
+      updateChartDate(data.candles);
+      const pairLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
+      if(pairLabel)pairLabel.textContent=(data.market_data?.candle_source||data.exchange)==='coinbase'?'Coinbase Spot':'Public Perpetual';
     }
     async function loadMarket(symbol, prefix) {
       const status = document.getElementById(prefix + '-status');
@@ -223,6 +303,7 @@
         const ticker = data.ticker;
         document.getElementById(prefix + '-symbol').textContent = data.symbol;
         document.getElementById(prefix + '-price').textContent = formatPrice(ticker.last);
+        document.getElementById(prefix + '-price').dataset.value=String(ticker.last);
         const hasTickerChange = Number.isFinite(ticker.change_percent);
         document.getElementById(prefix + '-change').textContent = hasTickerChange ? (ticker.change_percent >= 0 ? '+' : '') + ticker.change_percent.toFixed(2) + '% (24h)' : 'Ticker unavailable · candle close only';
         document.getElementById(prefix + '-change').className = hasTickerChange ? (ticker.change_percent >= 0 ? 'positive' : 'negative') : '';
@@ -238,6 +319,7 @@
         status.textContent = historyDate
           ? `Paper orders only. Historical candles ending ${historyDate} from ${candleSource}${sourceNote}.${tickerNote}`
           : `Paper orders only. Live public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
+        if(prefix==='market')updateTicketReference(Number(ticker.last||data.candles[data.candles.length-1].close));
       } catch (error) {
         if (prefix === 'market') {
           const cached = recalledMarketChart(cacheKey);
@@ -399,12 +481,87 @@
       }
       knownActivityKeys = currentKeys;
     }
+    function updateTicketReference(price) {
+      const panel=document.getElementById('order-panel'),form=document.getElementById('paper-ticket-form');
+      if(!panel||!form||!Number.isFinite(Number(price))||Number(price)<=0)return;
+      const value=Number(price),entry=form.elements.entry_price,stop=form.elements.stop_loss,target=form.elements.take_profit;
+      if(entry&&!entry.dataset.touched)entry.value=value.toPrecision(8).replace(/\.?0+$/,'');
+      const direction=form.elements.side.value==='long'?1:-1;
+      const stopDistance=value*.002,targetDistance=value*.004;
+      if(stop&&!stop.dataset.touched)stop.value=(value-direction*stopDistance).toPrecision(8).replace(/\.?0+$/,'');
+      if(target&&!target.dataset.touched)target.value=(value+direction*targetDistance).toPrecision(8).replace(/\.?0+$/,'');
+      const type=form.elements.order_type.value;
+      const reference=type==='limit'?Number(entry.value):value;
+      const qty=Number(form.elements.quantity.value)||0;
+      document.getElementById('ticket-order-value').textContent=money(reference*qty);
+      const risk=qty*(Math.abs(reference-Number(stop.value||reference))+reference*.0022);
+      document.getElementById('ticket-risk').textContent=money(risk);
+      document.getElementById('ticket-reference-price').textContent=`${formatPrice(value)} · ${selectedExchange} public quote/candle`;
+    }
+    function resetTicketPriceFields() {
+      const form=document.getElementById('paper-ticket-form');if(!form)return;
+      ['entry_price','stop_loss','take_profit'].forEach(name=>{delete form.elements[name].dataset.touched;form.elements[name].value='';});
+    }
+    function configurePaperTicket() {
+      const panel=document.querySelector('.order-panel');if(!panel)return;
+      panel.id='order-panel';
+      panel.innerHTML=`<div class="panel-title"><h3>Trade ticket</h3><span class="ticket-mode-badge">PAPER ONLY</span></div>
+        <form class="paper-ticket-form" id="paper-ticket-form">
+          <div class="paper-ticket-grid">
+            <input name="side" type="hidden" value="long" />
+            <div class="paper-ticket-field"><label for="ticket-order-type">Order type</label><select name="order_type" id="ticket-order-type"><option value="market">Market · simulated now</option><option value="limit">Limit · wait for candle touch</option></select></div>
+            <div class="paper-ticket-field"><label for="ticket-leverage">Leverage cap</label><select name="leverage" id="ticket-leverage"><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2× · max</option></select></div>
+            <div class="paper-ticket-field"><label for="ticket-quantity">Quantity · base units</label><input id="ticket-quantity" name="quantity" type="number" min="0.00000001" step="any" value="0.001" required /></div>
+            <div class="paper-ticket-field ticket-limit-price" id="ticket-limit-field" hidden><label for="ticket-entry-price">Limit entry · USDT</label><input id="ticket-entry-price" name="entry_price" type="number" min="0.00000001" step="any" /></div>
+            <div class="paper-ticket-field"><label for="ticket-stop-loss">Stop loss · required</label><input id="ticket-stop-loss" name="stop_loss" type="number" min="0.00000001" step="any" required /></div>
+            <div class="paper-ticket-field"><label for="ticket-take-profit">Take profit · required</label><input id="ticket-take-profit" name="take_profit" type="number" min="0.00000001" step="any" required /></div>
+          </div>
+          <div class="ticket-summary">Reference <b id="ticket-reference-price">Waiting for public quote</b><br>Funds available <b id="ticket-available">—</b> · order value <b id="ticket-order-value">—</b><br>Estimated stop risk <b id="ticket-risk">—</b>. The server risk gate may reject larger sizes.</div>
+          <div class="ticket-actions"><button class="long" type="submit" data-side="long">Paper Long</button><button class="short" type="submit" data-side="short">Paper Short</button></div>
+          <div class="ticket-status" id="ticket-status" role="status" aria-live="polite">Paper simulation only. No broker order is sent.</div>
+          <p class="ticket-safety">Market entries use a fresh executable-side quote. Limit entries wait for an available candle to touch the price. Stops and targets are simulated, not broker-hosted protection.</p>
+        </form>`;
+      const form=document.getElementById('paper-ticket-form'),type=form.elements.order_type;
+      form.querySelectorAll('input[name="entry_price"],input[name="stop_loss"],input[name="take_profit"]').forEach(input=>input.addEventListener('input',()=>{input.dataset.touched='true';updateTicketReference(Number(document.getElementById('market-price').dataset.value));}));
+      form.elements.quantity.addEventListener('input',()=>updateTicketReference(Number(document.getElementById('market-price').dataset.value)));
+      type.addEventListener('change',()=>{const limit=type.value==='limit';document.getElementById('ticket-limit-field').hidden=!limit;form.elements.entry_price.required=limit;updateTicketReference(Number(document.getElementById('market-price').dataset.value));});
+      form.querySelectorAll('button[data-side]').forEach(button=>button.addEventListener('click',()=>{form.elements.side.value=button.dataset.side;updateTicketReference(Number(document.getElementById('market-price').dataset.value));}));
+      form.addEventListener('submit',async event=>{
+        event.preventDefault();
+        const side=event.submitter?.dataset.side || form.elements.side.value;
+        if(!side)return;
+        const status=document.getElementById('ticket-status'),buttons=[...form.querySelectorAll('button[type="submit"]')];
+        const fields=Object.fromEntries(new FormData(form).entries());
+        const body={exchange:selectedExchange,symbol:primarySymbol,side,order_type:fields.order_type,quantity:String(fields.quantity),entry_price:String(fields.entry_price||document.getElementById('market-price').dataset.value||''),stop_loss:String(fields.stop_loss),take_profit:String(fields.take_profit),leverage:String(fields.leverage),interval:selectedInterval};
+        buttons.forEach(button=>button.disabled=true);status.className='ticket-status';status.textContent='Checking quote and risk limits…';
+        try{
+          const response=await fetch('/api/paper/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          const result=await response.json();if(!response.ok)throw new Error(result.error||'Paper order was rejected.');
+          status.className='ticket-status success';status.textContent=result.order.status==='pending'?`Limit paper order ${result.order.order_id} is pending. Edit by cancelling it and submitting revised values.`:`Paper position ${result.order.order_id} opened at ${formatPrice(result.order.entry_price)}.`;
+          addNotification(result.order.status==='pending'?'Paper limit order queued':'Paper position opened',`${side.toUpperCase()} ${primarySymbol} · ${result.order.quantity} units · ${result.message}`,'info');
+          await loadPaperState();await loadTradeDock();
+        }catch(error){status.className='ticket-status error';status.textContent=error.message;}
+        finally{buttons.forEach(button=>button.disabled=false);updateTicketExchangeAvailability();}
+      });
+      updateTicketExchangeAvailability();
+    }
+    function updateTicketExchangeAvailability(){
+      const isPerpetual=selectedExchange!=='coinbase',form=document.getElementById('paper-ticket-form');
+      if(!form)return;
+      form.querySelectorAll('button[type="submit"]').forEach(button=>button.disabled=!isPerpetual);
+      const status=document.getElementById('ticket-status');
+      if(!isPerpetual){status.className='ticket-status';status.textContent='Coinbase is a spot chart feed only. Select Bybit or Binance public perpetual feed for paper tickets.';}
+      else if(status.textContent.startsWith('Coinbase is a spot'))status.textContent='Paper simulation only. No broker order is sent.';
+    }
     function addPaperDock() {
       if (document.getElementById('paper-dock')) return;
       const orderPanel = document.querySelector('.order-panel'); if (!orderPanel) return;
       const dock = document.createElement('article'); dock.className = 'paper-dock'; dock.id = 'paper-dock';
       dock.innerHTML = '<div class="paper-dock-head"><div class="paper-dock-title"><h3>Paper Trading</h3><span class="paper-dock-live">● PAPER MODE</span></div><span class="small">Active positions and account activity</span><button class="paper-dock-toggle" id="paper-dock-toggle" type="button" aria-expanded="true">Collapse</button></div><div class="paper-dock-body"><div class="paper-dock-account" id="paper-dock-account"><span>Equity <strong>—</strong></span><span>Realized P&amp;L <strong>—</strong></span><span>Unrealized P&amp;L <strong>—</strong></span><span>Available funds <strong>—</strong></span><span>Margin buffer <strong>100%</strong></span></div><div class="paper-dock-tabs" role="tablist" aria-label="Paper trading views"><button class="paper-dock-tab active" data-dock-tab="positions" role="tab" type="button">Positions</button><button class="paper-dock-tab" data-dock-tab="orders" role="tab" type="button">Orders</button><button class="paper-dock-tab" data-dock-tab="history" role="tab" type="button">Order history</button><button class="paper-dock-tab" data-dock-tab="balance" role="tab" type="button">Balance history</button><button class="paper-dock-tab" data-dock-tab="trades" role="tab" type="button">Trade history</button><button class="paper-dock-tab" data-dock-tab="analytics" role="tab" type="button">Analytics</button></div><div class="paper-dock-panel" id="paper-dock-panel" role="tabpanel"><div class="paper-dock-empty">Loading active paper positions…</div></div></div>';
-      orderPanel.parentNode.insertBefore(dock, orderPanel);
+      const chartGrid=document.querySelector('.chart-grid');
+      if(!chartGrid)throw new Error('Chart grid is unavailable for paper trading layout.');
+      chartGrid.appendChild(orderPanel);
+      chartGrid.insertAdjacentElement('afterend',dock);
       const dialog = document.createElement('dialog'); dialog.id = 'paper-detail-dialog'; dialog.className = 'paper-detail-dialog';
       dialog.innerHTML = '<div class="paper-detail-head"><h3 id="paper-detail-title">Paper record details</h3><button class="paper-detail-close" type="button" aria-label="Close paper details">Close</button></div><div class="paper-detail-content"><dl id="paper-detail-list"></dl></div>';
       document.body.appendChild(dialog);
@@ -412,6 +569,8 @@
       dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
       const panel = document.getElementById('paper-dock-panel');
       panel.addEventListener('click', async event => {
+        const pendingOrderButton=event.target.closest('[data-paper-edit-pending]');
+        if(pendingOrderButton){event.preventDefault();event.stopPropagation();await editPendingPaperOrder(pendingOrderButton.dataset.paperEditPending);return;}
         const closeButton = event.target.closest('[data-paper-close], [data-paper-close-all]');
         if (closeButton) {
           event.preventDefault();
@@ -444,13 +603,15 @@
         }).join('');
         const action = options.closePositions
           ? `<td><button class="paper-close-button" type="button" data-paper-close="${escapePaperHtml(record.order_id)}" ${autoCopyEnabled ? 'disabled title="Turn off auto-copy before manually closing positions"' : 'title="Close using a fresh best bid or ask from a public exchange feed"'}>Close</button></td>`
+          : options.editPending
+            ? `<td>${['pending','data_gap'].includes(record.status) ? `<button class="paper-close-button" type="button" data-paper-edit-pending="${escapePaperHtml(record.order_id)}" title="Load these values into the paper ticket, then cancel and revise">Edit / cancel</button>` : ''}</td>`
           : '';
         return `<tr class="paper-detail-row" data-paper-detail="${index}" tabindex="0" role="button" aria-label="Show details for ${escapePaperHtml(paperDetailItems[index].title)}">${cells}${action}</tr>`;
       }).join('');
       const toolbar = options.closePositions
         ? `<div class="paper-position-toolbar"><span class="paper-close-note">${autoCopyEnabled ? 'Turn off auto-copy to enable manual closing.' : 'Position P&amp;L uses the latest paper candle mark and may be delayed. Manual closes use a fresh close-side bid/ask quote, with exchange failover; no close occurs if both feeds are stale or unavailable.'}</span><button class="paper-close-button paper-close-all" type="button" data-paper-close-all ${autoCopyEnabled ? 'disabled title="Turn off auto-copy before manually closing positions"' : 'title="Close all open paper positions using fresh public quotes"'}>Close all trades (${records.length})</button></div>`
         : '';
-      panel.innerHTML = `${toolbar}<table><thead><tr>${columns.map(column => `<th>${escapePaperHtml(column.label)}</th>`).join('')}${options.closePositions ? '<th>Action</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>`;
+      panel.innerHTML = `${toolbar}<table><thead><tr>${columns.map(column => `<th>${escapePaperHtml(column.label)}</th>`).join('')}${options.closePositions || options.editPending ? '<th>Action</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>`;
     }
     async function closePaperPositions(orderId, closeAll) {
       if (autoCopyEnabled) {
@@ -500,7 +661,7 @@
           paperColumn('Stop / Target', item => `${paperDisplayValue(item.stop_loss)} / ${paperDisplayValue(item.take_profit)}`),
           paperColumn('Size', item => paperDisplayValue(item.quantity)),
           paperColumn('Status', item => item.status),
-        ], 'No paper orders have been generated.');
+        ], 'No paper orders have been generated.', {editPending:true});
       } else if (tab === 'history' || tab === 'trades') {
         const trades = (data.trade_history || []).slice().reverse();
         renderPaperTable(trades, [
@@ -559,6 +720,28 @@
         panel.innerHTML = `<div class="paper-dock-empty">Could not load paper data: ${escapePaperHtml(error.message)}</div>`;
       }
     }
+    async function editPendingPaperOrder(orderId) {
+      const status=document.getElementById('ticket-status');
+      try{
+        const stateResponse=await fetch('/api/paper/state'),state=await stateResponse.json();
+        if(!stateResponse.ok)throw new Error(state.error||'Could not load pending paper order.');
+        const order=(state.orders||[]).find(item=>item.order_id===orderId&&['pending','data_gap'].includes(item.status));
+        if(!order)throw new Error('That paper order is no longer pending.');
+        selectedExchange=order.exchange;document.getElementById('exchange-select').value=selectedExchange;
+        selectAsset(order.symbol);
+        const form=document.getElementById('paper-ticket-form');
+        form.elements.order_type.value='limit';form.elements.order_type.dispatchEvent(new Event('change'));
+        form.elements.side.value=order.side;form.elements.quantity.value=order.quantity;
+        form.elements.entry_price.value=order.entry_price;form.elements.stop_loss.value=order.stop_loss;form.elements.take_profit.value=order.take_profit;form.elements.leverage.value=order.leverage||1;
+        ['entry_price','stop_loss','take_profit'].forEach(name=>{form.elements[name].dataset.touched='true';});
+        updateTicketReference(Number(document.getElementById('market-price').dataset.value));
+        const cancelResponse=await fetch('/api/paper/order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel',order_id:orderId})});
+        const cancelled=await cancelResponse.json();if(!cancelResponse.ok)throw new Error(cancelled.error||'Could not cancel pending paper order.');
+        status.className='ticket-status';status.textContent=`Loaded ${orderId}. It was cancelled; review or change the values, then submit a new paper order.`;
+        document.querySelector('.order-panel').scrollIntoView({behavior:'smooth',block:'nearest'});
+        await loadPaperState();
+      }catch(error){status.className='ticket-status error';status.textContent=error.message;}
+    }
     function renderTradeDock(data) {
       const account = data.account_summary || {}; const accountBar = document.getElementById('paper-dock-account'); const panel = document.getElementById('paper-dock-panel'); if (!accountBar || !panel) return;
       syncHareActivity(data.activity);
@@ -611,7 +794,7 @@
       const title = document.querySelector('#active-copy .panel-title'); const table = document.querySelector('#active-copy table'); if (!title || !table) return;
       const header = table.querySelector('thead tr'); if (header && !header.querySelector('.lion-header')) header.insertAdjacentHTML('beforeend', '<th class="lion-header">Lion gate</th>');
       const tools = document.createElement('div'); tools.className = 'copy-table-tools'; tools.innerHTML = '<button class="copy-tool-button" id="copy-search-button" type="button" aria-label="Search public copy traders" title="Search public copy traders">⌕</button><input class="copy-search" id="copy-search" type="search" placeholder="Search accounts" aria-label="Search public copy traders" /><button class="copy-tool-button" id="copy-sort-button" type="button" aria-label="Sort active copy traders" title="Sort active copy traders">⇅</button><select class="copy-sort" id="copy-sort" aria-label="Sort active copy traders"><option value="risk">Lion-qualified first</option><option value="pnl-high">P&amp;L: high to low</option><option value="pnl-low">P&amp;L: low to high</option><option value="account">Account: A–Z</option><option value="symbol">Symbol: A–Z</option></select>';
-      title.insertBefore(tools, title.querySelector('.copy-control'));
+      title.insertAdjacentElement('afterend', tools);
       const search = tools.querySelector('#copy-search'); const sort = tools.querySelector('#copy-sort'); search.value = activeCopySearch; sort.value = activeCopySort;
       tools.querySelector('#copy-search-button').addEventListener('click', () => { search.classList.toggle('visible'); tools.querySelector('#copy-search-button').classList.toggle('active', search.classList.contains('visible')); if (search.classList.contains('visible')) search.focus(); });
       tools.querySelector('#copy-sort-button').addEventListener('click', () => { sort.classList.toggle('visible'); tools.querySelector('#copy-sort-button').classList.toggle('active', sort.classList.contains('visible')); });
@@ -629,6 +812,180 @@
         else { const rows = data.positions.filter(position => position.lion_approved).map(position => `<tr><td>${position.symbol}</td><td>${position.side.toUpperCase()}</td><td>${Number(position.size).toLocaleString()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td class="${Number(position.unrealized_pnl) >= 0 ? 'positive' : 'negative'}">${signedMoney(position.unrealized_pnl)}</td><td class="lion-qualified">Lion approved</td></tr>`).join(''); const hidden = data.positions.length - data.positions.filter(position => position.lion_approved).length; card.innerHTML = `<div class="panel-title"><h3>Private account monitor</h3><span>Read-only · Paper copy</span></div><p class="private-monitor-note">Equity ${money(data.equity)} · ${hidden} position(s) hidden by Lion risk policy. Approved positions may be simulated in paper mode.</p><div class="private-position-table"><table><thead><tr><th>Symbol</th><th>Side</th><th>Size</th><th>Entry</th><th>Mark</th><th>Unrealized P&amp;L</th><th>Gate</th></tr></thead><tbody>${rows || '<tr><td colspan="7">No private positions passed the Lion policy.</td></tr>'}</tbody></table></div>`; }
         anchor.parentNode.insertBefore(card, anchor.nextSibling);
       } catch (_) {}
+    }
+    async function loadBrokerDirectory() {
+      try {
+        const response = await fetch('/api/brokers');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Broker directory is unavailable.');
+        document.getElementById('broker-directory')?.remove();
+        const card = document.createElement('article');
+        card.className = 'card wide';
+        card.id = 'broker-directory';
+        card.innerHTML = '<div class="panel-title"><h3>Broker connections</h3><span>Testnet only · live execution off</span></div><p class="broker-directory-note">Connect only to a broker-owned account or subaccount. This app cannot create or fund wallets. Use credentials created for the exact account you want to target. Unsupported brokers are saved as local requests; they are not sent externally.</p><div class="broker-directory-grid" id="broker-directory-grid"></div><div class="broker-connection-status" id="broker-connection-status" role="status"></div><button class="broker-request-open" id="broker-setup-open" type="button">Step-by-step Bybit testnet setup</button><form class="broker-test-order" id="broker-test-order" hidden><label>Symbol<input name="symbol" value="SOLUSDT" maxlength="20" pattern="[A-Za-z0-9]{2,20}" required /></label><label>Side<select name="side"><option value="Buy">Buy</option><option value="Sell">Sell</option></select></label><label>Quantity<input name="quantity" type="number" min="0.00000001" step="any" value="0.01" required /></label><button class="broker-test-submit" type="submit">Submit testnet market order</button><label class="broker-test-confirm"><input name="confirm" type="checkbox" required /> I understand this sends a Bybit TESTNET order only.</label></form><button class="broker-request-open" id="broker-request-open" type="button">＋ Request another broker</button><div class="broker-request-list" id="broker-request-list"></div><dialog class="broker-request-dialog" id="broker-request-dialog"><form class="broker-request-form" id="broker-request-form"><h3>Request a broker connection</h3><p>This request is stored locally for you to review. It does not contact the broker or enable account access.</p><label>Broker name<input name="broker_name" maxlength="80" required placeholder="Enter any broker" /></label><label>Requested connection<select name="requested_mode"><option value="read-only">Read-only monitoring</option><option value="testnet">Demo / testnet trading</option><option value="live">Live-trading support (not enabled)</option></select></label><label>Notes<textarea name="notes" maxlength="500" placeholder="Platform, market type, or account/subaccount details (never enter API keys here)"></textarea></label><div role="status" aria-live="polite"></div><footer><button type="button" data-close>Cancel</button><button type="submit">Save request</button></footer></form></dialog><dialog class="broker-setup-dialog" id="broker-setup-dialog"><section class="broker-setup-guide"><h3>Connect a Bybit testnet account</h3><p>This guide is for a fake-money test account, not your live wallet. This app does not open or fund wallets.</p><ol><li><strong>Open Bybit Testnet.</strong> Create or sign into a testnet account at <a href="https://testnet.bybit.com/" target="_blank" rel="noopener noreferrer">testnet.bybit.com</a>. Testnet funds are separate from real funds.</li><li><strong>Choose the account you want the bot to see.</strong> If you use a subaccount, create the API key inside that exact testnet account. The app uses the account belonging to the key; it does not switch accounts by ID.</li><li><strong>Create a dedicated API key.</strong> In Bybit testnet API management, create a key for this bot. Give it only the access needed for account verification and, later, test orders. Never allow withdrawals, transfers, or wallet permissions. You can start with read-only; the test order form stays disabled until order permission is verified.</li><li><strong>Save it directly in the local project file.</strong> Open <code>C:\\Users\\Hp\\Desktop\\Hacking Class and Tools\\Trading Bot\\.env</code> in VS Code. Add the lines below, replace only the values after <code>=</code>, then save. Do not paste either key into this page, chat, screenshots, or source code. The key stays in the ignored local file; it is not sent to an AI service.</li><li><strong>Verify the connection.</strong> Return here and click <em>Check Bybit testnet connection</em>. The app will verify the key with Bybit Testnet and show the account label and testnet equity. If verification fails, check the testnet account and key permissions; the app does not show the secret.</li></ol><pre id="broker-env-template">BYBIT_TESTNET_API_KEY=replace-with-testnet-api-key\nBYBIT_TESTNET_API_SECRET=replace-with-testnet-api-secret\nBYBIT_TESTNET_ACCOUNT_LABEL=My testnet subaccount</pre><p class="broker-setup-warning">The .env file is stored as plain text on this computer. Keep your Windows account protected, do not sync/share this file, and never commit it. The project ignores .env, but still check Git changes before publishing. Revoke the key at Bybit if the computer or file may have been exposed.</p><div class="broker-setup-actions"><button type="button" id="broker-env-copy">Copy settings template</button><button type="button" id="broker-setup-check">Check Bybit testnet connection</button><button type="button" data-close>Close guide</button></div><div id="broker-setup-status" role="status" aria-live="polite"></div></section></dialog>';
+        const anchor = document.getElementById('private-account-monitor') || document.getElementById('active-copy') || document.getElementById('copy-lab') || document.getElementById('intelligence');
+        anchor?.parentNode.insertBefore(card, anchor.nextSibling);
+
+        const status = card.querySelector('#broker-connection-status');
+        const grid = card.querySelector('#broker-directory-grid');
+        const testnet = data.brokers.find(broker => broker.id === 'bybit')?.account || {configured: false, verified: false, message: 'Bybit testnet status unavailable.'};
+        const formatEquity = value => Number(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const setupDialog = card.querySelector('#broker-setup-dialog');
+        const setupStatus = card.querySelector('#broker-setup-status');
+        const runBybitTestnetCheck = async () => {
+          const bybitButton = card.querySelector('[data-broker-id="bybit"] button');
+          bybitButton.disabled = true;
+          setupStatus.textContent = 'Checking the dedicated testnet account with Bybit…';
+          status.textContent = 'Checking the dedicated Bybit testnet account…';
+          try {
+            const check = await fetch('/api/brokers/bybit-testnet/check', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+            const result = await check.json();
+            if (!check.ok) throw new Error(result.error || 'Testnet connection failed.');
+            status.textContent = `${result.environment}: ${result.account_label} · ${result.account_type} · equity ${formatEquity(result.equity_usdt)} USDT. ${result.message}`;
+            setupStatus.textContent = `Connected successfully: ${result.account_label} · ${formatEquity(result.equity_usdt)} USDT testnet equity. ${result.order_submission_enabled ? 'The account key has test-order permission.' : 'The account is verified read-only; test orders remain disabled.'}`;
+            card.querySelector('#broker-test-order').hidden = !result.order_submission_enabled;
+            bybitButton.textContent = 'Testnet connected';
+            bybitButton.classList.add('broker-testnet-pill');
+            return true;
+          } catch (error) {
+            const message = error.message.includes('Configure dedicated Bybit testnet credentials')
+              ? 'Credentials not found. Complete the steps above, save the keys in the project .env file, then check again.'
+              : error.message;
+            setupStatus.textContent = message;
+            status.textContent = `${message} The secret was not requested by or sent from this page.`;
+            return false;
+          } finally { bybitButton.disabled = false; }
+        };
+        card.querySelector('#broker-setup-open').addEventListener('click', () => setupDialog.showModal());
+        setupDialog.querySelector('[data-close]').addEventListener('click', () => setupDialog.close());
+        card.querySelector('#broker-env-copy').addEventListener('click', async event => {
+          const button = event.currentTarget;
+          try {
+            await navigator.clipboard.writeText(card.querySelector('#broker-env-template').textContent);
+            setupStatus.textContent = 'Template copied. Paste it into the local .env file, replace the placeholders there, save, then check the connection.';
+          } catch (_) {
+            setupStatus.textContent = 'Clipboard is unavailable. Select and copy the template text above, then paste it into the local .env file.';
+          }
+          button.blur();
+        });
+        card.querySelector('#broker-setup-check').addEventListener('click', runBybitTestnetCheck);
+        status.textContent = testnet.verified
+          ? `${testnet.environment}: ${testnet.account_label} · ${testnet.account_type} · equity ${formatEquity(testnet.equity_usdt)} USDT. ${testnet.message}`
+          : testnet.message;
+        card.querySelector('#broker-test-order').hidden = !testnet.verified || !testnet.order_submission_enabled;
+        grid.replaceChildren();
+        data.brokers.forEach(broker => {
+          const item = document.createElement('div');
+          item.className = 'broker-directory-item';
+          item.dataset.brokerId = broker.id;
+          const name = document.createElement('strong');
+          name.textContent = broker.name;
+          const category = document.createElement('span');
+          category.textContent = broker.category;
+          const button = document.createElement('button');
+          button.type = 'button';
+          if (broker.id === 'paper') {
+            button.textContent = 'Available · simulation';
+            button.disabled = true;
+          } else if (broker.id === 'bybit') {
+            button.textContent = testnet.verified ? 'Testnet connected' : 'Connect testnet';
+            button.classList.toggle('broker-testnet-pill', testnet.verified);
+            button.addEventListener('click', runBybitTestnetCheck);
+          } else {
+            button.textContent = 'Request support';
+            button.addEventListener('click', () => openBrokerRequest(broker.name));
+          }
+          item.append(name, category, button);
+          grid.append(item);
+        });
+
+        const requestList = card.querySelector('#broker-request-list');
+        requestList.replaceChildren();
+        const heading = document.createElement('h4');
+        heading.textContent = 'Broker requests saved on this computer';
+        requestList.append(heading);
+        if (data.requests.length) {
+          data.requests.forEach(request => {
+            const entry = document.createElement('div');
+            entry.className = 'broker-request-entry';
+            entry.textContent = `${request.broker_name} · ${request.requested_mode} · ${request.status}`;
+            const detail = document.createElement('span');
+            detail.textContent = `${new Date(request.created_at).toLocaleString()}${request.notes ? ` · ${request.notes}` : ''}`;
+            entry.append(detail);
+            requestList.append(entry);
+          });
+        } else {
+          const empty = document.createElement('div');
+          empty.className = 'broker-request-entry';
+          empty.textContent = 'No requests yet.';
+          requestList.append(empty);
+        }
+
+        const dialog = card.querySelector('#broker-request-dialog');
+        const requestForm = card.querySelector('#broker-request-form');
+        const requestStatus = requestForm.querySelector('[role=status]');
+        card.querySelector('#broker-request-open').addEventListener('click', () => openBrokerRequest(''));
+        requestForm.querySelector('[data-close]').addEventListener('click', () => dialog.close());
+        requestForm.addEventListener('submit', async event => {
+          event.preventDefault();
+          const submit = requestForm.querySelector('button[type=submit]');
+          const form = new FormData(requestForm);
+          submit.disabled = true;
+          requestStatus.textContent = 'Saving request locally…';
+          try {
+            const saved = await fetch('/api/brokers/requests', {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({broker_name:form.get('broker_name'), requested_mode:form.get('requested_mode'), notes:form.get('notes')})
+            });
+            const result = await saved.json();
+            if (!saved.ok) throw new Error(result.error || 'Could not save request.');
+            dialog.close();
+            requestForm.reset();
+            await loadBrokerDirectory();
+          } catch (error) {
+            requestStatus.textContent = error.message;
+          } finally { submit.disabled = false; }
+        });
+
+        card.querySelector('#broker-test-order').addEventListener('submit', async event => {
+          event.preventDefault();
+          const formElement = event.currentTarget;
+          const form = new FormData(formElement);
+          if (!form.get('confirm')) return;
+          if (!window.confirm(`Submit a ${form.get('side')} market order for ${form.get('quantity')} ${form.get('symbol')} on BYBIT TESTNET only? This does not use real funds.`)) return;
+          const button = formElement.querySelector('button[type=submit]');
+          button.disabled = true;
+          status.textContent = 'Submitting explicitly confirmed Bybit testnet order…';
+          try {
+            const submitted = await fetch('/api/brokers/bybit-testnet/order', {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({symbol:form.get('symbol'), side:form.get('side'), quantity:form.get('quantity'), confirmed:true})
+            });
+            const result = await submitted.json();
+            if (!submitted.ok) throw new Error(result.error || 'Testnet order failed.');
+            status.textContent = `${result.order.environment} order ${result.order.status}: ${result.order.side} ${result.order.quantity} ${result.order.symbol} · ID ${result.order.order_id}. Check the Bybit testnet account for fill status.`;
+            formElement.reset();
+            formElement.elements.symbol.value = 'SOLUSDT';
+            formElement.elements.quantity.value = '0.01';
+          } catch (error) {
+            status.textContent = error.message;
+          } finally { button.disabled = false; }
+        });
+      } catch (error) {
+        const existing = document.getElementById('broker-connection-status');
+        if (existing) existing.textContent = error.message;
+      }
+    }
+    function openBrokerRequest(brokerName) {
+      const dialog = document.getElementById('broker-request-dialog');
+      if (!dialog) return;
+      const form = dialog.querySelector('#broker-request-form');
+      form.elements.broker_name.value = brokerName;
+      form.querySelector('[role=status]').textContent = '';
+      dialog.showModal();
+      form.elements.broker_name.focus();
     }
     async function loadTradeDock() {
       try {
@@ -656,12 +1013,12 @@
         const card = document.createElement('article');
         card.className = 'card wide'; card.id = 'active-copy';
         const rows = data.accounts.flatMap(account => account.positions.map(position => { const pnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'copy-long' : 'copy-short'; return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
-        card.innerHTML = `<div class="panel-title"><h3>Active copy traders</h3><div class="copy-control"><span>${control.auto_trade_enabled ? 'Auto-copy ON' : 'Auto-copy OFF'}</span><button class="copy-toggle ${control.auto_trade_enabled ? 'on' : ''}" id="copy-toggle" type="button">${control.auto_trade_enabled ? 'Turn off' : 'Turn on'}</button></div></div><div class="copy-notice" id="copy-notice">${control.last_action}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody>${rows || '<tr><td colspan="8">No active copied positions.</td></tr>'}</tbody></table></div>`;
+        card.innerHTML = `<div class="panel-title"><h3>Active copy traders</h3><div class="copy-control"><div class="copy-switch-setting"><strong>Auto-copy</strong><span id="copy-switch-note">When on, qualified signals can open new paper copies. Turning it off pauses new copies; existing positions stay open.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-copy" aria-checked="${control.auto_trade_enabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${control.auto_trade_enabled ? 'On' : 'Off'}</span></div></div></div><div class="copy-notice" id="copy-notice">${control.last_action}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody>${rows || '<tr><td colspan="8">No active copied positions.</td></tr>'}</tbody></table></div>`;
         anchor.parentNode.insertBefore(card, anchor.nextSibling);
         setupActiveCopyTools(data);
-        const copyToggle = document.getElementById('copy-toggle'); copyToggle.textContent = control.auto_trade_enabled ? 'Disable auto-copy' : 'Enable auto-copy'; copyToggle.title = control.auto_trade_enabled ? 'Pause new copies and request closing active copied positions' : 'Enable new paper copies after confirmation'; copyToggle.setAttribute('aria-label', copyToggle.title);
+        const copyToggle = document.getElementById('copy-toggle'); copyToggle.title = control.auto_trade_enabled ? 'Pause new copies; existing positions remain open' : 'Enable new paper copies after confirmation';
         document.getElementById('copy-toggle').addEventListener('click', async () => {
-          const enabled = !document.getElementById('copy-toggle').classList.contains('on');
+          const enabled = document.getElementById('copy-toggle').getAttribute('aria-checked') !== 'true';
           const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop. Existing positions remain open and can then be closed manually.';
           if (!window.confirm(message)) return;
           const update = await fetch('/api/copy/control', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
@@ -683,13 +1040,15 @@
       const badge = document.getElementById('paper-signal');
       const asset = findAsset(symbol);
       if (asset && !asset[2]) { badge.textContent = 'Paper signal: catalog only'; badge.title = 'Dedicated market adapter required for this asset class.'; badge.className = 'paper-signal'; return; }
+      if (document.getElementById('history-date').value) { badge.textContent = 'Paper signal: paused'; badge.title = 'Paper evaluation is disabled while viewing historical chart data.'; badge.className = 'paper-signal'; return; }
       try {
         const historyDate = document.getElementById('history-date').value; const historyQuery = historyDate ? '&history_date=' + encodeURIComponent(historyDate) : ''; const response = await fetch('/api/paper/evaluate?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=' + selectedInterval + historyQuery);
         const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Paper evaluation unavailable');
         const label = data.status === 'simulated' ? 'simulated ' + String(data.signal || '').toUpperCase() : data.status;
-        badge.textContent = 'Paper signal: ' + label;
-        badge.className = data.status === 'simulated' ? 'paper-signal positive' : 'paper-signal';
+        badge.textContent = data.monitoring_gap ? 'Paper signal: halted · data gap' : 'Paper signal: ' + label;
+        badge.className = data.status === 'simulated' ? 'paper-signal positive' : data.monitoring_gap ? 'paper-signal negative' : 'paper-signal';
         if (data.reason) badge.title = data.reason;
+        if(Array.isArray(data.open_positions)){lastOpenPositions=data.open_positions;lastPendingOrders=(data.orders||[]).filter(order=>['pending','data_gap'].includes(order.status));renderPositionOverlay([...lastOpenPositions,...lastPendingOrders]);}
         renderBehavior(data.behavioral);
       } catch (error) { badge.textContent = 'Paper signal: unavailable'; badge.title = error.message; }
     }
@@ -698,9 +1057,12 @@
         const response = await fetch('/api/paper/state');
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Paper state unavailable');
+        lastOpenPositions=data.open_positions||[];lastPendingOrders=(data.orders||[]).filter(order=>['pending','data_gap'].includes(order.status));
         document.getElementById('paper-equity-value').textContent = '$' + Number(data.equity).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' equity';
+        const availableFunds=document.getElementById('ticket-available');if(availableFunds)availableFunds.textContent=money(data.account_summary?.available_balance||0);
         const open = document.getElementById('open-positions-list');
-        open.innerHTML = data.open_positions.length ? data.open_positions.map(position => `<div class="state-row"><span>${position.symbol} · ${position.side.toUpperCase()}</span><b class="${position.unrealized_pnl >= 0 ? 'positive' : 'negative'}">${position.unrealized_pnl >= 0 ? '+' : ''}${Number(position.unrealized_pnl).toFixed(2)}</b></div>`).join('') : '<div class="state-empty">No open paper positions.</div>';
+        open.innerHTML = data.open_positions.length ? data.open_positions.map(position => `<div class="state-row" title="${escapePaperHtml(position.monitoring_warning || '')}"><span>${position.symbol} · ${position.side.toUpperCase()}${position.monitoring_status === 'data_gap' ? ' · ⚠ monitoring halted' : ''}</span><b class="${position.unrealized_pnl >= 0 ? 'positive' : 'negative'}">${position.unrealized_pnl >= 0 ? '+' : ''}${Number(position.unrealized_pnl).toFixed(2)}</b></div>`).join('') : '<div class="state-empty">No open paper positions.</div>';
+        renderPositionOverlay([...lastOpenPositions,...lastPendingOrders]);
         const history = document.getElementById('paper-history-list');
         history.innerHTML = data.history.length ? data.history.slice().reverse().map(position => `<div class="state-row"><span>${position.symbol} · ${position.side.toUpperCase()} · ${position.status}</span><b class="${position.realized_pnl >= 0 ? 'positive' : 'negative'}">${position.realized_pnl >= 0 ? '+' : ''}${Number(position.realized_pnl).toFixed(2)}</b></div>`).join('') : '<div class="state-empty">No closed paper trades.</div>';
         renderTradeDock(data);
@@ -726,34 +1088,131 @@
     function movingAverage(values, period) { return values.map((_, index) => { const sample = values.slice(Math.max(0, index - period + 1), index + 1); return sample.reduce((sum, value) => sum + value, 0) / sample.length; }); }
     function exponentialAverage(values, period) { const multiplier = 2 / (period + 1); return values.reduce((result, value, index) => { result.push(index === 0 ? value : (value - result[index - 1]) * multiplier + result[index - 1]); return result; }, []); }
     function relativeStrength(values, period) { return values.map((_, index) => { const start = Math.max(1, index - period + 1), changes = values.slice(start, index + 1).map((value, offset) => value - values[start + offset - 1]); const gains = changes.filter(change => change > 0).reduce((sum, change) => sum + change, 0), losses = changes.filter(change => change < 0).reduce((sum, change) => sum - change, 0); return losses === 0 ? 100 : 100 - (100 / (1 + gains / losses)); }); }
-    function drawSeries(canvas, lines, minValue, maxValue) { const box = canvas.parentElement, width = box.clientWidth, height = box.clientHeight, scale = window.devicePixelRatio || 1; canvas.width = width * scale; canvas.height = height * scale; canvas.style.width = width + 'px'; canvas.style.height = height + 'px'; const ctx = canvas.getContext('2d'); ctx.setTransform(scale,0,0,scale,0,0); ctx.clearRect(0,0,width,height); const all = lines.flatMap(line => line.values.filter(Number.isFinite)); const min = Number.isFinite(minValue) ? minValue : Math.min(...all), max = Number.isFinite(maxValue) ? maxValue : Math.max(...all), range = max - min || 1; lines.forEach(line => { ctx.strokeStyle = line.color; ctx.lineWidth = line.width || 1; ctx.beginPath(); line.values.forEach((value, index) => { const x = index * width / Math.max(1, line.values.length - 1), y = height - 7 - ((value - min) / range) * (height - 14); index ? ctx.lineTo(x,y) : ctx.moveTo(x,y); }); ctx.stroke(); }); }
-    function drawIndicators(candles) { const closes = candles.map(c => c.close), sma = movingAverage(closes, 20), ema = exponentialAverage(closes, 20), rsi = relativeStrength(closes, 14), stoch = closes.map((close, index) => { const sample = candles.slice(Math.max(0, index - 13), index + 1), high = Math.max(...sample.map(item => item.high)), low = Math.min(...sample.map(item => item.low)); return high === low ? 50 : ((close - low) / (high - low)) * 100; }), macd = exponentialAverage(closes, 12).map((value, index) => value - exponentialAverage(closes, 26)[index]), atr = candles.map((c, index) => { const previous = candles[Math.max(0, index - 1)].close; return Math.max(c.high - c.low, Math.abs(c.high - previous), Math.abs(c.low - previous)); }), vwap = candles.map((_, index) => { const sample = candles.slice(0, index + 1); const volume = sample.reduce((sum, item) => sum + (item.volume || 1), 0); return sample.reduce((sum, item) => sum + item.close * (item.volume || 1), 0) / volume; });
-      drawSeries(document.getElementById('sma-overlay'), [{values:sma,color:'#f2b84b'}], Math.min(...candles.map(c => c.low)), Math.max(...candles.map(c => c.high)));
-      drawSeries(document.getElementById('ema-overlay'), [{values:ema,color:'#6aa8ff'}], Math.min(...candles.map(c => c.low)), Math.max(...candles.map(c => c.high)));
-      const deviation = candles.map((_, index) => { const sample = closes.slice(Math.max(0,index-19), index+1), average = sma[index]; return Math.sqrt(sample.reduce((sum,value) => sum + (value-average) ** 2, 0) / sample.length) * 2; }); drawSeries(document.getElementById('bollinger-overlay'), [{values:sma.map((value,index) => value + deviation[index]),color:'#bb7cff'},{values:sma.map((value,index) => value - deviation[index]),color:'#bb7cff'}], Math.min(...candles.map(c => c.low)), Math.max(...candles.map(c => c.high)));
-      drawSeries(document.getElementById('vwap-overlay'), [{values:vwap,color:'#16b979'}], Math.min(...candles.map(c => c.low)), Math.max(...candles.map(c => c.high)));
-      drawSeries(document.getElementById('stoch-chart'), [{values:stoch,color:'#6aa8ff'}], 0, 100); drawSeries(document.getElementById('rsi-chart'), [{values:rsi,color:'#d6a83f'}], 0, 100); drawSeries(document.getElementById('macd-chart'), [{values:macd,color:'#bb7cff'}]); drawSeries(document.getElementById('atr-chart'), [{values:atr,color:'#f2b84b'}]); setIndicatorVisibility(); }
+    function drawSeries(canvas, lines, minValue, maxValue) {
+      const box = canvas.parentElement, width = box.clientWidth, height = box.clientHeight, scale = window.devicePixelRatio || 1;
+      if (!width || !height) return;
+      const priceOverlay = box.classList.contains('chart');
+      const axisWidth = priceOverlay ? 0 : 48, bottomSpace = priceOverlay ? 0 : 17;
+      const plotWidth = Math.max(1, width - axisWidth), plotHeight = Math.max(1, height - bottomSpace);
+      canvas.width = (priceOverlay?plotWidth:width) * scale; canvas.height = (priceOverlay?plotHeight:height) * scale;
+      canvas.style.width = (priceOverlay?plotWidth:width) + 'px'; canvas.style.height = (priceOverlay?plotHeight:height) + 'px';
+      const ctx = canvas.getContext('2d'); ctx.setTransform(scale,0,0,scale,0,0); ctx.clearRect(0,0,priceOverlay?plotWidth:width,priceOverlay?plotHeight:height);
+      const all = lines.flatMap(line => line.values.filter(Number.isFinite));
+      const min = Number.isFinite(minValue) ? minValue : Math.min(...all), max = Number.isFinite(maxValue) ? maxValue : Math.max(...all), range = max - min || 1;
+      if (!priceOverlay) {
+        ctx.strokeStyle = '#24242c'; ctx.fillStyle = '#9999a4'; ctx.font = '9px Arial'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (let tick = 0; tick <= 2; tick++) {
+          const value = max - range * tick / 2, y = plotHeight * tick / 2;
+          ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(plotWidth,y); ctx.stroke();
+          ctx.fillText(Number(value).toFixed(range < 2 ? 1 : 0), width - 4, y);
+        }
+        const labelCount = Math.max(2, Math.floor(plotWidth / 155));
+        ctx.textBaseline = 'top'; ctx.fillStyle = '#858591';
+        for (let i=0;i<=labelCount;i++) {
+          const index = Math.min(lastMarketCandles.length - 1, Math.round(i * (lastMarketCandles.length - 1) / labelCount));
+          if (index < 0) continue;
+          ctx.textAlign = i === 0 ? 'left' : i === labelCount ? 'right' : 'center';
+          ctx.fillText(chartTimestampLabel(lastMarketCandles[index].timestamp_ms, selectedInterval), i * plotWidth / labelCount, plotHeight + 3);
+        }
+      }
+      lines.forEach(line => {
+        ctx.strokeStyle = line.color; ctx.lineWidth = line.width || 1; ctx.beginPath();
+        let started = false;
+        line.values.forEach((value, index) => {
+          if (!Number.isFinite(value)) { started = false; return; }
+          const x = index * plotWidth / Math.max(1, line.values.length - 1), y = plotHeight - ((value - min) / range) * plotHeight;
+          if (started) ctx.lineTo(x,y); else { ctx.moveTo(x,y); started = true; }
+        });
+        ctx.stroke();
+      });
+    }
+    function formatVolume(value) {
+      const amount = Number(value);
+      if (!Number.isFinite(amount)) return '—';
+      return new Intl.NumberFormat(undefined, {notation:'compact', maximumFractionDigits:2}).format(amount);
+    }
+    function drawVolumeChart(candles) {
+      const pane = document.querySelector('.volume-pane'), canvas = document.getElementById('volume-chart');
+      if (!pane || !canvas || !candles.length) return;
+      const width = pane.clientWidth, height = pane.clientHeight, scale = window.devicePixelRatio || 1;
+      if (!width || !height) return;
+      const axisWidth = 48, bottomSpace = 17, plotWidth = Math.max(1,width-axisWidth), plotHeight = Math.max(1,height-bottomSpace);
+      canvas.width = width*scale; canvas.height = height*scale; canvas.style.width=width+'px'; canvas.style.height=height+'px';
+      const ctx=canvas.getContext('2d'); ctx.setTransform(scale,0,0,scale,0,0); ctx.clearRect(0,0,width,height);
+      const values=candles.map(item => Math.max(0,Number(item.volume)||0)), max=Math.max(...values,0), step=plotWidth/candles.length, barWidth=Math.max(1,Math.min(10,step*.68));
+      ctx.strokeStyle='#24242c';ctx.fillStyle='#9999a4';ctx.font='9px Arial';ctx.textAlign='right';ctx.textBaseline='middle';
+      for(let tick=0;tick<=2;tick++){const value=max*(1-tick/2),y=plotHeight*tick/2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(plotWidth,y);ctx.stroke();ctx.fillText(formatVolume(value),width-4,y);}
+      values.forEach((value,index)=>{const candle=candles[index],barHeight=max>0?value/max*(plotHeight-3):0;if(barHeight<=0)return;ctx.fillStyle=Number(candle.close)>=Number(candle.open)?'rgba(22,185,121,.68)':'rgba(237,64,83,.68)';ctx.fillRect(index*step+(step-barWidth)/2,plotHeight-barHeight,barWidth,barHeight);});
+      const labelCount=Math.max(2,Math.floor(plotWidth/155));ctx.fillStyle='#858591';ctx.textBaseline='top';
+      for(let i=0;i<=labelCount;i++){const index=Math.min(candles.length-1,Math.round(i*(candles.length-1)/labelCount));ctx.textAlign=i===0?'left':i===labelCount?'right':'center';ctx.fillText(chartTimestampLabel(candles[index].timestamp_ms,selectedInterval),i*plotWidth/labelCount,plotHeight+3);}
+    }
+    function renderPositionOverlay(positions=lastOpenPositions) {
+      const chart=document.querySelector('.chart'); if(!chart)return;
+      let canvas=document.getElementById('position-overlay');
+      if(!canvas){canvas=document.createElement('canvas');canvas.id='position-overlay';canvas.className='position-overlay';chart.insertBefore(canvas,document.getElementById('drawing-overlay'));}
+      const width=chart.clientWidth-PRICE_AXIS_WIDTH,height=chart.clientHeight-TIME_AXIS_HEIGHT,scale=window.devicePixelRatio||1;
+      canvas.width=Math.max(1,width)*scale;canvas.height=Math.max(1,height)*scale;canvas.style.width=Math.max(1,width)+'px';canvas.style.height=Math.max(1,height)+'px';
+      const ctx=canvas.getContext('2d');ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,width,height);
+      if(!lastMarketCandles.length)return;
+      const prices=lastMarketCandles.flatMap(c=>[Number(c.high),Number(c.low)]),rawMax=Math.max(...prices),rawMin=Math.min(...prices),pad=(rawMax-rawMin||rawMax*.002||1)*.06,max=rawMax+pad,min=rawMin-pad,range=max-min||1;
+      const visible=positions.filter(position=>position.symbol===primarySymbol);
+      visible.forEach(position=>{
+        const pending=position.status==='pending';
+        const levels=pending
+          ? [{value:Number(position.entry_price),color:'#6aa8ff',label:`PENDING LIMIT ${String(position.side).toUpperCase()}`}]
+          : [
+            {value:Number(position.entry_price),color:'#a7a7b2',label:'ENTRY'},
+            {value:Number(position.stop_loss),color:position.trailing_stop_active?'#e7c873':'#ed4053',label:position.trailing_stop_active?'TRAILING STOP':'STOP LOSS'},
+            {value:Number(position.take_profit),color:'#16b979',label:'TAKE PROFIT'},
+          ];
+        levels.forEach(level=>{
+          if(!Number.isFinite(level.value)||level.value>max||level.value<min)return;
+          const y=height-((level.value-min)/range)*height;
+          ctx.strokeStyle=level.color;ctx.lineWidth=1;ctx.setLineDash(level.label==='ENTRY'?[4,4]:[6,3]);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();ctx.setLineDash([]);
+          ctx.font='9px Arial';const text=`${level.label} ${formatPrice(level.value)}`,textWidth=ctx.measureText(text).width+10,x=Math.max(2,width-textWidth-4);
+          ctx.fillStyle='#0b0b0fdd';ctx.fillRect(x,y-8,textWidth,16);ctx.fillStyle=level.color;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(text,x+5,y);
+        });
+      });
+    }
+    function drawIndicators(candles) {
+      const closes=candles.map(c=>Number(c.close)),sma=movingAverage(closes,20),ema=exponentialAverage(closes,20),rsi=relativeStrength(closes,14);
+      const stochRaw=rsi.map((value,index)=>{const sample=rsi.slice(Math.max(0,index-13),index+1),low=Math.min(...sample),high=Math.max(...sample);return high===low?50:(value-low)/(high-low)*100;});
+      const stochK=movingAverage(stochRaw,3),stochD=movingAverage(stochK,3),fastEma=exponentialAverage(closes,12),slowEma=exponentialAverage(closes,26),macd=fastEma.map((value,index)=>value-slowEma[index]),macdSignal=exponentialAverage(macd,9);
+      const atr=candles.map((c,index)=>{const previous=Number(candles[Math.max(0,index-1)].close);return Math.max(Number(c.high)-Number(c.low),Math.abs(Number(c.high)-previous),Math.abs(Number(c.low)-previous));});
+      let sessionDate='',sessionVolume=0,sessionValue=0;
+      const vwap=candles.map(item=>{const date=new Date(Number(item.timestamp_ms)).toISOString().slice(0,10);if(date!==sessionDate){sessionDate=date;sessionVolume=0;sessionValue=0;}const volume=Math.max(0,Number(item.volume)||0);if(volume>0){sessionVolume+=volume;sessionValue+=((Number(item.high)+Number(item.low)+Number(item.close))/3)*volume;}return sessionVolume?sessionValue/sessionVolume:NaN;});
+      const lows=candles.map(c=>Number(c.low)),highs=candles.map(c=>Number(c.high)),rawMin=Math.min(...lows),rawMax=Math.max(...highs),padding=(rawMax-rawMin||rawMax*.002||1)*.06,chartMin=rawMin-padding,chartMax=rawMax+padding;
+      drawSeries(document.getElementById('sma-overlay'),[{values:sma,color:'#f2b84b'}],chartMin,chartMax);
+      drawSeries(document.getElementById('ema-overlay'),[{values:ema,color:'#6aa8ff'}],chartMin,chartMax);
+      const deviation=candles.map((_,index)=>{const sample=closes.slice(Math.max(0,index-19),index+1),average=sma[index];return Math.sqrt(sample.reduce((sum,value)=>sum+(value-average)**2,0)/sample.length)*2;});
+      drawSeries(document.getElementById('bollinger-overlay'),[{values:sma.map((value,index)=>value+deviation[index]),color:'#bb7cff'},{values:sma.map((value,index)=>value-deviation[index]),color:'#bb7cff'}],chartMin,chartMax);
+      drawSeries(document.getElementById('vwap-overlay'),[{values:vwap,color:'#16b979'}],chartMin,chartMax);
+      drawSeries(document.getElementById('stoch-chart'),[{values:stochK,color:'#6aa8ff'},{values:stochD,color:'#e7c873'}],0,100);
+      drawSeries(document.getElementById('rsi-chart'),[{values:rsi,color:'#d6a83f'}],0,100);
+      drawSeries(document.getElementById('macd-chart'),[{values:macd,color:'#bb7cff'},{values:macdSignal,color:'#e7c873'}]);
+      drawSeries(document.getElementById('atr-chart'),[{values:atr,color:'#f2b84b'}]);setIndicatorVisibility();
+    }
     let chartRefreshTimer = null;
     let chartRefreshInFlight = false;
     async function refreshChartLoop() { if (chartRefreshTimer) { clearTimeout(chartRefreshTimer); chartRefreshTimer = null; } if (document.visibilityState !== 'visible') { document.getElementById('chart-refresh-status').textContent = 'Auto refresh: paused'; return; } if (!chartRefreshInFlight) { chartRefreshInFlight = true; document.getElementById('chart-refresh-status').textContent = 'Auto refresh: updating'; try { await loadMarket(primarySymbol, 'market'); document.getElementById('chart-refresh-status').textContent = 'Auto refresh: every 5s'; } finally { chartRefreshInFlight = false; } } chartRefreshTimer = setTimeout(refreshChartLoop, 5000); }
     function startChartRefreshLoop() { if (document.visibilityState === 'visible') refreshChartLoop(); }
     function refreshMarkets() { loadMarket(primarySymbol, 'market'); loadWatchlist(); evaluatePaper(primarySymbol); startChartRefreshLoop(); }
     document.querySelectorAll('.timeframe').forEach(button => button.addEventListener('click', () => { selectedInterval = button.dataset.interval; document.querySelectorAll('.timeframe').forEach(item => item.classList.toggle('active', item.dataset.interval === selectedInterval)); refreshMarkets(); }));
-    function selectAsset(symbol) { primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; refreshMarkets(); }
+    function selectAsset(symbol) { primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; resetTicketPriceFields(); refreshMarkets(); }
     document.querySelectorAll('.asset-row').forEach(button => button.addEventListener('click', () => selectAsset(button.dataset.symbol)));
     document.getElementById('asset-class-select').addEventListener('change', event => { selectedAssetClass = event.target.value; selectAsset(assetCatalog[selectedAssetClass][0][0]); });
     document.getElementById('asset-symbol-select').addEventListener('change', event => selectAsset(event.target.value));
     document.getElementById('history-date').addEventListener('change', event => { const value = event.target.value; document.getElementById('chart-tool-status').textContent = value ? 'Historical mode: ' + value : 'Live mode selected'; refreshMarkets(); });
     document.getElementById('search-symbol').addEventListener('click', () => { const symbol = document.getElementById('symbol-search').value.trim().toUpperCase(); if (/^[A-Z0-9]{5,15}$/.test(symbol)) selectAsset(symbol); });
     document.getElementById('symbol-search').addEventListener('keydown', event => { if (event.key === 'Enter') document.getElementById('search-symbol').click(); });
-    document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; refreshMarkets(); });
+    document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; resetTicketPriceFields(); updateTicketExchangeAvailability(); refreshMarkets(); });
     const toolbarIconPaths = { 'Crosshair':'<circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>', 'Trend line':'<path d="M4 18 10 12 14 15 21 6"/><path d="M17 6h4v4"/>', 'Horizontal line':'<path d="M3 12h18"/><path d="M6 8v8M18 8v8"/>', 'Parallel channel':'<path d="m4 17 7-7M8 21l7-7M9 10l5 5"/>', 'Fibonacci retracement':'<path d="M4 5h16M4 9h16M4 13h16M4 17h16M4 21h16"/><path d="m5 5 14 16"/>', 'Brush':'<path d="m14 4 6 6-9 9-6 1 1-6 8-10Z"/><path d="m12 6 6 6"/>', 'Text note':'<path d="M4 5h16M12 5v14M8 19h8"/>', 'Emoji marker':'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>', 'Measure':'<path d="m4 17 13-13 3 3L7 20H4v-3Z"/><path d="m9 15 2 2M12 12l2 2M15 9l2 2"/>', 'Zoom':'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M10.5 7v7M7 10.5h7"/>', 'Magnet mode':'<path d="M6 4v8a6 6 0 0 0 12 0V4"/><path d="M6 4h4v8a2 2 0 0 0 4 0V4h4M6 8h4M14 8h4"/>', 'Lock drawings':'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>', 'Toggle visibility':'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>', 'Delete drawings':'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', 'Chart settings':'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>', 'Compare symbols':'<path d="M4 18V6M4 18h16"/><path d="m7 14 3-4 3 2 5-6"/>', 'Log scale':'<path d="M5 19V5M5 19h14"/><path d="M8 15h3M8 11h6M8 7h9"/>', 'Auto scale':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M12 7v10M9 10l3-3 3 3M9 14l3 3 3-3"/>', 'Fullscreen':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 1 2-2v-3"/>' };
     function toolbarIcon(title) { return `<svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${toolbarIconPaths[title] || ''}</svg>`; }
     document.querySelectorAll('.drawing-tools button,.chart-bottom-tools button').forEach(button => { const label = button.title; const text = label === 'Compare symbols' ? 'Compare' : label === 'Log scale' ? 'Log' : label === 'Auto scale' ? 'Auto' : ''; button.innerHTML = toolbarIcon(label) + (text ? `<span>${text}</span>` : ''); });
     document.querySelectorAll('.drawing-tools button').forEach(button => button.addEventListener('click', () => { const title = button.title; if (title === 'Delete drawings') { drawings = []; renderDrawings(); document.getElementById('chart-tool-status').textContent = 'Drawings cleared'; return; } if (title === 'Toggle visibility') { drawingsVisible = !drawingsVisible; drawingCanvas.style.opacity = drawingsVisible ? '1' : '0'; document.getElementById('chart-tool-status').textContent = drawingsVisible ? 'Drawings visible' : 'Drawings hidden'; return; } if (title === 'Lock drawings') { drawingsLocked = !drawingsLocked; document.getElementById('chart-tool-status').textContent = drawingsLocked ? 'Drawings locked' : 'Drawings unlocked'; return; } drawingTool = title; document.querySelectorAll('.drawing-tools button').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.getElementById('chart-tool-status').textContent = title + ' selected'; }));
     document.querySelector('.drawing-tools button').classList.add('active');
     document.querySelectorAll('.chart-bottom-tools button').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
-    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); addPaperDock(); loadPaperStatus(); setupAgentConsult(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
+    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); configurePaperTicket(); addPaperDock(); loadPaperStatus(); setupAgentConsult(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); loadBrokerDirectory(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
   </script>
 </body>
 </html>

@@ -71,6 +71,14 @@ class MarketApiTests(unittest.TestCase):
 
         self.assertEqual(binance.requested_intervals, ["1h"])
 
+    def test_coinbase_can_be_selected_as_an_independent_chart_feed(self) -> None:
+        coinbase = FakeMarketClient(sample_candles(), sample_ticker("coinbase"))
+        with patch.object(server, "MARKET_CLIENTS", {"coinbase": coinbase}):
+            payload = server.market_payload("coinbase", "SOLUSDT", "1")
+
+        self.assertEqual(payload["market_data"]["candle_source"], "coinbase")
+        self.assertEqual(payload["ticker"]["exchange"], "coinbase")
+
     def test_chart_error_is_raised_only_when_both_candle_feeds_fail(self) -> None:
         bybit = FakeMarketClient(OSError("TLS handshake timed out"), OSError("ticker timed out"))
         binance = FakeMarketClient(OSError("DNS lookup failed"), OSError("ticker lookup failed"))

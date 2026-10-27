@@ -97,6 +97,62 @@ class PaperCloseApiTests(unittest.TestCase):
         with response:
             return response.status, json.loads(response.read())
 
+    def test_historical_chart_data_cannot_mutate_paper_trading_state(self) -> None:
+        request = Request(self.base_url + "/api/paper/evaluate?exchange=bybit&symbol=SOLUSDT&interval=1&history_date=2026-01-01")
+        with self.assertRaises(HTTPError) as raised:
+            urlopen(request, timeout=2)
+
+        self.assertEqual(raised.exception.code, 409)
+        raised.exception.close()
+        self.assertEqual(self.session.snapshot()["orders"], [])
+        self.assertEqual(self.session.snapshot()["open_positions"], [])
+
+    def test_manual_market_ticket_uses_fresh_entry_quote_and_stays_paper_only(self) -> None:
+        self.post_json("/api/copy/control", {"enabled": False})
+        status, body = self.post_json("/api/paper/order", {
+            "exchange": "bybit",
+            "symbol": "SOLUSDT",
+            "side": "long",
+            "order_type": "market",
+            "quantity": "0.001",
+            "entry_price": "110",
+            "stop_loss": "109",
+            "take_profit": "112",
+            "leverage": "1",
+            "interval": "1",
+        })
+
+        self.assertEqual(status, 201)
+        self.assertEqual(body["order"]["status"], "simulated")
+        self.assertEqual(body["order"]["entry_price"], 110.1)
+        self.assertEqual(body["order"]["entry_quote_source"], "bybit_ask")
+        self.assertEqual(body["state"]["open_positions"][0]["quantity"], 0.001)
+        self.assertEqual(body["message"], "Paper order saved. No exchange order was sent.")
+
+    def test_limit_ticket_is_pending_and_cancelable(self) -> None:
+        self.post_json("/api/copy/control", {"enabled": False})
+        status, body = self.post_json("/api/paper/order", {
+            "exchange": "bybit",
+            "symbol": "SOLUSDT",
+            "side": "short",
+            "order_type": "limit",
+            "quantity": "0.01",
+            "entry_price": "110",
+            "stop_loss": "111",
+            "take_profit": "108",
+            "leverage": "1",
+            "interval": "1",
+        })
+        self.assertEqual(status, 202)
+        self.assertEqual(body["order"]["status"], "pending")
+        cancel_status, cancelled = self.post_json("/api/paper/order", {
+            "action": "cancel",
+            "order_id": body["order"]["order_id"],
+        })
+        self.assertEqual(cancel_status, 200)
+        self.assertEqual(cancelled["order"]["status"], "cancelled")
+        self.assertEqual(cancelled["state"]["open_positions"], [])
+
     def test_auto_copy_blocks_close_then_manual_close_works_when_disabled(self) -> None:
         order_id = create_position(self.session, "SOLUSDT")
 

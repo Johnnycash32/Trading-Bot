@@ -9,9 +9,10 @@ from pathlib import Path
 from threading import RLock
 from urllib.parse import parse_qs, urlsplit
 
+from .broker_connections import BrokerRequestStore, BybitTestnetAccount, BybitTestnetConfig, broker_directory_payload
 from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .gemini_agent import GeminiAnalysisAgent, gemini_config
-from .market_data import BinanceMarketData, BybitMarketData
+from .market_data import BinanceMarketData, BybitMarketData, CoinbaseMarketData
 from .paper_session import PaperExecutionSession
 from .private_accounts import private_account_snapshot
 from .strategy import MovingAverageCrossStrategy
@@ -20,7 +21,9 @@ from .strategy import MovingAverageCrossStrategy
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 PAPER_STATE_FILE = PROJECT_ROOT / ".paper-state.json"
-MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData()}
+BROKER_REQUESTS_FILE = PROJECT_ROOT / ".broker-requests.json"
+BROKER_REQUESTS = BrokerRequestStore(BROKER_REQUESTS_FILE)
+MARKET_CLIENTS = {"bybit": BybitMarketData(), "binance": BinanceMarketData(), "coinbase": CoinbaseMarketData()}
 PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_SESSION.save(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
@@ -34,6 +37,11 @@ BINANCE_INTERVALS = {
     "60": "1h", "120": "2h", "240": "4h", "360": "6h", "720": "12h",
     "D": "1d", "W": "1w", "M": "1M",
 }
+INTERVAL_MILLISECONDS = {
+    **{str(minutes): minutes * 60_000 for minutes in (1, 3, 5, 15, 30, 60, 120, 240, 360, 720)},
+    "D": 86_400_000,
+    "W": 604_800_000,
+}
 CLOSE_QUOTE_MAX_AGE_MS = 5_000
 CLOSE_QUOTE_FUTURE_TOLERANCE_MS = 2_000
 
@@ -41,12 +49,14 @@ CLOSE_QUOTE_FUTURE_TOLERANCE_MS = 2_000
 def market_payload(exchange: str, symbol: str, interval: str, end_ms: int | None = None) -> dict[str, object]:
     """Fetch chart candles with venue failover and treat the live ticker as optional."""
 
-    venues = [exchange, *(venue for venue in ("bybit", "binance") if venue != exchange)]
+    venues = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
     candle_errors: list[str] = []
     candle_source = exchange
     candles = None
     for venue in venues:
-        client = MARKET_CLIENTS[venue]
+        client = MARKET_CLIENTS.get(venue)
+        if client is None:
+            continue
         venue_interval = BINANCE_INTERVALS.get(interval, interval) if venue == "binance" else interval
         try:
             candles = client.candles(symbol, venue_interval, 120, end_ms)
@@ -62,7 +72,8 @@ def market_payload(exchange: str, symbol: str, interval: str, end_ms: int | None
     ticker = None
     ticker_source = None
     ticker_errors: list[str] = []
-    for venue in venues:
+    ticker_venues = [venue for venue in venues if venue in MARKET_CLIENTS]
+    for venue in ticker_venues:
         try:
             ticker = MARKET_CLIENTS[venue].ticker(symbol)
             ticker_source = venue
@@ -110,7 +121,7 @@ def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
     if exchange not in MARKET_CLIENTS or not SYMBOL_PATTERN.fullmatch(symbol) or side not in {"long", "short"}:
         raise ValueError(f"Open order {position.get('order_id', 'unknown')} has invalid market details.")
 
-    sources = [exchange, *(venue for venue in ("bybit", "binance") if venue != exchange)]
+    sources = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
     errors: list[str] = []
     now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
     for venue in sources:
@@ -130,6 +141,36 @@ def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
             errors.append(f"{venue}: {exc}")
 
     raise RuntimeError("No fresh executable close quote is available (" + "; ".join(errors) + ").")
+
+
+def fresh_open_quote(exchange: str, symbol: str, side: str) -> tuple[float, str, int]:
+    """Resolve a fresh executable-side public quote for a paper entry."""
+
+    if exchange not in MARKET_CLIENTS or not SYMBOL_PATTERN.fullmatch(symbol) or side not in {"long", "short"}:
+        raise ValueError("Choose a supported exchange, symbol, and trade side.")
+    sources = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
+    errors: list[str] = []
+    now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+    for venue in sources:
+        client = MARKET_CLIENTS.get(venue)
+        if client is None:
+            continue
+        try:
+            ticker = client.ticker(symbol)
+            timestamp_ms = ticker.timestamp_ms
+            if timestamp_ms is None:
+                raise ValueError("quote has no exchange timestamp")
+            age_ms = now_ms - timestamp_ms
+            if age_ms < -CLOSE_QUOTE_FUTURE_TOLERANCE_MS or age_ms > CLOSE_QUOTE_MAX_AGE_MS:
+                raise ValueError(f"quote is stale ({age_ms} ms old)")
+            price = ticker.ask if side == "long" else ticker.bid
+            if price is None or not isfinite(price) or price <= 0:
+                raise ValueError(f"quote has no valid {side}-entry price")
+            return float(price), f"{venue}_{'ask' if side == 'long' else 'bid'}", timestamp_ms
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
+            errors.append(f"{venue}: {exc}")
+
+    raise RuntimeError("No fresh executable entry quote is available (" + "; ".join(errors) + ").")
 
 
 def live_copy_accounts() -> tuple[list[ActiveCopyAccount], float]:
@@ -231,14 +272,18 @@ class AppHandler(BaseHTTPRequestHandler):
             symbol = query.get("symbol", ["SOLUSDT"])[0].upper()
             interval = query.get("interval", ["1"])[0]
             end_ms = history_end_ms(query.get("history_date", [None])[0])
+            if end_ms is not None:
+                self._send(409, b'{"error":"Paper evaluation is disabled for historical chart data."}', "application/json; charset=utf-8")
+                return
             client = MARKET_CLIENTS.get(exchange)
             if client is None:
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
                 return
             try:
-                candles = client.candles(symbol, interval, 120, end_ms)
+                venue_interval = BINANCE_INTERVALS.get(interval, interval) if exchange == "binance" else interval
+                candles = client.candles(symbol, venue_interval, 120, end_ms)
                 with PAPER_LOCK:
-                    result = PAPER_SESSION.evaluate(exchange, symbol, candles)
+                    result = PAPER_SESSION.evaluate(exchange, symbol, candles, INTERVAL_MILLISECONDS.get(interval))
                     PAPER_SESSION.save(PAPER_STATE_FILE)
                 result["symbol"] = symbol
                 result["exchange"] = exchange
@@ -273,10 +318,206 @@ class AppHandler(BaseHTTPRequestHandler):
         if request.path == "/api/private/positions":
             self._send(200, json.dumps(private_account_snapshot()).encode(), "application/json; charset=utf-8")
             return
+        if request.path == "/api/brokers":
+            try:
+                payload = broker_directory_payload(BROKER_REQUESTS)
+                self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._send(500, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+            return
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 
     def do_POST(self) -> None:  # noqa: N802
         request = urlsplit(self.path)
+        if request.path == "/api/paper/order":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid paper order request"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid paper order request"}', "application/json; charset=utf-8")
+                return
+
+            if payload.get("action") == "cancel":
+                if set(payload) != {"action", "order_id"} or not isinstance(payload.get("order_id"), str):
+                    self._send(400, b'{"error":"Provide a pending paper order ID to cancel"}', "application/json; charset=utf-8")
+                    return
+                with PAPER_LOCK:
+                    cancelled = PAPER_SESSION.cancel_pending_order(payload["order_id"])
+                    if cancelled is None:
+                        self._send(404, b'{"error":"No matching pending paper order"}', "application/json; charset=utf-8")
+                        return
+                    try:
+                        PAPER_SESSION.save(PAPER_STATE_FILE)
+                    except (OSError, ValueError) as exc:
+                        self._send(500, json.dumps({"error": f"Could not save paper order cancellation: {exc}"}).encode(), "application/json; charset=utf-8")
+                        return
+                    self._send(200, json.dumps({"order": cancelled, "state": PAPER_SESSION.snapshot()}).encode(), "application/json; charset=utf-8")
+                return
+
+            expected_fields = {
+                "exchange", "symbol", "side", "order_type", "quantity",
+                "entry_price", "stop_loss", "take_profit", "leverage", "interval",
+            }
+            if set(payload) != expected_fields or any(not isinstance(payload.get(key), str) for key in expected_fields):
+                self._send(400, b'{"error":"Paper order fields are invalid"}', "application/json; charset=utf-8")
+                return
+            exchange = payload["exchange"].lower()
+            symbol = payload["symbol"].upper()
+            side = payload["side"].lower()
+            order_type = payload["order_type"].lower()
+            interval = payload["interval"]
+            if exchange not in MARKET_CLIENTS or interval not in PAPER_INTERVALS or not SYMBOL_PATTERN.fullmatch(symbol):
+                self._send(400, b'{"error":"Choose a supported market, symbol, and chart interval"}', "application/json; charset=utf-8")
+                return
+            if order_type not in {"market", "limit"}:
+                self._send(400, b'{"error":"Only market and limit paper orders are supported"}', "application/json; charset=utf-8")
+                return
+            try:
+                quantity = float(payload["quantity"])
+                entry_price = float(payload["entry_price"])
+                stop_loss = float(payload["stop_loss"])
+                take_profit = float(payload["take_profit"])
+                leverage = float(payload["leverage"])
+                if order_type == "market":
+                    entry_price, quote_source, quote_timestamp_ms = fresh_open_quote(exchange, symbol, side)
+                else:
+                    quote_source, quote_timestamp_ms = "user_limit_price", None
+            except (ValueError, TypeError) as exc:
+                self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                return
+            except RuntimeError as exc:
+                self._send(503, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                return
+            interval_ms = INTERVAL_MILLISECONDS.get(interval)
+            if interval_ms is None:
+                self._send(400, b'{"error":"This chart interval is not available for paper entries"}', "application/json; charset=utf-8")
+                return
+            now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+            candle_timestamp_ms = now_ms - now_ms % interval_ms
+            with PAPER_LOCK:
+                if COPY_CONTROL["auto_trade_enabled"]:
+                    self._send(409, b'{"error":"Turn off auto-copy before placing a manual paper order"}', "application/json; charset=utf-8")
+                    return
+                try:
+                    order = PAPER_SESSION.submit_manual_order(
+                        exchange,
+                        symbol,
+                        side,
+                        quantity,
+                        entry_price,
+                        stop_loss,
+                        take_profit,
+                        leverage,
+                        candle_timestamp_ms,
+                        order_type,
+                    )
+                    order["entry_quote_source"] = quote_source
+                    order["entry_quote_timestamp_ms"] = quote_timestamp_ms
+                    saved_order = next(item for item in PAPER_SESSION.orders if item["order_id"] == order["order_id"])
+                    saved_order["entry_quote_source"] = quote_source
+                    saved_order["entry_quote_timestamp_ms"] = quote_timestamp_ms
+                    if order_type == "market":
+                        saved_position = next(item for item in PAPER_SESSION.positions if item["order_id"] == order["order_id"])
+                        saved_position["entry_quote_source"] = quote_source
+                        saved_position["entry_quote_timestamp_ms"] = quote_timestamp_ms
+                    PAPER_SESSION.save(PAPER_STATE_FILE)
+                except ValueError as exc:
+                    self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                    return
+                except (OSError, RuntimeError) as exc:
+                    self._send(500, json.dumps({"error": f"Could not save paper order: {exc}"}).encode(), "application/json; charset=utf-8")
+                    return
+                status_code = 202 if order_type == "limit" else 201
+                self._send(status_code, json.dumps({
+                    "order": order,
+                    "state": PAPER_SESSION.snapshot(symbol),
+                    "message": "Paper order saved. No exchange order was sent.",
+                }).encode(), "application/json; charset=utf-8")
+            return
+
+        if request.path in {
+            "/api/brokers/requests",
+            "/api/brokers/bybit-testnet/check",
+            "/api/brokers/bybit-testnet/order",
+        }:
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length < 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                raw_payload = self.rfile.read(length) if length else b"{}"
+                payload = json.loads(raw_payload)
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid request payload"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid request payload"}', "application/json; charset=utf-8")
+                return
+            if request.path == "/api/brokers/requests":
+                broker_name = payload.get("broker_name")
+                mode = payload.get("requested_mode")
+                notes = payload.get("notes", "")
+                if not isinstance(broker_name, str) or not isinstance(mode, str) or not isinstance(notes, str):
+                    self._send(400, b'{"error":"Broker name, requested mode, and notes must be text"}', "application/json; charset=utf-8")
+                    return
+                try:
+                    saved = BROKER_REQUESTS.add_request(broker_name, mode, notes)
+                except ValueError as exc:
+                    self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                    return
+                except (OSError, RuntimeError) as exc:
+                    self._send(500, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                    return
+                self._send(201, json.dumps({"request": saved}).encode(), "application/json; charset=utf-8")
+                return
+
+            if request.path.endswith("/check") and payload:
+                self._send(400, b'{"error":"The Bybit testnet check does not accept credentials in the request"}', "application/json; charset=utf-8")
+                return
+            if request.path.endswith("/order") and set(payload) != {"symbol", "side", "quantity", "confirmed"}:
+                self._send(400, b'{"error":"Only symbol, side, quantity, and confirmation are accepted; credentials must remain on the server"}', "application/json; charset=utf-8")
+                return
+            if request.path.endswith("/order") and payload.get("confirmed") is not True:
+                self._send(400, b'{"error":"Explicitly confirm that this order is for Bybit testnet only"}', "application/json; charset=utf-8")
+                return
+            config = BybitTestnetConfig.from_environment()
+            if config is None:
+                self._send(409, b'{"error":"Configure dedicated Bybit testnet credentials on the server first"}', "application/json; charset=utf-8")
+                return
+            account = BybitTestnetAccount(config)
+            if request.path.endswith("/check"):
+                try:
+                    snapshot = account.snapshot()
+                except (OSError, RuntimeError, ValueError, KeyError, TypeError) as exc:
+                    self._send(502, json.dumps({"error": f"Bybit testnet verification failed: {exc}"}).encode(), "application/json; charset=utf-8")
+                    return
+                self._send(200, json.dumps(snapshot).encode(), "application/json; charset=utf-8")
+                return
+            symbol = payload.get("symbol")
+            side = payload.get("side")
+            quantity = payload.get("quantity")
+            if not isinstance(symbol, str) or not isinstance(side, str) or not isinstance(quantity, str):
+                self._send(400, b'{"error":"Symbol, side, and quantity must be text"}', "application/json; charset=utf-8")
+                return
+            try:
+                order = account.place_market_order(symbol, side, quantity)
+            except ValueError as exc:
+                self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                return
+            except PermissionError as exc:
+                self._send(403, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                return
+            except (OSError, RuntimeError, KeyError, TypeError) as exc:
+                self._send(502, json.dumps({"error": f"Bybit testnet order failed: {exc}"}).encode(), "application/json; charset=utf-8")
+                return
+            self._send(200, json.dumps({"order": order}).encode(), "application/json; charset=utf-8")
+            return
         if request.path == "/api/paper/close":
             try:
                 length = int(self.headers.get("Content-Length", "0"))
@@ -442,7 +683,7 @@ class AppHandler(BaseHTTPRequestHandler):
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
     server = ThreadingHTTPServer((host, port), AppHandler)
     print(f"Trading Bot app running at http://{host}:{port}")
-    print("Paper mode only; no live orders or exchange credentials are enabled.")
+    print("Paper mode plus explicitly confirmed Bybit testnet orders; live orders are disabled.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
