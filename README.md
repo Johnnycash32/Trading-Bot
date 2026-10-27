@@ -94,7 +94,7 @@ Every paper evaluation returns a decision from the behavioral layer:
 
 The animal roles are intentionally observable: Raccoon collects public evidence, Eagle dispatches the strategy signal, Hawk examines chart structure, Lion enforces limits, Cheetah represents paper execution, and Hare delivers the decision. Confidence is a transparent research score, not a probability of profit.
 
-Hare's bell in the dashboard header opens a compact, scrollable news and activity panel. It dispatches notable paper lifecycle, risk rejection, and agent-failure events; routine monitor and duplicate-signal entries are grouped to keep the feed readable. Activity rows open their full event details, and the unread badge clears when the panel is opened.
+Hare's bell in the dashboard header opens a compact, scrollable news and activity panel. Its labeled Corner alerts switch turns brief browser pop-up alerts on or off; off is muted gray and on is green, and the switch choice is saved in the browser. The in-panel news and activity feeds remain available either way. Hare dispatches notable paper lifecycle, risk rejection, and agent-failure events; routine monitor and duplicate-signal entries are grouped to keep the feed readable. Activity rows open their full event details, and the unread badge clears when the panel is opened.
 
 ## Research references
 
