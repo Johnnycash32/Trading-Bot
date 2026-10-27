@@ -29,8 +29,76 @@ COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_actio
 PAPER_AVAILABLE_BALANCE = 8_420.50
 SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]{2,20}$")
 PAPER_INTERVALS = {"1", "3", "5", "15", "30", "60", "120", "240", "360", "720", "D", "W", "M"}
+BINANCE_INTERVALS = {
+    "1": "1m", "3": "3m", "5": "5m", "15": "15m", "30": "30m",
+    "60": "1h", "120": "2h", "240": "4h", "360": "6h", "720": "12h",
+    "D": "1d", "W": "1w", "M": "1M",
+}
 CLOSE_QUOTE_MAX_AGE_MS = 5_000
 CLOSE_QUOTE_FUTURE_TOLERANCE_MS = 2_000
+
+
+def market_payload(exchange: str, symbol: str, interval: str, end_ms: int | None = None) -> dict[str, object]:
+    """Fetch chart candles with venue failover and treat the live ticker as optional."""
+
+    venues = [exchange, *(venue for venue in ("bybit", "binance") if venue != exchange)]
+    candle_errors: list[str] = []
+    candle_source = exchange
+    candles = None
+    for venue in venues:
+        client = MARKET_CLIENTS[venue]
+        venue_interval = BINANCE_INTERVALS.get(interval, interval) if venue == "binance" else interval
+        try:
+            candles = client.candles(symbol, venue_interval, 120, end_ms)
+            if not candles:
+                raise ValueError(f"{venue} returned no candles")
+            candle_source = venue
+            break
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
+            candle_errors.append(f"{venue}: {exc}")
+    if candles is None:
+        raise RuntimeError("No exchange returned chart candles (" + "; ".join(candle_errors) + ").")
+
+    ticker = None
+    ticker_source = None
+    ticker_errors: list[str] = []
+    for venue in venues:
+        try:
+            ticker = MARKET_CLIENTS[venue].ticker(symbol)
+            ticker_source = venue
+            break
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
+            ticker_errors.append(f"{venue}: {exc}")
+    if ticker is None:
+        latest_candle = candles[-1]
+        ticker = {
+            "exchange": candle_source,
+            "symbol": symbol,
+            "last": latest_candle.close,
+            "bid": None,
+            "ask": None,
+            "change_percent": None,
+            "timestamp_ms": latest_candle.timestamp_ms,
+        }
+        ticker_source = "candle_close"
+    else:
+        ticker = ticker.__dict__
+
+    return {
+        "exchange": exchange,
+        "symbol": symbol,
+        "interval": interval,
+        "ticker": ticker,
+        "candles": [candle.__dict__ for candle in candles],
+        "market_data": {
+            "candle_source": candle_source,
+            "ticker_source": ticker_source,
+            "fallback": candle_source != exchange,
+            "ticker_unavailable": ticker_source == "candle_close",
+            "candle_errors": candle_errors,
+            "ticker_errors": ticker_errors,
+        },
+    }
 
 
 def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
@@ -147,20 +215,11 @@ class AppHandler(BaseHTTPRequestHandler):
             symbol = query.get("symbol", ["SOLUSDT"])[0].upper()
             interval = query.get("interval", ["1"])[0]
             end_ms = history_end_ms(query.get("history_date", [None])[0])
-            client = MARKET_CLIENTS.get(exchange)
-            if client is None:
+            if exchange not in MARKET_CLIENTS:
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
                 return
             try:
-                ticker = client.ticker(symbol)
-                candles = client.candles(symbol, interval, 120, end_ms)
-                payload = {
-                    "exchange": exchange,
-                    "symbol": symbol,
-                    "interval": interval,
-                    "ticker": ticker.__dict__,
-                    "candles": [candle.__dict__ for candle in candles],
-                }
+                payload = market_payload(exchange, symbol, interval, end_ms)
                 self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
             except Exception as exc:  # public feed failures should not crash the paper app
                 message = json.dumps({"error": f"Public market feed unavailable: {exc}"}).encode()

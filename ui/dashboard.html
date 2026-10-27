@@ -183,22 +183,83 @@
     drawingCanvas.addEventListener('pointerup', event => { if (drawingStart) finishDrawing(chartPoint(event)); });
     drawingCanvas.addEventListener('click', event => { if (drawingTool === 'Horizontal line' && !drawingsLocked && !drawingStart) { const point = chartPoint(event); drawings.push({type:'horizontal',start:point,end:point}); renderDrawings(); } });
     resizeDrawingCanvas();
+    const marketChartMemory = new Map();
+    function marketChartCacheKey(exchange, symbol, interval, historyDate) { return `market-chart:${exchange}:${symbol}:${interval}:${historyDate || 'live'}`; }
+    function rememberMarketChart(key, data) {
+      const cached = {...data, cached_at:Date.now()};
+      marketChartMemory.set(key, cached);
+      try { localStorage.setItem(key, JSON.stringify(cached)); } catch (_) {}
+    }
+    function recalledMarketChart(key) {
+      if (marketChartMemory.has(key)) return marketChartMemory.get(key);
+      try {
+        const cached = JSON.parse(localStorage.getItem(key) || 'null');
+        if (cached && Array.isArray(cached.candles) && cached.candles.length) {
+          marketChartMemory.set(key, cached);
+          return cached;
+        }
+      } catch (_) {}
+      return null;
+    }
+    function renderMarketChart(data) {
+      if (!Array.isArray(data.candles) || !data.candles.length) throw new Error('The market feed returned no chart candles.');
+      drawCandles(document.getElementById('price-chart'), data.candles);
+      drawIndicators(data.candles);
+    }
     async function loadMarket(symbol, prefix) {
       const status = document.getElementById(prefix + '-status');
       const asset = findAsset(symbol);
       if (asset && !asset[2]) { status.textContent = `${asset[1]} is in the paper asset catalog. A dedicated public ${selectedExchange} adapter is not connected yet.`; return; }
+      const historyDate = document.getElementById('history-date').value;
+      const cacheKey = marketChartCacheKey(selectedExchange, symbol, selectedInterval, historyDate);
       try {
-        const historyDate = document.getElementById('history-date').value; const historyQuery = historyDate ? '&history_date=' + encodeURIComponent(historyDate) : ''; const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=' + selectedInterval + historyQuery);
+        const historyQuery = historyDate ? '&history_date=' + encodeURIComponent(historyDate) : ''; const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=' + selectedInterval + historyQuery);
         const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Feed unavailable');
+        if (prefix === 'market') {
+          renderMarketChart(data);
+          rememberMarketChart(cacheKey, data);
+        }
         const ticker = data.ticker;
         document.getElementById(prefix + '-symbol').textContent = data.symbol;
         document.getElementById(prefix + '-price').textContent = formatPrice(ticker.last);
-        document.getElementById(prefix + '-change').textContent = (ticker.change_percent >= 0 ? '+' : '') + ticker.change_percent.toFixed(2) + '% (24h)';
-        document.getElementById(prefix + '-change').className = ticker.change_percent >= 0 ? 'positive' : 'negative';
+        const hasTickerChange = Number.isFinite(ticker.change_percent);
+        document.getElementById(prefix + '-change').textContent = hasTickerChange ? (ticker.change_percent >= 0 ? '+' : '') + ticker.change_percent.toFixed(2) + '% (24h)' : 'Ticker unavailable · candle close only';
+        document.getElementById(prefix + '-change').className = hasTickerChange ? (ticker.change_percent >= 0 ? 'positive' : 'negative') : '';
         document.getElementById(prefix + '-updated').textContent = new Date(ticker.timestamp_ms || Date.now()).toLocaleTimeString();
-        if (prefix === 'market') { drawCandles(document.getElementById('price-chart'), data.candles); drawIndicators(data.candles); }
-        status.textContent = historyDate ? 'Paper orders only. Historical candles ending ' + historyDate + ' · refreshed just now.' : 'Paper orders only. Live public ' + selectedExchange + ' candles · refreshed just now.';
-      } catch (error) { status.textContent = error.message + ' Paper dashboard remains available.'; }
+        const marketData = data.market_data || {};
+        const candleSource = marketData.candle_source || selectedExchange;
+        const sourceNote = marketData.fallback ? ` · ${selectedExchange} unavailable; using ${candleSource}` : '';
+        const tickerNote = marketData.ticker_unavailable
+          ? ' · ticker unavailable; displayed price is last candle close'
+          : marketData.ticker_source && marketData.ticker_source !== candleSource
+            ? ` · price ticker from ${marketData.ticker_source}`
+            : '';
+        status.textContent = historyDate
+          ? `Paper orders only. Historical candles ending ${historyDate} from ${candleSource}${sourceNote}.${tickerNote}`
+          : `Paper orders only. Live public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
+      } catch (error) {
+        if (prefix === 'market') {
+          const cached = recalledMarketChart(cacheKey);
+          if (cached) {
+            try {
+              renderMarketChart(cached);
+              const cachedAt = Number(cached.cached_at) || 0;
+              const savedTime = cachedAt ? new Date(cachedAt).toLocaleString() : 'an unknown time';
+              const cachedSource = cached.market_data?.candle_source || cached.exchange || selectedExchange;
+              document.getElementById('market-price').textContent = formatPrice(cached.ticker?.last ?? cached.candles[cached.candles.length - 1].close);
+              document.getElementById('market-change').textContent = 'Saved chart only · not live';
+              document.getElementById('market-change').className = '';
+              document.getElementById('market-updated').textContent = `Saved ${savedTime}`;
+              status.textContent = `${error.message} Showing saved ${cachedSource} candles from ${savedTime}; this chart and price are not live and are not used to close trades.`;
+              return;
+            } catch (cacheError) {
+              status.textContent = `${error.message} Saved chart could not be displayed: ${cacheError.message}`;
+              return;
+            }
+          }
+        }
+        status.textContent = error.message + ' Paper dashboard remains available. No saved chart is available to display offline.';
+      }
     }
     async function loadWatchlist() {
       const assets = [['SOLUSDT','watch-sol','watch-sol-change'],['BTCUSDT','watch-btc','watch-btc-change'],['ETHUSDT','watch-eth','watch-eth-change'],['XRPUSDT','watch-xrp','watch-xrp-change']];
