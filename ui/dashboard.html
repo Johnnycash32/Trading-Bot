@@ -34,8 +34,10 @@
   </style>
   <style>
     .copy-toggle{color:#e7c873}.copy-toggle.on{color:#b9f1d8}.active-copy-table{max-height:340px;overflow:auto}.active-copy-table .copy-profile{color:#d9a8ff}.active-copy-table .copy-exchange{color:#6fd7e8}.active-copy-table .copy-mode{color:#e7c873}.active-copy-table .copy-long{color:#16b979;font-weight:800}.active-copy-table .copy-short{color:#ed4053;font-weight:800}.copy-table-tools{align-items:center;display:flex;gap:5px;margin-left:auto}.copy-tool-button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.72rem;padding:6px 8px}.copy-tool-button.active{background:#303044;color:#fff}.copy-search{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px 8px;width:145px}.copy-search.visible{display:block}.copy-sort{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px}.copy-sort.visible{display:block}.lion-qualified{color:#16b979;font-size:.65rem;font-weight:800}.hare-notifications{display:grid;gap:12px}.notification-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between}.notification-toggle{background:#22222a;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.67rem;padding:6px 9px}.notification-list{display:grid;gap:7px}.notification-item{background:#17171e;border-left:3px solid #6aa8ff;border-radius:3px;color:#c9c9d2;font-size:.72rem;padding:8px 10px}.notification-item.warn{border-left-color:#e7c873}.notification-item.alert{border-left-color:#ed4053}.notification-item time{color:#858591;display:block;font-size:.62rem;margin-top:3px}.notification-toast{background:#17171e;border:1px solid #4a4a57;border-left:4px solid #6aa8ff;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.45);color:#f5f5f7;max-width:330px;padding:12px 14px;position:fixed;right:20px;top:20px;z-index:20}.notification-toast.warn{border-left-color:#e7c873}.notification-toast.alert{border-left-color:#ed4053}.notification-toast strong{display:block;font-size:.75rem}.notification-toast span{color:#c9c9d2;display:block;font-size:.7rem;margin-top:3px}
+    .hare-corner-toggle{align-items:center;background:#17171d;border:1px solid #383842;border-radius:50%;color:#e8e8ed;display:inline-flex;font-size:1rem;height:34px;justify-content:center;position:relative;width:34px}.hare-corner-toggle:hover,.hare-corner-toggle[aria-expanded=true]{background:#292932;border-color:#626274}.hare-corner-badge{align-items:center;background:#ed4053;border:2px solid #0b0b0f;border-radius:99px;color:#fff;display:flex;font-size:.57rem;font-weight:900;height:17px;justify-content:center;min-width:17px;padding:0 4px;position:absolute;right:-5px;top:-5px}.hare-corner-badge[hidden]{display:none}.hare-corner-panel{background:#111116;border:1px solid #383842;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.55);display:none;max-height:min(70vh,560px);overflow:hidden;position:fixed;right:16px;top:60px;width:min(350px,calc(100vw - 24px));z-index:30}.hare-corner-panel.open{display:flex;flex-direction:column}.hare-corner-head{align-items:center;border-bottom:1px solid #292930;display:flex;gap:10px;padding:10px 12px}.hare-corner-head strong{font-size:.77rem;margin-right:auto}.hare-corner-head .notification-toggle{font-size:.6rem;padding:5px 7px}.hare-feed-tabs{border-bottom:1px solid #292930;display:flex;gap:5px;padding:8px 10px}.hare-feed-tab{background:#202027;border:0;border-radius:12px;color:#aaaab4;font-size:.63rem;padding:5px 9px}.hare-feed-tab.active{background:#eeeef1;color:#17171d}.hare-feed-view{display:none;min-height:0;overflow:auto;overscroll-behavior:contain;padding:8px}.hare-feed-view.active{display:grid;gap:6px}.hare-feed-empty{color:#858591;font-size:.68rem;padding:12px 8px}    .hare-activity-item{background:#17171e;border:0;border-left:2px solid #6aa8ff;border-radius:3px;color:#c9c9d2;cursor:pointer;font-size:.66rem;line-height:1.4;padding:7px 8px;text-align:left;width:100%}.hare-activity-item:hover,.hare-activity-item:focus{background:#22222b;outline:1px solid #555563}.hare-activity-item.position_closed,.hare-activity-item.paper_rejected,.hare-activity-item.agent_analysis.failed{border-left-color:#e7c873}.hare-activity-title{color:#eeeef1;font-weight:800}.hare-activity-meta{color:#858591;font-size:.59rem;margin-top:3px}.notification-toast{max-width:min(330px,calc(100vw - 24px));right:12px;top:60px}
     .private-position-table{max-height:250px;overflow:auto}.private-position-table table{border-collapse:collapse;font-size:.68rem;min-width:720px;width:100%}.private-position-table td,.private-position-table th{border-bottom:1px solid #292930;padding:8px;text-align:left;white-space:nowrap}.private-position-table th{color:#858591}.private-monitor-note{color:#9c9ca7;font-size:.7rem;margin:0 0 10px}.private-monitor-note strong{color:#e7c873}
-    .paper-dock{background:#0d0d10;border:1px solid #292930;border-radius:7px;grid-column:1/-1;overflow:hidden}.paper-dock.collapsed .paper-dock-body{display:none}.paper-dock-head{align-items:center;background:#151519;border-bottom:1px solid #292930;display:flex;gap:12px;padding:10px 12px}.paper-dock-title{align-items:center;display:flex;gap:8px;margin-right:auto}.paper-dock-title h3{font-size:.82rem;margin:0}.paper-dock-live{color:#16b979;font-size:.64rem;font-weight:800}.paper-dock-toggle{background:#25252d;border:1px solid #444451;border-radius:4px;color:#e7c873;font-size:.68rem;font-weight:800;padding:6px 11px}.paper-dock-account{align-items:center;background:#18181e;border-bottom:1px solid #292930;display:flex;gap:20px;overflow:auto;padding:10px 12px;white-space:nowrap}.paper-dock-account span{color:#9696a2;font-size:.66rem}.paper-dock-account strong{color:#eee;font-size:.72rem;margin-left:5px}.paper-dock-account .positive{color:#16b979}.paper-dock-account .negative{color:#ed4053}.paper-dock-tabs{display:flex;gap:5px;padding:10px 12px 0}.paper-dock-tab{background:#202027;border:0;border-radius:14px;color:#b7b7c2;font-size:.68rem;padding:7px 11px}.paper-dock-tab.active{background:#f1f1f3;color:#111116}    .paper-dock-panel{max-height:min(42vh,360px);min-height:115px;overflow:auto;overscroll-behavior:contain;padding:8px 12px 14px}.paper-dock-panel table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.paper-dock-panel th{color:#858591;font-weight:600;text-align:left}.paper-dock-panel td,.paper-dock-panel th{border-bottom:1px solid #24242a;padding:8px 7px;white-space:nowrap}.paper-dock-empty{color:#858591;font-size:.72rem;padding:16px 4px}.paper-dock-note{color:#9c9ca7;font-size:.68rem;margin:7px 4px}.paper-dock-symbol{color:#6fd7e8;font-weight:800}.paper-dock-long{color:#16b979;font-weight:800}.paper-dock-short{color:#ed4053;font-weight:800}
+    .paper-dock{background:#0d0d10;border:1px solid #292930;border-radius:7px;grid-column:1/-1;overflow:hidden}.paper-dock.collapsed .paper-dock-body{display:none}.paper-dock-head{align-items:center;background:#151519;border-bottom:1px solid #292930;display:flex;gap:12px;padding:10px 12px}.paper-dock-title{align-items:center;display:flex;gap:8px;margin-right:auto}.paper-dock-title h3{font-size:.82rem;margin:0}.paper-dock-live{color:#16b979;font-size:.64rem;font-weight:800}.paper-dock-toggle{background:#25252d;border:1px solid #444451;border-radius:4px;color:#e7c873;font-size:.68rem;font-weight:800;padding:6px 11px}.paper-dock-account{align-items:center;background:#18181e;border-bottom:1px solid #292930;display:flex;gap:20px;overflow:auto;padding:10px 12px;white-space:nowrap}.paper-dock-account span{color:#9696a2;font-size:.66rem}.paper-dock-account strong{color:#eee;font-size:.72rem;margin-left:5px}.paper-dock-account .positive{color:#16b979}.paper-dock-account .negative{color:#ed4053}.paper-dock-tabs{display:flex;gap:5px;padding:10px 12px 0}.paper-dock-tab{background:#202027;border:0;border-radius:14px;color:#b7b7c2;font-size:.68rem;padding:7px 11px}.paper-dock-tab.active{background:#f1f1f3;color:#111116}.paper-dock-panel{max-height:min(42vh,360px);min-height:115px;overflow:auto;overscroll-behavior:contain;padding:8px 12px 14px}.paper-dock-panel table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.paper-dock-panel th{color:#858591;font-weight:600;text-align:left}.paper-dock-panel td,.paper-dock-panel th{border-bottom:1px solid #24242a;padding:8px 7px;white-space:nowrap}.paper-dock-empty{color:#858591;font-size:.72rem;padding:16px 4px}.paper-dock-note{color:#9c9ca7;font-size:.68rem;margin:7px 4px}.paper-dock-symbol{color:#6fd7e8;font-weight:800}.paper-dock-long{color:#16b979;font-weight:800}.paper-dock-short{color:#ed4053;font-weight:800}
+    @media(max-width:600px){.hare-corner-panel{right:8px;top:54px;width:min(350px,calc(100vw - 16px))}.hare-corner-toggle{height:32px;width:32px}.hare-corner-panel{max-height:75vh}}
     .paper-detail-row{cursor:pointer}.paper-detail-row:hover,.paper-detail-row:focus{background:#1b1b22;outline:1px solid #565667;outline-offset:-1px}.paper-detail-button{align-items:center;background:#17171d;border:1px solid #292930;border-radius:4px;color:#eeeef1;cursor:pointer;display:flex;font-size:.72rem;justify-content:space-between;padding:10px;width:100%}.paper-detail-button:hover,.paper-detail-button:focus{background:#22222b;outline:1px solid #6aa8ff}.paper-detail-dialog{background:#111116;border:1px solid #454550;border-radius:8px;color:#eeeef1;max-height:min(80vh,700px);max-width:620px;padding:0;width:calc(100% - 32px)}.paper-detail-dialog::backdrop{background:rgba(0,0,0,.72)}.paper-detail-head{align-items:center;border-bottom:1px solid #292930;display:flex;justify-content:space-between;padding:14px 18px}.paper-detail-head h3{font-size:.9rem;margin:0}.paper-detail-close{background:#262630;border:1px solid #3b3b47;border-radius:4px;color:#eeeef1;padding:5px 9px}.paper-detail-content{max-height:calc(80vh - 60px);overflow:auto;padding:8px 18px 16px}.paper-detail-content dl{display:grid;grid-template-columns:minmax(120px, .7fr) 1.3fr;margin:0}.paper-detail-content dt,.paper-detail-content dd{border-bottom:1px solid #26262d;font-size:.72rem;margin:0;padding:9px 5px;overflow-wrap:anywhere}.paper-detail-content dt{color:#9696a2}.paper-detail-content dd{color:#f1f1f4;white-space:pre-wrap}
     .paper-position-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between;margin:0 0 8px}.paper-close-button{background:#292027;border:1px solid #713640;border-radius:4px;color:#ff9da7;font-size:.67rem;font-weight:800;padding:6px 9px}.paper-close-button:hover:not(:disabled){background:#46232b}.paper-close-button:disabled{cursor:not-allowed;opacity:.42}.paper-close-all{background:#48252d}.paper-close-note{color:#92929d;font-size:.66rem}
   </style>
@@ -46,12 +48,12 @@
       <div class="logo">Trading<span>Bot.</span></div>
       <div class="nav-label">Command centre</div>
       <nav class="nav">
-        <a class="active" href="#overview">Overview</a><a href="#markets">Markets</a><a href="#positions">Positions</a><a href="#active-copy">Active copy traders</a><a href="#intelligence">Trader intelligence</a><a href="#agents">Agent room</a><a href="#activity">Activity log</a>
+        <a class="active" href="#overview">Overview</a><a href="#markets">Markets</a><a href="#positions">Positions</a><a href="#active-copy">Active copy traders</a><a href="#intelligence">Trader intelligence</a><a href="#agents">Agent room</a><a href="#" id="hare-nav-link">Hare feed</a>
       </nav>
       <div class="mode"><strong>Paper trading mode</strong>Live market data concept · No real orders are being placed.</div>
     </aside>
     <main class="main"><div id="notification-toast" class="notification-toast" hidden></div>
-      <header class="topbar"><h1>Good morning, John</h1><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><button class="button danger" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')">Emergency stop</button></div></header>
+      <header class="topbar"><h1>Good morning, John</h1><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><button class="button danger" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')">Emergency stop</button><button class="hare-corner-toggle" id="hare-corner-toggle" type="button" aria-label="Open Hare news and activity" aria-expanded="false" aria-controls="hare-corner-panel"><span aria-hidden="true">🔔</span><span class="hare-corner-badge" id="hare-corner-badge" hidden>0</span></button></div></header>
       <div class="content" id="overview">
         <div class="intro"><div><div class="eyebrow">Paper command centre</div><h2>Observe. Validate. Protect.</h2><p>A safe visual foundation for your future Bybit and Binance trading platform.</p></div><div class="intro-note">Public market feeds and the risk engine are connected. Execution remains paper-only and approval-gated.</div></div>
         <section class="metrics"><article class="card"><div class="metric-label">Paper equity</div><div class="metric-value" id="account-equity-value">$10,000.00</div><div class="small neutral" id="account-equity-note">Starting balance</div></article><article class="card"><div class="metric-label">Available balance</div><div class="metric-value" id="available-balance-value">$8,420.50</div><div class="small" id="available-balance-note">15.8% allocated · waiting for active P&amp;L</div></article><article class="card"><div class="metric-label">Paper P&amp;L</div><div class="metric-value positive" id="account-pnl-value">+$184.20</div><div class="small positive" id="account-pnl-note">Session result</div></article><article class="card"><div class="metric-label">Drawdown</div><div class="metric-value">2.1%</div><div class="small">Within 10% limit</div></article></section>
@@ -66,7 +68,6 @@
           <article class="card paper-state" id="paper-state"><div class="panel-title"><h3>Paper execution state</h3><span id="paper-equity-value">$10,000.00 equity</span></div><div class="state-grid"><div><div class="small">Open positions · live paper P&amp;L</div><div class="state-list" id="open-positions-list"><div class="state-empty">No open paper positions.</div></div></div><div><div class="small">Closed paper trades · realized P&amp;L</div><div class="state-list" id="paper-history-list"><div class="state-empty">No closed paper trades.</div></div></div></div></article>
           <article class="card wide" id="agents"><div class="panel-title"><h3>Animal agent room</h3><span>Event-driven service states</span></div><div class="agents"><div class="agent"><div class="animal">🦝</div><div><h4>Raccoon · Evidence scout</h4><p>Collecting public evidence</p><span class="status">● Working</span></div></div><div class="agent"><div class="animal">🦅</div><div><h4>Eagle · Signal dispatcher</h4><p>Waiting for confirmation</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦉</div><div><h4>Hawk · Chart examiner</h4><p>Reviewing structure and momentum</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦁</div><div><h4>Lion · Risk commander</h4><p>Hard limits enforced</p><span class="status">● Supervising</span></div></div><div class="agent"><div class="animal">🐆</div><div><h4>Cheetah · Paper execution</h4><p>No live orders permitted</p><span class="status">● Standby</span></div></div><div class="agent"><div class="animal">🐇</div><div><h4>Hare · Notifications</h4><p>All alerts delivered</p><span class="status">● Ready</span></div></div></div><section class="agent-consult" aria-label="On-demand agent review"><label for="agent-consult-select">Review with</label><select id="agent-consult-select"><option value="local">Local paper agents · read-only</option><option value="gemini">Gemini AI · on-demand</option></select><button id="agent-consult-button" type="button">Run review</button><span id="agent-consult-status" role="status">Select an agent to review the current public-market chart.</span><p class="agent-consult-privacy">Gemini receives only the selected symbol, interval, public ticker, and recent public candles when you press Run review. No API key, account details, or orders are sent.</p><div id="agent-consult-result" class="agent-consult-result" aria-live="polite" hidden></div></section><div class="behavior-summary" id="behavior-summary"><div class="behavior-summary-head"><strong>Behavior gate</strong><span>Monitoring</span></div><p>Waiting for the next public-candle evaluation.</p><div class="behavior-gates"></div></div></article>
           <article class="card" id="intelligence"><div class="panel-title"><h3>Trader intelligence</h3><span>Public sources only</span></div><ul class="feed"><li><b>Candidate review</b> · Sample size is being checked<time>Raccoon · 09:42</time></li><li><b>Signal rejected</b> · Risk-to-reward below policy<time>Owl · 09:36</time></li><li><b>Verification pending</b> · Source limitations recorded<time>Raccoon · 09:28</time></li></ul></article>
-          <article class="card" id="activity"><div class="panel-title"><h3>Activity feed</h3><span>Latest events</span></div><ul class="feed"><li><b>Paper mode active</b> · No exchange order submitted<time>System · 09:45</time></li><li><b>BTCUSDT monitored</b> · Entry conditions incomplete<time>Owl · 09:41</time></li><li><b>Risk policy healthy</b> · New entries remain restricted<time>Lion · 09:40</time></li></ul></article>
         </section>
       </div>
       <div class="footer">Python-served paper application · Capital preservation first · No financial advice</div>
@@ -267,6 +268,17 @@
     }
     let popupNotificationsEnabled = localStorage.getItem('trading-bot-popup-notifications') !== 'false';
     const seenNotifications = new Set();
+    let unreadHareNotifications = 0;
+    let knownActivityKeys = null;
+    const dispatchedActivityKeys = new Set();
+    function activityKey(item) { return `${item.timestamp || ''}:${item.type || ''}:${item.order_id || ''}:${item.symbol || ''}:${item.agent || ''}`; }
+    function updateHareBadge() {
+      const badge = document.getElementById('hare-corner-badge');
+      if (!badge) return;
+      badge.hidden = unreadHareNotifications === 0;
+      badge.textContent = unreadHareNotifications > 99 ? '99+' : String(unreadHareNotifications);
+      document.getElementById('hare-corner-toggle')?.setAttribute('aria-label', unreadHareNotifications ? `Open Hare news and activity, ${unreadHareNotifications} unread` : 'Open Hare news and activity');
+    }
     function addNotification(title, message, level = 'info') {
       const list = document.getElementById('notification-list');
       if (!list) return;
@@ -274,30 +286,119 @@
       if (seenNotifications.has(key)) return;
       seenNotifications.add(key);
       const item = document.createElement('div'); item.className = `notification-item ${level}`;
-      item.innerHTML = `<strong>${title}</strong> · ${message}<time>Hare · ${new Date().toLocaleTimeString()}</time>`;
+      item.innerHTML = `<strong>${escapePaperHtml(title)}</strong> · ${escapePaperHtml(message)}<time>Hare · ${new Date().toLocaleTimeString()}</time>`;
       list.prepend(item);
-      while (list.children.length > 8) list.lastElementChild.remove();
+      while (list.children.length > 30) list.lastElementChild.remove();
+      if (!document.getElementById('hare-corner-panel')?.classList.contains('open')) unreadHareNotifications += 1;
+      updateHareBadge();
       const toast = document.getElementById('notification-toast');
-      if (popupNotificationsEnabled && toast) { toast.className = `notification-toast ${level}`; toast.innerHTML = `<strong>${title}</strong><span>${message}</span>`; toast.hidden = false; clearTimeout(window.notificationToastTimer); window.notificationToastTimer = setTimeout(() => { toast.hidden = true; }, 5000); }
+      if (popupNotificationsEnabled && toast && !document.getElementById('hare-corner-panel')?.classList.contains('open')) { toast.className = `notification-toast ${level}`; toast.innerHTML = `<strong>${escapePaperHtml(title)}</strong><span>${escapePaperHtml(message)}</span>`; toast.hidden = false; clearTimeout(window.notificationToastTimer); window.notificationToastTimer = setTimeout(() => { toast.hidden = true; }, 5000); }
     }
     function renderNotificationSetting() {
       const button = document.getElementById('notification-toggle');
-      if (button) { button.textContent = popupNotificationsEnabled ? 'Corner popups: ON' : 'Corner popups: OFF'; button.setAttribute('aria-pressed', String(popupNotificationsEnabled)); }
+      if (button) { button.textContent = popupNotificationsEnabled ? 'Popups on' : 'Popups off'; button.setAttribute('aria-pressed', String(popupNotificationsEnabled)); }
     }
     function addNotificationSection() {
-      if (document.getElementById('hare-notifications')) return;
-      const agents = document.getElementById('agents'); if (!agents) return;
-      const card = document.createElement('article'); card.className = 'card wide'; card.id = 'hare-notifications';
-      card.innerHTML = '<div class="panel-title"><h3>Hare notifications</h3><span>Alert center</span></div><div class="hare-notifications"><div class="notification-toolbar"><span class="small">Alerts remain here when corner popups are off.</span><button class="notification-toggle" id="notification-toggle" type="button"></button></div><div class="notification-list" id="notification-list"></div></div>';
-      agents.parentNode.insertBefore(card, agents.nextSibling);
-      document.getElementById('notification-toggle').addEventListener('click', () => { popupNotificationsEnabled = !popupNotificationsEnabled; localStorage.setItem('trading-bot-popup-notifications', String(popupNotificationsEnabled)); renderNotificationSetting(); addNotification('Popup setting changed', popupNotificationsEnabled ? 'Corner alerts are enabled.' : 'Corner alerts are off; alerts remain in this notification bar.', 'warn'); });
-      addNotification('Hare ready', 'Notifications will appear here.', 'info'); renderNotificationSetting();
+      if (document.getElementById('hare-corner-panel')) return;
+      const panel = document.createElement('section');
+      panel.className = 'hare-corner-panel';
+      panel.id = 'hare-corner-panel';
+      panel.setAttribute('aria-label', 'Hare notifications and activity');
+      panel.innerHTML = '<div class="hare-corner-head"><strong>Hare · News desk</strong><button class="notification-toggle" id="notification-toggle" type="button" aria-pressed="true"></button></div><div class="hare-feed-tabs" role="tablist" aria-label="Hare feed views"><button class="hare-feed-tab active" type="button" role="tab" aria-selected="true" data-hare-feed="alerts">News</button><button class="hare-feed-tab" type="button" role="tab" aria-selected="false" data-hare-feed="activity">Activity</button></div><div class="hare-feed-view active" id="notification-list" role="tabpanel" data-hare-view="alerts"><div class="hare-feed-empty">Hare is ready. New alerts will appear here.</div></div><div class="hare-feed-view" id="hare-activity-list" role="tabpanel" data-hare-view="activity"><div class="hare-feed-empty">Loading recent activity…</div></div>';
+      document.querySelector('.main').appendChild(panel);
+      const toggle = document.getElementById('hare-corner-toggle');
+      const setOpen = open => {
+        panel.classList.toggle('open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        if (open) { unreadHareNotifications = 0; updateHareBadge(); }
+      };
+      toggle.addEventListener('click', () => setOpen(!panel.classList.contains('open')));
+      document.addEventListener('click', event => {
+        if (!panel.contains(event.target) && !toggle.contains(event.target)) setOpen(false);
+      });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') setOpen(false); });
+      document.getElementById('notification-toggle').addEventListener('click', () => {
+        popupNotificationsEnabled = !popupNotificationsEnabled;
+        localStorage.setItem('trading-bot-popup-notifications', String(popupNotificationsEnabled));
+        renderNotificationSetting();
+      });
+      document.querySelectorAll('[data-hare-feed]').forEach(button => button.addEventListener('click', () => {
+        document.querySelectorAll('[data-hare-feed]').forEach(tab => {
+          const active = tab === button;
+          tab.classList.toggle('active', active);
+          tab.setAttribute('aria-selected', String(active));
+        });
+        document.querySelectorAll('[data-hare-view]').forEach(view => view.classList.toggle('active', view.dataset.hareView === button.dataset.hareFeed));
+      }));
+      document.getElementById('hare-nav-link')?.addEventListener('click', event => {
+        event.preventDefault();
+        setOpen(true);
+        document.querySelector('[data-hare-feed="activity"]').click();
+      });
+      document.getElementById('hare-activity-list').addEventListener('click', event => {
+        const activity = event.target.closest('[data-hare-activity]');
+        if (!activity) return;
+        const record = JSON.parse(activity.dataset.hareActivity);
+        paperDetailItems = [{title:record.order_id || record.symbol || record.type || 'Activity', record}];
+        showPaperDetail(0);
+      });
+      renderNotificationSetting();
+      updateHareBadge();
+    }
+    function describeHareActivity(item) {
+      const symbol = item.symbol ? ` ${item.symbol}` : '';
+      const side = item.side ? ` ${String(item.side).toUpperCase()}` : '';
+      if (item.type === 'position_opened') return {title:`Position opened ·${symbol}${side}`, message:`Paper order ${item.order_id || ''} opened at ${paperDisplayValue(item.entry_price)}.`, level:'info'};
+      if (item.type === 'position_closed') return {title:`Position closed ·${symbol}${side}`, message:`${item.exit_reason || 'Closed'} · ${signedMoney(item.realized_pnl || 0)} realized P&L.`, level:Number(item.realized_pnl) >= 0 ? 'info' : 'alert'};
+      if (item.type === 'paper_rejected') return {title:`Risk gate ·${symbol}`, message:item.reason || item.code || 'Paper signal rejected by risk controls.', level:'warn'};
+      if (item.type === 'agent_analysis' && item.status === 'failed') return {title:`Agent issue ·${symbol}`, message:item.reason || `${item.agent || 'Agent'} review failed.`, level:'warn'};
+      return null;
+    }
+    function syncHareActivity(records) {
+      const allActivity = Array.isArray(records) ? records : [];
+      const routineCount = allActivity.filter(item => item.type === 'monitor' || item.type === 'duplicate_signal').length;
+      const activity = allActivity.filter(item => item.type !== 'monitor' && item.type !== 'duplicate_signal').slice(-30).reverse();
+      const list = document.getElementById('hare-activity-list');
+      if (!list) return;
+      if (!activity.length) {
+        list.innerHTML = '<div class="hare-feed-empty">No notable paper activity has been recorded yet.</div>';
+      } else {
+        list.innerHTML = activity.map(item => {
+          const type = String(item.type || 'activity');
+          const title = type.replace(/_/g, ' ');
+          const summary = item.reason || item.exit_reason || item.status || item.side || item.agent || 'Paper activity recorded.';
+          const meta = [item.symbol, item.order_id, item.timestamp ? new Date(item.timestamp).toLocaleString() : ''].filter(Boolean).join(' · ');
+          return `<button class="hare-activity-item ${escapePaperHtml(type)}" type="button" data-hare-activity="${escapePaperHtml(JSON.stringify(item))}"><span class="hare-activity-title">${escapePaperHtml(title)}</span> · ${escapePaperHtml(summary)}<div class="hare-activity-meta">${escapePaperHtml(meta)}</div></button>`;
+        }).join('');
+      }
+      if (routineCount) {
+        const summary = document.createElement('div');
+        summary.className = 'hare-feed-empty';
+        summary.textContent = `${routineCount} routine monitor/duplicate checks grouped to keep Hare’s feed focused.`;
+        list.prepend(summary);
+      }
+      const currentKeys = new Set(activity.map(activityKey));
+      if (knownActivityKeys === null) {
+        knownActivityKeys = currentKeys;
+        return;
+      }
+      for (const item of activity) {
+        const key = activityKey(item);
+        if (!knownActivityKeys.has(key) && !dispatchedActivityKeys.has(key)) {
+          const notification = describeHareActivity(item);
+          if (notification) {
+            addNotification(notification.title, notification.message, notification.level);
+            dispatchedActivityKeys.add(key);
+          }
+        }
+      }
+      knownActivityKeys = currentKeys;
     }
     function addPaperDock() {
       if (document.getElementById('paper-dock')) return;
       const orderPanel = document.querySelector('.order-panel'); if (!orderPanel) return;
       const dock = document.createElement('article'); dock.className = 'paper-dock'; dock.id = 'paper-dock';
-      dock.innerHTML = '<div class="paper-dock-head"><div class="paper-dock-title"><h3>Paper Trading</h3><span class="paper-dock-live">● PAPER MODE</span></div><span class="small">Active positions and account activity</span><button class="paper-dock-toggle" id="paper-dock-toggle" type="button" aria-expanded="true">Collapse</button></div><div class="paper-dock-body"><div class="paper-dock-account" id="paper-dock-account"><span>Equity <strong>—</strong></span><span>Realized P&amp;L <strong>—</strong></span><span>Unrealized P&amp;L <strong>—</strong></span><span>Available funds <strong>—</strong></span><span>Margin buffer <strong>100%</strong></span></div><div class="paper-dock-tabs" role="tablist" aria-label="Paper trading views"><button class="paper-dock-tab active" data-dock-tab="positions" role="tab" type="button">Positions</button><button class="paper-dock-tab" data-dock-tab="orders" role="tab" type="button">Orders</button><button class="paper-dock-tab" data-dock-tab="history" role="tab" type="button">Order history</button><button class="paper-dock-tab" data-dock-tab="balance" role="tab" type="button">Balance history</button><button class="paper-dock-tab" data-dock-tab="activity" role="tab" type="button">Activity log</button><button class="paper-dock-tab" data-dock-tab="trades" role="tab" type="button">Trade history</button><button class="paper-dock-tab" data-dock-tab="analytics" role="tab" type="button">Analytics</button></div><div class="paper-dock-panel" id="paper-dock-panel" role="tabpanel"><div class="paper-dock-empty">Loading active paper positions…</div></div></div>';
+      dock.innerHTML = '<div class="paper-dock-head"><div class="paper-dock-title"><h3>Paper Trading</h3><span class="paper-dock-live">● PAPER MODE</span></div><span class="small">Active positions and account activity</span><button class="paper-dock-toggle" id="paper-dock-toggle" type="button" aria-expanded="true">Collapse</button></div><div class="paper-dock-body"><div class="paper-dock-account" id="paper-dock-account"><span>Equity <strong>—</strong></span><span>Realized P&amp;L <strong>—</strong></span><span>Unrealized P&amp;L <strong>—</strong></span><span>Available funds <strong>—</strong></span><span>Margin buffer <strong>100%</strong></span></div><div class="paper-dock-tabs" role="tablist" aria-label="Paper trading views"><button class="paper-dock-tab active" data-dock-tab="positions" role="tab" type="button">Positions</button><button class="paper-dock-tab" data-dock-tab="orders" role="tab" type="button">Orders</button><button class="paper-dock-tab" data-dock-tab="history" role="tab" type="button">Order history</button><button class="paper-dock-tab" data-dock-tab="balance" role="tab" type="button">Balance history</button><button class="paper-dock-tab" data-dock-tab="trades" role="tab" type="button">Trade history</button><button class="paper-dock-tab" data-dock-tab="analytics" role="tab" type="button">Analytics</button></div><div class="paper-dock-panel" id="paper-dock-panel" role="tabpanel"><div class="paper-dock-empty">Loading active paper positions…</div></div></div>';
       orderPanel.parentNode.insertBefore(dock, orderPanel);
       const dialog = document.createElement('dialog'); dialog.id = 'paper-detail-dialog'; dialog.className = 'paper-detail-dialog';
       dialog.innerHTML = '<div class="paper-detail-head"><h3 id="paper-detail-title">Paper record details</h3><button class="paper-detail-close" type="button" aria-label="Close paper details">Close</button></div><div class="paper-detail-content"><dl id="paper-detail-list"></dl></div>';
@@ -414,14 +515,6 @@
           paperColumn('Equity', item => money(item.equity)),
           paperColumn('Change', item => ({text:signedMoney(item.change), className:Number(item.change) >= 0 ? 'positive' : 'negative'})),
         ], 'No balance history yet. Equity changes are recorded when paper trades close.');
-      } else if (tab === 'activity') {
-        renderPaperTable((data.activity || []).slice().reverse(), [
-          paperColumn('Time', item => new Date(item.timestamp).toLocaleString()),
-          paperColumn('Event', item => String(item.type || 'event').replace(/_/g, ' ')),
-          paperColumn('Symbol', item => item.symbol || '—', 'paper-dock-symbol'),
-          paperColumn('Order ID', item => item.order_id || '—'),
-          paperColumn('Details', item => item.reason || item.exit_reason || item.code || item.side || 'Select row for full details'),
-        ], 'No paper activity has been recorded yet.');
       } else if (tab === 'analytics') {
         const analytics = data.analytics || {};
         renderPaperDetailButtons([
@@ -463,6 +556,7 @@
     }
     function renderTradeDock(data) {
       const account = data.account_summary || {}; const accountBar = document.getElementById('paper-dock-account'); const panel = document.getElementById('paper-dock-panel'); if (!accountBar || !panel) return;
+      syncHareActivity(data.activity);
       const pnl = Number(account.unrealized_pnl || 0); const color = pnl >= 0 ? 'positive' : 'negative'; const marginBuffer = Number(account.equity) > 0 ? Math.max(0, Number(account.available_balance) / Number(account.equity) * 100) : 0; accountBar.innerHTML = `<span>Equity <strong>${money(account.equity)}</strong></span><span>Realized P&amp;L <strong class="${Number(account.realized_pnl) >= 0 ? 'positive' : 'negative'}">${signedMoney(account.realized_pnl)}</strong></span><span>Unrealized P&amp;L <strong class="${color}">${signedMoney(pnl)}</strong></span><span>Available funds <strong>${money(account.available_balance)}</strong></span><span>Margin buffer <strong>${marginBuffer.toFixed(1)}%</strong></span>`;
       const activeTab = document.querySelector('.paper-dock-tab.active')?.dataset.dockTab || 'positions';
       renderPaperDockData(activeTab, data);
