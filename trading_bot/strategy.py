@@ -42,3 +42,22 @@ class MovingAverageCrossStrategy:
         if previous_fast >= previous_slow and current_fast < current_slow:
             return Signal.SHORT
         return Signal.HOLD
+
+    def pullback_signal(self, candles: list[Candle]) -> Signal:
+        """Return a continuation signal when price recovers the fast average in-trend."""
+        closes = [candle.close for candle in candles]
+        if len(closes) < self.slow_period + 1:
+            return Signal.HOLD
+        current_fast = moving_average(closes, self.fast_period)
+        current_slow = moving_average(closes, self.slow_period)
+        previous_fast = moving_average(closes[:-1], self.fast_period)
+        previous_slow = moving_average(closes[:-1], self.slow_period)
+        if None in (current_fast, current_slow, previous_fast, previous_slow):
+            return Signal.HOLD
+        if current_fast > current_slow and previous_fast > previous_slow:
+            if closes[-2] <= previous_fast and closes[-1] > current_fast and closes[-1] > closes[-2]:
+                return Signal.LONG
+        if current_fast < current_slow and previous_fast < previous_slow:
+            if closes[-2] >= previous_fast and closes[-1] < current_fast and closes[-1] < closes[-2]:
+                return Signal.SHORT
+        return Signal.HOLD

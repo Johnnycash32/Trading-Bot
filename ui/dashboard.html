@@ -29,11 +29,15 @@
   </style>
   <style>
     .behavior-summary{border-top:1px solid #292930;margin-top:14px;padding-top:12px}.behavior-summary-head{align-items:center;display:flex;gap:10px;justify-content:space-between}.behavior-summary-head strong{color:#f5f5f7;font-size:.78rem}.behavior-summary-head span{color:#16b979;font-size:.68rem;font-weight:800;text-transform:uppercase}.behavior-summary p{color:#a5a5af;font-size:.7rem;margin:7px 0}.behavior-gates{display:flex;flex-wrap:wrap;gap:6px}.behavior-gate{background:#1a1a20;border:1px solid #2e2e37;border-radius:99px;color:#c4c4cc;font-size:.63rem;padding:4px 7px}.behavior-gate.warn{border-color:#765a2d;color:#e2b85c}.behavior-gate.block{border-color:#713640;color:#ef7d8b}.copy-control{align-items:center;display:flex;gap:9px}.copy-toggle{background:#262630;border:1px solid #3b3b47;border-radius:4px;color:#d8d8df;font-size:.68rem;font-weight:800;padding:7px 10px}.copy-toggle.on{background:#155a49;border-color:#16b979}.copy-notice{color:#d8ae5d;font-size:.68rem;margin:8px 0}.active-copy-table{overflow:auto}.active-copy-table table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.active-copy-table th{color:#858591;font-weight:600;text-align:left}.active-copy-table td,.active-copy-table th{border-bottom:1px solid #292930;padding:9px 7px;white-space:nowrap}.active-copy-table td strong{color:#f5f5f7}.active-copy-table .positive{color:#16b979}.active-copy-table .negative{color:#ed4053}
+    .agent-consult{border-top:1px solid #292930;display:grid;gap:8px;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;margin-top:14px;padding-top:12px}.agent-consult label{color:#aaaab4;font-size:.7rem}.agent-consult select,.agent-consult button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#eeeef1;font-size:.7rem;padding:8px}.agent-consult button{background:#155a49;border-color:#18765e;font-weight:800}.agent-consult button:disabled{cursor:wait;opacity:.65}.agent-consult [role=status]{color:#a5a5af;font-size:.68rem;grid-column:1/-1}.agent-consult-privacy,.agent-consult-result{color:#858591;font-size:.67rem;grid-column:1/-1;margin:0}.agent-consult-result{background:#17171d;border:1px solid #30303a;border-radius:4px;color:#d9d9e0;line-height:1.6;padding:11px;white-space:pre-wrap}.agent-consult-result[hidden]{display:none}
+    @media(max-width:600px){.agent-consult{grid-template-columns:1fr}.agent-consult [role=status],.agent-consult-privacy,.agent-consult-result{grid-column:1}}
   </style>
   <style>
     .copy-toggle{color:#e7c873}.copy-toggle.on{color:#b9f1d8}.active-copy-table{max-height:340px;overflow:auto}.active-copy-table .copy-profile{color:#d9a8ff}.active-copy-table .copy-exchange{color:#6fd7e8}.active-copy-table .copy-mode{color:#e7c873}.active-copy-table .copy-long{color:#16b979;font-weight:800}.active-copy-table .copy-short{color:#ed4053;font-weight:800}.copy-table-tools{align-items:center;display:flex;gap:5px;margin-left:auto}.copy-tool-button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.72rem;padding:6px 8px}.copy-tool-button.active{background:#303044;color:#fff}.copy-search{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px 8px;width:145px}.copy-search.visible{display:block}.copy-sort{background:#17171d;border:1px solid #444451;border-radius:4px;color:#eee;display:none;font-size:.68rem;padding:6px}.copy-sort.visible{display:block}.lion-qualified{color:#16b979;font-size:.65rem;font-weight:800}.hare-notifications{display:grid;gap:12px}.notification-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between}.notification-toggle{background:#22222a;border:1px solid #3a3a46;border-radius:4px;color:#b8c7ff;font-size:.67rem;padding:6px 9px}.notification-list{display:grid;gap:7px}.notification-item{background:#17171e;border-left:3px solid #6aa8ff;border-radius:3px;color:#c9c9d2;font-size:.72rem;padding:8px 10px}.notification-item.warn{border-left-color:#e7c873}.notification-item.alert{border-left-color:#ed4053}.notification-item time{color:#858591;display:block;font-size:.62rem;margin-top:3px}.notification-toast{background:#17171e;border:1px solid #4a4a57;border-left:4px solid #6aa8ff;border-radius:7px;box-shadow:0 18px 45px rgba(0,0,0,.45);color:#f5f5f7;max-width:330px;padding:12px 14px;position:fixed;right:20px;top:20px;z-index:20}.notification-toast.warn{border-left-color:#e7c873}.notification-toast.alert{border-left-color:#ed4053}.notification-toast strong{display:block;font-size:.75rem}.notification-toast span{color:#c9c9d2;display:block;font-size:.7rem;margin-top:3px}
     .private-position-table{max-height:250px;overflow:auto}.private-position-table table{border-collapse:collapse;font-size:.68rem;min-width:720px;width:100%}.private-position-table td,.private-position-table th{border-bottom:1px solid #292930;padding:8px;text-align:left;white-space:nowrap}.private-position-table th{color:#858591}.private-monitor-note{color:#9c9ca7;font-size:.7rem;margin:0 0 10px}.private-monitor-note strong{color:#e7c873}
-    .paper-dock{background:#0d0d10;border:1px solid #292930;border-radius:7px;grid-column:1/-1;overflow:hidden}.paper-dock.collapsed .paper-dock-body{display:none}.paper-dock-head{align-items:center;background:#151519;border-bottom:1px solid #292930;display:flex;gap:12px;padding:10px 12px}.paper-dock-title{align-items:center;display:flex;gap:8px;margin-right:auto}.paper-dock-title h3{font-size:.82rem;margin:0}.paper-dock-live{color:#16b979;font-size:.64rem;font-weight:800}.paper-dock-toggle{background:#25252d;border:1px solid #444451;border-radius:4px;color:#e7c873;font-size:.68rem;font-weight:800;padding:6px 11px}.paper-dock-account{align-items:center;background:#18181e;border-bottom:1px solid #292930;display:flex;gap:20px;overflow:auto;padding:10px 12px;white-space:nowrap}.paper-dock-account span{color:#9696a2;font-size:.66rem}.paper-dock-account strong{color:#eee;font-size:.72rem;margin-left:5px}.paper-dock-account .positive{color:#16b979}.paper-dock-account .negative{color:#ed4053}.paper-dock-tabs{display:flex;gap:5px;padding:10px 12px 0}.paper-dock-tab{background:#202027;border:0;border-radius:14px;color:#b7b7c2;font-size:.68rem;padding:7px 11px}.paper-dock-tab.active{background:#f1f1f3;color:#111116}.paper-dock-panel{min-height:115px;overflow:auto;padding:8px 12px 14px}.paper-dock-panel table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.paper-dock-panel th{color:#858591;font-weight:600;text-align:left}.paper-dock-panel td,.paper-dock-panel th{border-bottom:1px solid #24242a;padding:8px 7px;white-space:nowrap}.paper-dock-empty{color:#858591;font-size:.72rem;padding:16px 4px}.paper-dock-note{color:#9c9ca7;font-size:.68rem;margin:7px 4px}.paper-dock-symbol{color:#6fd7e8;font-weight:800}.paper-dock-long{color:#16b979;font-weight:800}.paper-dock-short{color:#ed4053;font-weight:800}
+    .paper-dock{background:#0d0d10;border:1px solid #292930;border-radius:7px;grid-column:1/-1;overflow:hidden}.paper-dock.collapsed .paper-dock-body{display:none}.paper-dock-head{align-items:center;background:#151519;border-bottom:1px solid #292930;display:flex;gap:12px;padding:10px 12px}.paper-dock-title{align-items:center;display:flex;gap:8px;margin-right:auto}.paper-dock-title h3{font-size:.82rem;margin:0}.paper-dock-live{color:#16b979;font-size:.64rem;font-weight:800}.paper-dock-toggle{background:#25252d;border:1px solid #444451;border-radius:4px;color:#e7c873;font-size:.68rem;font-weight:800;padding:6px 11px}.paper-dock-account{align-items:center;background:#18181e;border-bottom:1px solid #292930;display:flex;gap:20px;overflow:auto;padding:10px 12px;white-space:nowrap}.paper-dock-account span{color:#9696a2;font-size:.66rem}.paper-dock-account strong{color:#eee;font-size:.72rem;margin-left:5px}.paper-dock-account .positive{color:#16b979}.paper-dock-account .negative{color:#ed4053}.paper-dock-tabs{display:flex;gap:5px;padding:10px 12px 0}.paper-dock-tab{background:#202027;border:0;border-radius:14px;color:#b7b7c2;font-size:.68rem;padding:7px 11px}.paper-dock-tab.active{background:#f1f1f3;color:#111116}    .paper-dock-panel{max-height:min(42vh,360px);min-height:115px;overflow:auto;overscroll-behavior:contain;padding:8px 12px 14px}.paper-dock-panel table{border-collapse:collapse;font-size:.68rem;min-width:760px;width:100%}.paper-dock-panel th{color:#858591;font-weight:600;text-align:left}.paper-dock-panel td,.paper-dock-panel th{border-bottom:1px solid #24242a;padding:8px 7px;white-space:nowrap}.paper-dock-empty{color:#858591;font-size:.72rem;padding:16px 4px}.paper-dock-note{color:#9c9ca7;font-size:.68rem;margin:7px 4px}.paper-dock-symbol{color:#6fd7e8;font-weight:800}.paper-dock-long{color:#16b979;font-weight:800}.paper-dock-short{color:#ed4053;font-weight:800}
+    .paper-detail-row{cursor:pointer}.paper-detail-row:hover,.paper-detail-row:focus{background:#1b1b22;outline:1px solid #565667;outline-offset:-1px}.paper-detail-button{align-items:center;background:#17171d;border:1px solid #292930;border-radius:4px;color:#eeeef1;cursor:pointer;display:flex;font-size:.72rem;justify-content:space-between;padding:10px;width:100%}.paper-detail-button:hover,.paper-detail-button:focus{background:#22222b;outline:1px solid #6aa8ff}.paper-detail-dialog{background:#111116;border:1px solid #454550;border-radius:8px;color:#eeeef1;max-height:min(80vh,700px);max-width:620px;padding:0;width:calc(100% - 32px)}.paper-detail-dialog::backdrop{background:rgba(0,0,0,.72)}.paper-detail-head{align-items:center;border-bottom:1px solid #292930;display:flex;justify-content:space-between;padding:14px 18px}.paper-detail-head h3{font-size:.9rem;margin:0}.paper-detail-close{background:#262630;border:1px solid #3b3b47;border-radius:4px;color:#eeeef1;padding:5px 9px}.paper-detail-content{max-height:calc(80vh - 60px);overflow:auto;padding:8px 18px 16px}.paper-detail-content dl{display:grid;grid-template-columns:minmax(120px, .7fr) 1.3fr;margin:0}.paper-detail-content dt,.paper-detail-content dd{border-bottom:1px solid #26262d;font-size:.72rem;margin:0;padding:9px 5px;overflow-wrap:anywhere}.paper-detail-content dt{color:#9696a2}.paper-detail-content dd{color:#f1f1f4;white-space:pre-wrap}
+    .paper-position-toolbar{align-items:center;display:flex;gap:8px;justify-content:space-between;margin:0 0 8px}.paper-close-button{background:#292027;border:1px solid #713640;border-radius:4px;color:#ff9da7;font-size:.67rem;font-weight:800;padding:6px 9px}.paper-close-button:hover:not(:disabled){background:#46232b}.paper-close-button:disabled{cursor:not-allowed;opacity:.42}.paper-close-all{background:#48252d}.paper-close-note{color:#92929d;font-size:.66rem}
   </style>
 </head>
 <body>
@@ -60,7 +64,7 @@
           <article class="card order-panel"><div class="panel-title"><h3>Trade ticket</h3><span>Auto-trading OFF</span></div><div class="order-form"><div class="order-tabs"><span class="active">Limit</span><span>Market</span><span>Conditional</span></div><div class="order-input">Available <strong>0.0034 USDT</strong></div><div class="order-input">Price (USDT) <strong>104.420</strong></div><div class="order-input">Order value <strong>USDT ⇄</strong></div><div class="checks"><label><input type="checkbox" /> TP/SL</label><label><input type="checkbox" /> Post-Only</label><label><input type="checkbox" /> Reduce-Only</label></div><div class="trade-buttons"><button class="long" type="button" onclick="alert('Paper approval required. No live order was submitted.')">Long</button><button class="short" type="button" onclick="alert('Paper approval required. No live order was submitted.')">Short</button></div><div class="order-note">The Python risk engine must approve a paper order before a future exchange adapter can act. Large trades will require separate approval.</div></div></article>
           <article class="card" id="positions"><div class="panel-title"><h3>Risk commander</h3><span>Policy status</span></div><div class="risk-row"><div class="risk-head"><span>Daily loss limit</span><b>18%</b></div><div class="bar"><span class="safe" style="width:18%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Open-position risk</span><b>34%</b></div><div class="bar"><span style="width:34%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Margin utilisation</span><b>42%</b></div><div class="bar"><span class="warn" style="width:42%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Auto-trading</span><b class="neutral">OFF</b></div><div class="small">Analysis and monitoring can continue.</div></div></article>
           <article class="card paper-state" id="paper-state"><div class="panel-title"><h3>Paper execution state</h3><span id="paper-equity-value">$10,000.00 equity</span></div><div class="state-grid"><div><div class="small">Open positions · live paper P&amp;L</div><div class="state-list" id="open-positions-list"><div class="state-empty">No open paper positions.</div></div></div><div><div class="small">Closed paper trades · realized P&amp;L</div><div class="state-list" id="paper-history-list"><div class="state-empty">No closed paper trades.</div></div></div></div></article>
-          <article class="card wide" id="agents"><div class="panel-title"><h3>Animal agent room</h3><span>Event-driven service states</span></div><div class="agents"><div class="agent"><div class="animal">🦝</div><div><h4>Raccoon · Evidence scout</h4><p>Collecting public evidence</p><span class="status">● Working</span></div></div><div class="agent"><div class="animal">🦅</div><div><h4>Eagle · Signal dispatcher</h4><p>Waiting for confirmation</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦉</div><div><h4>Hawk · Chart examiner</h4><p>Reviewing structure and momentum</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦁</div><div><h4>Lion · Risk commander</h4><p>Hard limits enforced</p><span class="status">● Supervising</span></div></div><div class="agent"><div class="animal">🐆</div><div><h4>Cheetah · Paper execution</h4><p>No live orders permitted</p><span class="status">● Standby</span></div></div><div class="agent"><div class="animal">🐇</div><div><h4>Hare · Notifications</h4><p>All alerts delivered</p><span class="status">● Ready</span></div></div></div><div class="behavior-summary" id="behavior-summary"><div class="behavior-summary-head"><strong>Behavior gate</strong><span>Monitoring</span></div><p>Waiting for the next public-candle evaluation.</p><div class="behavior-gates"></div></div></article>
+          <article class="card wide" id="agents"><div class="panel-title"><h3>Animal agent room</h3><span>Event-driven service states</span></div><div class="agents"><div class="agent"><div class="animal">🦝</div><div><h4>Raccoon · Evidence scout</h4><p>Collecting public evidence</p><span class="status">● Working</span></div></div><div class="agent"><div class="animal">🦅</div><div><h4>Eagle · Signal dispatcher</h4><p>Waiting for confirmation</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦉</div><div><h4>Hawk · Chart examiner</h4><p>Reviewing structure and momentum</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦁</div><div><h4>Lion · Risk commander</h4><p>Hard limits enforced</p><span class="status">● Supervising</span></div></div><div class="agent"><div class="animal">🐆</div><div><h4>Cheetah · Paper execution</h4><p>No live orders permitted</p><span class="status">● Standby</span></div></div><div class="agent"><div class="animal">🐇</div><div><h4>Hare · Notifications</h4><p>All alerts delivered</p><span class="status">● Ready</span></div></div></div><section class="agent-consult" aria-label="On-demand agent review"><label for="agent-consult-select">Review with</label><select id="agent-consult-select"><option value="local">Local paper agents · read-only</option><option value="gemini">Gemini AI · on-demand</option></select><button id="agent-consult-button" type="button">Run review</button><span id="agent-consult-status" role="status">Select an agent to review the current public-market chart.</span><p class="agent-consult-privacy">Gemini receives only the selected symbol, interval, public ticker, and recent public candles when you press Run review. No API key, account details, or orders are sent.</p><div id="agent-consult-result" class="agent-consult-result" aria-live="polite" hidden></div></section><div class="behavior-summary" id="behavior-summary"><div class="behavior-summary-head"><strong>Behavior gate</strong><span>Monitoring</span></div><p>Waiting for the next public-candle evaluation.</p><div class="behavior-gates"></div></div></article>
           <article class="card" id="intelligence"><div class="panel-title"><h3>Trader intelligence</h3><span>Public sources only</span></div><ul class="feed"><li><b>Candidate review</b> · Sample size is being checked<time>Raccoon · 09:42</time></li><li><b>Signal rejected</b> · Risk-to-reward below policy<time>Owl · 09:36</time></li><li><b>Verification pending</b> · Source limitations recorded<time>Raccoon · 09:28</time></li></ul></article>
           <article class="card" id="activity"><div class="panel-title"><h3>Activity feed</h3><span>Latest events</span></div><ul class="feed"><li><b>Paper mode active</b> · No exchange order submitted<time>System · 09:45</time></li><li><b>BTCUSDT monitored</b> · Entry conditions incomplete<time>Owl · 09:41</time></li><li><b>Risk policy healthy</b> · New entries remain restricted<time>Lion · 09:40</time></li></ul></article>
         </section>
@@ -69,6 +73,53 @@
     </main>
   </div>
   <script>
+    async function setupAgentConsult() {
+      const selector = document.getElementById('agent-consult-select');
+      const button = document.getElementById('agent-consult-button');
+      const status = document.getElementById('agent-consult-status');
+      const result = document.getElementById('agent-consult-result');
+      try {
+        const response = await fetch('/api/agents');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Agent availability could not be loaded.');
+        const gemini = data.gemini;
+        const geminiOption = selector.querySelector('option[value="gemini"]');
+        if (geminiOption) {
+          geminiOption.disabled = !gemini.configured;
+          geminiOption.textContent = gemini.configured ? `Gemini AI · ${gemini.model}` : 'Gemini AI · configure GEMINI_API_KEY in .env';
+        }
+        status.textContent = gemini.configured
+          ? `Gemini is ready (${gemini.model}). Reviews run only when requested.`
+          : 'Gemini is not configured. Add GEMINI_API_KEY to the local .env file.';
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          result.hidden = true;
+          status.textContent = 'Reviewing the selected market with public data…';
+          try {
+            const agent = selector.value;
+            const endpoint = agent === 'gemini' ? '/api/agents/gemini/analyze' : '/api/agents/local/analyze';
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({exchange:selectedExchange, symbol:primarySymbol, interval:selectedInterval}),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Agent review failed.');
+            result.textContent = `${data.agent}${data.model ? ` · ${data.model}` : ''} · ${data.symbol} · ${data.exchange}\n\n${data.analysis}\n\nDescriptive analysis only. It does not create, approve, or submit orders.`;
+            result.hidden = false;
+            status.textContent = 'Review complete. The result is recorded in Paper Trading → Activity log.';
+            addNotification(`${data.agent} review complete`, `${data.symbol} · read-only analysis`, 'info');
+            loadPaperState();
+          } catch (error) {
+            status.textContent = error.message;
+          } finally {
+            button.disabled = false;
+          }
+        });
+      } catch (error) {
+        status.textContent = `Agent availability unavailable: ${error.message}`;
+      }
+    }
     async function loadPaperStatus() {
       const status = document.getElementById('connection-status');
       try {
@@ -187,21 +238,173 @@
       const dock = document.createElement('article'); dock.className = 'paper-dock'; dock.id = 'paper-dock';
       dock.innerHTML = '<div class="paper-dock-head"><div class="paper-dock-title"><h3>Paper Trading</h3><span class="paper-dock-live">● PAPER MODE</span></div><span class="small">Active positions and account activity</span><button class="paper-dock-toggle" id="paper-dock-toggle" type="button" aria-expanded="true">Collapse</button></div><div class="paper-dock-body"><div class="paper-dock-account" id="paper-dock-account"><span>Equity <strong>—</strong></span><span>Realized P&amp;L <strong>—</strong></span><span>Unrealized P&amp;L <strong>—</strong></span><span>Available funds <strong>—</strong></span><span>Margin buffer <strong>100%</strong></span></div><div class="paper-dock-tabs" role="tablist" aria-label="Paper trading views"><button class="paper-dock-tab active" data-dock-tab="positions" role="tab" type="button">Positions</button><button class="paper-dock-tab" data-dock-tab="orders" role="tab" type="button">Orders</button><button class="paper-dock-tab" data-dock-tab="history" role="tab" type="button">Order history</button><button class="paper-dock-tab" data-dock-tab="balance" role="tab" type="button">Balance history</button><button class="paper-dock-tab" data-dock-tab="activity" role="tab" type="button">Activity log</button><button class="paper-dock-tab" data-dock-tab="trades" role="tab" type="button">Trade history</button><button class="paper-dock-tab" data-dock-tab="analytics" role="tab" type="button">Analytics</button></div><div class="paper-dock-panel" id="paper-dock-panel" role="tabpanel"><div class="paper-dock-empty">Loading active paper positions…</div></div></div>';
       orderPanel.parentNode.insertBefore(dock, orderPanel);
+      const dialog = document.createElement('dialog'); dialog.id = 'paper-detail-dialog'; dialog.className = 'paper-detail-dialog';
+      dialog.innerHTML = '<div class="paper-detail-head"><h3 id="paper-detail-title">Paper record details</h3><button class="paper-detail-close" type="button" aria-label="Close paper details">Close</button></div><div class="paper-detail-content"><dl id="paper-detail-list"></dl></div>';
+      document.body.appendChild(dialog);
+      dialog.querySelector('.paper-detail-close').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+      const panel = document.getElementById('paper-dock-panel');
+      panel.addEventListener('click', async event => {
+        const closeButton = event.target.closest('[data-paper-close], [data-paper-close-all]');
+        if (closeButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          await closePaperPositions(closeButton.dataset.paperClose || null, closeButton.hasAttribute('data-paper-close-all'));
+          return;
+        }
+        const row = event.target.closest('[data-paper-detail]');
+        if (row) showPaperDetail(Number(row.dataset.paperDetail));
+      });
+      panel.addEventListener('keydown', event => { const row = event.target.closest('[data-paper-detail]'); if (row && !event.target.closest('button') && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); showPaperDetail(Number(row.dataset.paperDetail)); } });
       document.getElementById('paper-dock-toggle').addEventListener('click', () => { const collapsed = dock.classList.toggle('collapsed'); const button = document.getElementById('paper-dock-toggle'); button.textContent = collapsed ? 'Expand' : 'Collapse'; button.setAttribute('aria-expanded', String(!collapsed)); });
       document.querySelectorAll('[data-dock-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-dock-tab]').forEach(item => item.classList.toggle('active', item === button)); renderTradeDockTab(button.dataset.dockTab); }));
     }
-    function renderTradeDockTab(tab) {
+    let autoCopyEnabled = false;
+    let paperDetailItems = [];
+    function escapePaperHtml(value) { return String(value ?? '—').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
+    function paperDisplayValue(value) { return typeof value === 'number' ? value.toLocaleString(undefined, {maximumFractionDigits:8}) : String(value ?? '—'); }
+    function paperDetailValue(value) { return value && typeof value === 'object' ? JSON.stringify(value, null, 2) : paperDisplayValue(value); }
+    function paperColumn(label, value, className = '') { return {label, value, className}; }
+    function renderPaperTable(records, columns, emptyMessage, options = {}) {
       const panel = document.getElementById('paper-dock-panel'); if (!panel) return;
-      const messages = {orders:'No paper orders are currently pending.', history:'Paper order history will appear here after a risk-approved simulation.', balance:'Balance history records paper equity and available-funds changes.', activity:'Market monitoring, risk gates, and Hare notifications remain active.', trades:'Closed paper trades and realized P&L will appear here.', analytics:'Analytics will summarize copied-trade performance after more paper history is collected.'};
-      if (tab !== 'positions') { panel.innerHTML = `<div class="paper-dock-empty">${messages[tab] || messages.activity}</div>`; return; }
-      panel.innerHTML = '<div class="paper-dock-empty">Loading active paper positions…</div>';
+      paperDetailItems = records.map(record => ({title: record.order_id || record.symbol || record.type || record.label || 'Paper record', record}));
+      if (!records.length) { panel.innerHTML = `<div class="paper-dock-empty">${escapePaperHtml(emptyMessage)}</div>`; return; }
+      const rows = records.map((record, index) => {
+        const cells = columns.map(column => {
+          const rendered = column.value(record);
+          const cell = typeof rendered === 'object' && rendered !== null ? rendered : {text: rendered};
+          return `<td class="${escapePaperHtml(cell.className || column.className)}">${escapePaperHtml(cell.text)}</td>`;
+        }).join('');
+        const action = options.closePositions
+          ? `<td><button class="paper-close-button" type="button" data-paper-close="${escapePaperHtml(record.order_id)}" ${autoCopyEnabled ? 'disabled title="Turn off auto-copy before manually closing positions"' : 'title="Close using a fresh best bid or ask from a public exchange feed"'}>Close</button></td>`
+          : '';
+        return `<tr class="paper-detail-row" data-paper-detail="${index}" tabindex="0" role="button" aria-label="Show details for ${escapePaperHtml(paperDetailItems[index].title)}">${cells}${action}</tr>`;
+      }).join('');
+      const toolbar = options.closePositions
+        ? `<div class="paper-position-toolbar"><span class="paper-close-note">${autoCopyEnabled ? 'Turn off auto-copy to enable manual closing.' : 'Position P&amp;L uses the latest paper candle mark and may be delayed. Manual closes use a fresh close-side bid/ask quote, with exchange failover; no close occurs if both feeds are stale or unavailable.'}</span><button class="paper-close-button paper-close-all" type="button" data-paper-close-all ${autoCopyEnabled ? 'disabled title="Turn off auto-copy before manually closing positions"' : 'title="Close all open paper positions using fresh public quotes"'}>Close all trades (${records.length})</button></div>`
+        : '';
+      panel.innerHTML = `${toolbar}<table><thead><tr>${columns.map(column => `<th>${escapePaperHtml(column.label)}</th>`).join('')}${options.closePositions ? '<th>Action</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    async function closePaperPositions(orderId, closeAll) {
+      if (autoCopyEnabled) {
+        addNotification('Manual close unavailable', 'Turn off auto-copy before manually closing paper positions.', 'warn');
+        return;
+      }
+      const message = closeAll
+        ? 'Close all open paper trades using fresh public bid/ask quotes? If neither exchange has a fresh quote for any position, none will be closed.'
+        : `Close paper trade ${orderId} using a fresh public bid/ask quote? If both exchange feeds are stale or unavailable, the position will remain open.`;
+      if (!window.confirm(message)) return;
+      try {
+        const response = await fetch('/api/paper/close', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(closeAll ? {all: true} : {order_id: orderId}),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not close the paper position.');
+        addNotification('Paper position closed', data.message, 'alert');
+        await renderTradeDockTab('positions');
+      } catch (error) {
+        addNotification('Paper close failed', error.message, 'alert');
+      }
+    }
+    function renderPaperDetailButtons(records) {
+      const panel = document.getElementById('paper-dock-panel'); if (!panel) return;
+      paperDetailItems = records;
+      panel.innerHTML = `<div class="state-list">${records.map((item, index) => `<button class="paper-detail-button" type="button" data-paper-detail="${index}"><span>${escapePaperHtml(item.title)}</span><b>${escapePaperHtml(item.value)}</b></button>`).join('')}</div>`;
+    }
+    function renderPaperDockData(tab, data) {
+      if (tab === 'positions') {
+        renderPaperTable(data.open_positions || [], [
+          paperColumn('Symbol', item => item.symbol, 'paper-dock-symbol'),
+          paperColumn('Side', item => ({text:String(item.side).toUpperCase(), className:item.side === 'long' ? 'paper-dock-long' : 'paper-dock-short'})),
+          paperColumn('Entry', item => paperDisplayValue(item.entry_price)),
+          paperColumn('Mark · paper candle', item => paperDisplayValue(item.mark_price)),
+          paperColumn('Size', item => paperDisplayValue(item.quantity)),
+          paperColumn('Unrealized P&L · paper mark', item => ({text:signedMoney(item.unrealized_pnl), className:Number(item.unrealized_pnl) >= 0 ? 'positive' : 'negative'})),
+          paperColumn('Stop / Target', item => `${paperDisplayValue(item.stop_loss)} / ${paperDisplayValue(item.take_profit)}`),
+        ], 'No open paper positions.', {closePositions: true});
+      } else if (tab === 'orders') {
+        renderPaperTable((data.orders || []).slice().reverse(), [
+          paperColumn('Order ID', item => item.order_id),
+          paperColumn('Symbol', item => item.symbol, 'paper-dock-symbol'),
+          paperColumn('Side', item => ({text:String(item.side).toUpperCase(), className:item.side === 'long' ? 'paper-dock-long' : 'paper-dock-short'})),
+          paperColumn('Entry', item => paperDisplayValue(item.entry_price)),
+          paperColumn('Stop / Target', item => `${paperDisplayValue(item.stop_loss)} / ${paperDisplayValue(item.take_profit)}`),
+          paperColumn('Size', item => paperDisplayValue(item.quantity)),
+          paperColumn('Status', item => item.status),
+        ], 'No paper orders have been generated.');
+      } else if (tab === 'history' || tab === 'trades') {
+        const trades = (data.trade_history || []).slice().reverse();
+        renderPaperTable(trades, [
+          paperColumn('Order ID', item => item.order_id),
+          paperColumn('Symbol', item => item.symbol, 'paper-dock-symbol'),
+          paperColumn('Side', item => ({text:String(item.side).toUpperCase(), className:item.side === 'long' ? 'paper-dock-long' : 'paper-dock-short'})),
+          paperColumn('Entry', item => paperDisplayValue(item.entry_price)),
+          paperColumn('Exit', item => paperDisplayValue(item.exit_price)),
+          paperColumn('Size', item => paperDisplayValue(item.quantity)),
+          paperColumn('Realized P&L', item => ({text:signedMoney(item.realized_pnl), className:Number(item.realized_pnl) >= 0 ? 'positive' : 'negative'})),
+          paperColumn('Status', item => item.status),
+        ], 'No completed paper trades yet.');
+      } else if (tab === 'balance') {
+        renderPaperTable((data.balance_history || []).slice().reverse(), [
+          paperColumn('Time', item => new Date(item.timestamp).toLocaleString()),
+          paperColumn('Event', item => item.label),
+          paperColumn('Equity', item => money(item.equity)),
+          paperColumn('Change', item => ({text:signedMoney(item.change), className:Number(item.change) >= 0 ? 'positive' : 'negative'})),
+        ], 'No balance history yet. Equity changes are recorded when paper trades close.');
+      } else if (tab === 'activity') {
+        renderPaperTable((data.activity || []).slice().reverse(), [
+          paperColumn('Time', item => new Date(item.timestamp).toLocaleString()),
+          paperColumn('Event', item => String(item.type || 'event').replace(/_/g, ' ')),
+          paperColumn('Symbol', item => item.symbol || '—', 'paper-dock-symbol'),
+          paperColumn('Order ID', item => item.order_id || '—'),
+          paperColumn('Details', item => item.reason || item.exit_reason || item.code || item.side || 'Select row for full details'),
+        ], 'No paper activity has been recorded yet.');
+      } else if (tab === 'analytics') {
+        const analytics = data.analytics || {};
+        renderPaperDetailButtons([
+          {title:'Total closed trades', value:analytics.total_trades || 0, record:{metric:'Total closed trades', value:analytics.total_trades || 0, note:'Count of closed paper positions.'}},
+          {title:'Win rate', value:`${((analytics.win_rate || 0) * 100).toFixed(1)}%`, record:{metric:'Win rate', value:analytics.win_rate || 0, wins:analytics.wins || 0, losses:analytics.losses || 0, note:'Descriptive historical ratio, not a probability of future profit.'}},
+          {title:'Realized P&L', value:signedMoney(analytics.realized_pnl || 0), record:{metric:'Realized P&L', value:analytics.realized_pnl || 0}},
+          {title:'Average trade', value:signedMoney(analytics.average_pnl || 0), record:{metric:'Average trade', value:analytics.average_pnl || 0}},
+          {title:'Best trade', value:signedMoney(analytics.best_trade || 0), record:{metric:'Best trade', value:analytics.best_trade || 0}},
+          {title:'Worst trade', value:signedMoney(analytics.worst_trade || 0), record:{metric:'Worst trade', value:analytics.worst_trade || 0}},
+        ]);
+      } else {
+        const panel = document.getElementById('paper-dock-panel'); if (panel) panel.innerHTML = '<div class="paper-dock-empty">No paper data for this tab.</div>';
+      }
+    }
+    function showPaperDetail(index) {
+      const item = paperDetailItems[index]; const dialog = document.getElementById('paper-detail-dialog'); const list = document.getElementById('paper-detail-list');
+      if (!item || !dialog || !list) return;
+      document.getElementById('paper-detail-title').textContent = `Paper detail · ${item.title}`;
+      list.replaceChildren();
+      Object.entries(item.record || {}).forEach(([key, value]) => {
+        const label = document.createElement('dt'); label.textContent = key.replace(/_/g, ' ');
+        const detail = document.createElement('dd'); detail.textContent = paperDetailValue(value);
+        list.append(label, detail);
+      });
+      if (!dialog.open) dialog.showModal();
+    }
+    async function renderTradeDockTab(tab) {
+      const panel = document.getElementById('paper-dock-panel'); if (!panel) return;
+      panel.innerHTML = '<div class="paper-dock-empty">Loading paper data…</div>';
+      try {
+        const response = await fetch('/api/paper/state');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Paper state unavailable');
+        renderTradeDock(data);
+        if (document.querySelector('.paper-dock-tab.active')?.dataset.dockTab === tab) renderPaperDockData(tab, data);
+      } catch (error) {
+        panel.innerHTML = `<div class="paper-dock-empty">Could not load paper data: ${escapePaperHtml(error.message)}</div>`;
+      }
     }
     function renderTradeDock(data) {
       const account = data.account_summary || {}; const accountBar = document.getElementById('paper-dock-account'); const panel = document.getElementById('paper-dock-panel'); if (!accountBar || !panel) return;
-      const pnl = Number(account.unrealized_pnl || 0); const color = pnl >= 0 ? 'positive' : 'negative'; accountBar.innerHTML = `<span>Equity <strong>${money(account.equity)}</strong></span><span>Realized P&amp;L <strong class="positive">${signedMoney(account.realized_pnl)}</strong></span><span>Unrealized P&amp;L <strong class="${color}">${signedMoney(pnl)}</strong></span><span>Available funds <strong class="${color}">${money(account.available_balance)}</strong></span><span>Margin buffer <strong>100%</strong></span>`;
-      const activeTab = document.querySelector('.paper-dock-tab.active')?.dataset.dockTab || 'positions'; if (activeTab !== 'positions') return;
-      const rows = data.accounts.flatMap(item => item.positions.map(position => { const positionPnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'paper-dock-long' : 'paper-dock-short'; return `<tr><td><strong>${item.display_name}</strong><br><span class="small">${item.exchange}</span></td><td class="paper-dock-symbol">${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${positionPnl >= 0 ? 'positive' : 'negative'}">${signedMoney(positionPnl)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
-      panel.innerHTML = rows ? `<table><thead><tr><th>Account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="paper-dock-empty">No active copied positions.</div>';
+      const pnl = Number(account.unrealized_pnl || 0); const color = pnl >= 0 ? 'positive' : 'negative'; const marginBuffer = Number(account.equity) > 0 ? Math.max(0, Number(account.available_balance) / Number(account.equity) * 100) : 0; accountBar.innerHTML = `<span>Equity <strong>${money(account.equity)}</strong></span><span>Realized P&amp;L <strong class="${Number(account.realized_pnl) >= 0 ? 'positive' : 'negative'}">${signedMoney(account.realized_pnl)}</strong></span><span>Unrealized P&amp;L <strong class="${color}">${signedMoney(pnl)}</strong></span><span>Available funds <strong>${money(account.available_balance)}</strong></span><span>Margin buffer <strong>${marginBuffer.toFixed(1)}%</strong></span>`;
+      const activeTab = document.querySelector('.paper-dock-tab.active')?.dataset.dockTab || 'positions';
+      renderPaperDockData(activeTab, data);
     }
     function renderBehavior(behavior) {
       const summary = document.getElementById('behavior-summary');
@@ -267,7 +470,16 @@
         anchor.parentNode.insertBefore(card, anchor.nextSibling);
       } catch (_) {}
     }
-    async function loadTradeDock() { try { const response = await fetch('/api/copy/active'); const data = await response.json(); if (response.ok) renderTradeDock(data); } catch (_) {} }
+    async function loadTradeDock() {
+      try {
+        const response = await fetch('/api/paper/state'); const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Paper state unavailable');
+        renderTradeDock(data);
+      } catch (error) {
+        const panel = document.getElementById('paper-dock-panel');
+        if (panel) panel.innerHTML = `<div class="paper-dock-empty">Could not refresh paper data: ${escapePaperHtml(error.message)}</div>`;
+      }
+    }
     async function loadActiveCopy(force = false) {
       const anchor = document.getElementById('copy-lab') || document.getElementById('intelligence');
       if (!anchor || (!force && document.getElementById('active-copy'))) return;
@@ -276,7 +488,8 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Active copy data unavailable');
         const control = data.control;
-        renderTradeDock(data);
+        autoCopyEnabled = control.auto_trade_enabled;
+        if (document.querySelector('.paper-dock-tab.active')?.dataset.dockTab === 'positions') renderTradeDockTab('positions');
         const copiedTrade = data.accounts.flatMap(account => account.positions.map(position => ({account, position})))[0];
         if (control.auto_trade_enabled && copiedTrade) displayCopiedTrade(copiedTrade.account, copiedTrade.position);
         document.getElementById('active-copy')?.remove();
@@ -289,7 +502,7 @@
         const copyToggle = document.getElementById('copy-toggle'); copyToggle.textContent = control.auto_trade_enabled ? 'Disable auto-copy' : 'Enable auto-copy'; copyToggle.title = control.auto_trade_enabled ? 'Pause new copies and request closing active copied positions' : 'Enable new paper copies after confirmation'; copyToggle.setAttribute('aria-label', copyToggle.title);
         document.getElementById('copy-toggle').addEventListener('click', async () => {
           const enabled = !document.getElementById('copy-toggle').classList.contains('on');
-          const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop and a close request will be created for active copied positions. Monitoring will continue.';
+          const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop. Existing positions remain open and can then be closed manually.';
           if (!window.confirm(message)) return;
           const update = await fetch('/api/copy/control', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
           if (update.ok) { const result = await update.json(); addNotification(enabled ? 'Auto-copy enabled' : 'Close request created', result.control.last_action, enabled ? 'warn' : 'alert'); await loadActiveCopy(true); }
@@ -330,7 +543,12 @@
         open.innerHTML = data.open_positions.length ? data.open_positions.map(position => `<div class="state-row"><span>${position.symbol} · ${position.side.toUpperCase()}</span><b class="${position.unrealized_pnl >= 0 ? 'positive' : 'negative'}">${position.unrealized_pnl >= 0 ? '+' : ''}${Number(position.unrealized_pnl).toFixed(2)}</b></div>`).join('') : '<div class="state-empty">No open paper positions.</div>';
         const history = document.getElementById('paper-history-list');
         history.innerHTML = data.history.length ? data.history.slice().reverse().map(position => `<div class="state-row"><span>${position.symbol} · ${position.side.toUpperCase()} · ${position.status}</span><b class="${position.realized_pnl >= 0 ? 'positive' : 'negative'}">${position.realized_pnl >= 0 ? '+' : ''}${Number(position.realized_pnl).toFixed(2)}</b></div>`).join('') : '<div class="state-empty">No closed paper trades.</div>';
-      } catch (_) {}
+        renderTradeDock(data);
+      } catch (error) {
+        document.getElementById('open-positions-list').innerHTML = `<div class="state-empty">Paper state unavailable: ${escapePaperHtml(error.message)}</div>`;
+        document.getElementById('paper-history-list').innerHTML = '<div class="state-empty">Paper state unavailable.</div>';
+        addNotification('Paper state unavailable', error.message, 'alert');
+      }
       loadAccountSummary();
     }
     function money(value) { return '$' + Number(value).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
@@ -339,9 +557,9 @@
       try {
         const response = await fetch('/api/account/summary'); const data = await response.json(); if (!response.ok) return;
         const pnl = Number(data.unrealized_pnl || 0); const balance = document.getElementById('available-balance-value'); const balanceNote = document.getElementById('available-balance-note'); const equity = document.getElementById('account-equity-value'); const equityNote = document.getElementById('account-equity-note'); const pnlValue = document.getElementById('account-pnl-value'); const pnlNote = document.getElementById('account-pnl-note');
-        balance.textContent = money(data.available_balance); balance.className = 'metric-value ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : ''); balanceNote.textContent = `Active copied P&L ${signedMoney(pnl)} · updates every 5s`; balanceNote.className = 'small ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral');
+        balance.textContent = money(data.available_balance); balance.className = 'metric-value ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : ''); balanceNote.textContent = `Paper funds available · updates every 5s`; balanceNote.className = 'small neutral';
         equity.textContent = money(data.equity); equityNote.textContent = `Realized ${signedMoney(data.realized_pnl)} · unrealized ${signedMoney(pnl)}`; equityNote.className = 'small ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral');
-        pnlValue.textContent = signedMoney(pnl); pnlValue.className = 'metric-value ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral'); pnlNote.textContent = 'Live paper copy result'; pnlNote.className = 'small ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral');
+        pnlValue.textContent = signedMoney(pnl); pnlValue.className = 'metric-value ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral'); pnlNote.textContent = 'Paper account P&L'; pnlNote.className = 'small ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : 'neutral');
       } catch (_) {}
     }
     function setIndicatorVisibility() { document.querySelectorAll('[data-indicator]').forEach(item => { item.hidden = !selectedIndicators.has(item.dataset.indicator); }); ['sma-overlay','ema-overlay','bollinger-overlay','vwap-overlay'].forEach(id => { document.getElementById(id).hidden = !selectedIndicators.has(id.replace('-overlay','')); }); }
@@ -375,7 +593,7 @@
     document.querySelectorAll('.drawing-tools button').forEach(button => button.addEventListener('click', () => { const title = button.title; if (title === 'Delete drawings') { drawings = []; renderDrawings(); document.getElementById('chart-tool-status').textContent = 'Drawings cleared'; return; } if (title === 'Toggle visibility') { drawingsVisible = !drawingsVisible; drawingCanvas.style.opacity = drawingsVisible ? '1' : '0'; document.getElementById('chart-tool-status').textContent = drawingsVisible ? 'Drawings visible' : 'Drawings hidden'; return; } if (title === 'Lock drawings') { drawingsLocked = !drawingsLocked; document.getElementById('chart-tool-status').textContent = drawingsLocked ? 'Drawings locked' : 'Drawings unlocked'; return; } drawingTool = title; document.querySelectorAll('.drawing-tools button').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.getElementById('chart-tool-status').textContent = title + ' selected'; }));
     document.querySelector('.drawing-tools button').classList.add('active');
     document.querySelectorAll('.chart-bottom-tools button').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
-    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); addPaperDock(); loadPaperStatus(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
+    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); addPaperDock(); loadPaperStatus(); setupAgentConsult(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
   </script>
 </body>
 </html>

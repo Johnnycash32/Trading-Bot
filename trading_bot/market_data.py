@@ -33,7 +33,7 @@ class Candle:
 
 def load_json(url: str) -> dict[str, Any]:
     request = Request(url, headers={"User-Agent": "trading-bot-paper/0.1"})
-    with urlopen(request, timeout=10) as response:
+    with urlopen(request, timeout=3) as response:
         return json.loads(response.read().decode("utf-8"))
 
 

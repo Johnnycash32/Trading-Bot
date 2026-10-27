@@ -21,6 +21,18 @@ This first implementation is deliberately paper-only. It provides:
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.
 
+Paper session orders, positions, closed trades, balance changes, and activity events are saved locally in `.paper-state.json` so they survive a server restart. This file is ignored by Git. A new session starts with the configured starting balance and no fabricated sample trades; its history fills only as paper evaluations create or close positions.
+
+Paper position management checks each candle's high and low so a target can close a simulated trade even if the candle later retraces before its close. When a trade moves favorably, a stop is advanced to lock a small net profit after estimated fees and slippage. Stop/target ambiguity within one candle is resolved conservatively in favor of the stop. Fresh moving-average crossovers and confirmed fast-average pullback recoveries can create entries, with one entry per symbol per candle, one open position per symbol, and the daily-loss and position-size risk gates still enforced. This is paper research behavior, not a profit guarantee.
+
+The Paper Trading Positions tab provides per-position and close-all controls. A manual paper close requires an exchange-timestamped quote no more than five seconds old. It prefers the position's exchange and falls back between Bybit and Binance linear futures; it uses the best bid to close a long and the best ask to close a short. A stale, missing, invalid, or unavailable quote refuses the close instead of using a saved mark. The selected quote source and timestamp are recorded in trade history and activity. Displayed unrealized P&L remains based on the most recent paper candle mark and may lag live prices; the UI labels this distinction. Manual close requests are disabled and server-rejected while auto-copy is enabled; disabling auto-copy pauses new copies without discarding open paper positions, which can then be closed manually. This is paper simulation only and is not an exchange order.
+
+## Optional Gemini agent
+
+The dashboard offers an on-demand Gemini market-analysis agent when `GEMINI_API_KEY` is present in the local `.env` file. The key stays on the server and is sent to Google's API in an HTTP header, never returned to the browser or written to paper activity. When you explicitly select Gemini and run a review, only the selected exchange, symbol, interval, public ticker, and recent public candles are sent. Reviews are descriptive only; they cannot place, approve, or trigger paper or live orders. The built-in local-agent review is read-only and does not require an API key.
+
+Set `GEMINI_MODEL` in `.env` to override the default `gemini-2.5-flash` model. Restart the server after changing the key or model.
+
 ## Safety boundary
 
 An 80% historical win rate may be used as a research filter, but it is not a promise of future profit and cannot be treated as a probability without calibration. Every candidate must be evaluated after fees, funding, spread, slippage, drawdown, sample size, and out-of-sample performance.

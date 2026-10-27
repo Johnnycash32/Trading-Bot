@@ -9,3 +9,5 @@ dist/
 build/
 *.log
 secrets/
+.paper-state.json
+.paper-state.json.tmp

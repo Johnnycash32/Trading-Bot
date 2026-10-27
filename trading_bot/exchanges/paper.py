@@ -15,6 +15,11 @@ class PaperExchange(ExchangeAdapter):
     def __init__(self) -> None:
         self._orders = count(1)
 
+    def set_next_order_number(self, number: int) -> None:
+        if number < 1:
+            raise ValueError("Order numbers must be positive.")
+        self._orders = count(number)
+
     def get_ticker(self, symbol: str) -> dict[str, Any]:
         return {"symbol": symbol, "last": None, "source": "paper-placeholder"}
 
