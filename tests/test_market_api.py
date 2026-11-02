@@ -1,12 +1,15 @@
 import json
 import unittest
+from datetime import datetime, timezone
 from http.server import ThreadingHTTPServer
 from threading import Thread
 from urllib.request import urlopen
 from unittest.mock import patch
 
 from trading_bot import server
-from trading_bot.market_data import Candle, Ticker
+from trading_bot.market_data import Candle, Ticker, TwelveDataMarketData
+from trading_bot.paper_session import PaperExecutionSession
+from trading_bot.strategy import MovingAverageCrossStrategy
 
 
 class FakeMarketClient:
@@ -40,6 +43,20 @@ def sample_ticker(exchange: str = "bybit") -> Ticker:
 
 
 class MarketApiTests(unittest.TestCase):
+    def test_paper_evaluation_uses_only_candles_that_have_closed(self) -> None:
+        candles = [
+            Candle(60_000, 99, 102, 98, 101, 42),
+            Candle(120_000, 101, 103, 100, 102, 40),
+            Candle(180_000, 102, 104, 101, 103, 38),
+        ]
+
+        confirmed = server.closed_candles(candles, 60_000, now_ms=180_000)
+
+        self.assertEqual([candle.timestamp_ms for candle in confirmed], [60_000, 120_000])
+
+    def test_paper_evaluation_fails_closed_for_unknown_candle_interval(self) -> None:
+        self.assertEqual(server.closed_candles(sample_candles(), None, now_ms=1_800_000_000_000), [])
+
     def test_chart_candles_fail_over_to_other_venue(self) -> None:
         bybit = FakeMarketClient(OSError("Bybit timed out"), OSError("Bybit timed out"))
         binance = FakeMarketClient(sample_candles(), sample_ticker("binance"))
@@ -99,6 +116,134 @@ class MarketApiTests(unittest.TestCase):
                     self.assertEqual(response.status, 200)
                     self.assertEqual(payload["candles"][0]["close"], 101)
                     self.assertTrue(payload["market_data"]["ticker_unavailable"])
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
+    def test_twelve_data_chart_endpoint_routes_asset_class_and_keeps_key_private(self) -> None:
+        urls = []
+        now = datetime.now(timezone.utc)
+        timestamp = int(now.timestamp())
+
+        def loader(url):
+            urls.append(url)
+            if "/time_series?" in url:
+                return {"values": [{
+                    "datetime": now.strftime("%Y-%m-%d %H:%M:%S"),
+                    "open": "1.1", "high": "1.2", "low": "1.0", "close": "1.15", "volume": "10",
+                }]}
+            return {"close": "1.15", "timestamp": str(timestamp), "percent_change": "0.3"}
+
+        client = TwelveDataMarketData("server-only-test-key", loader)
+        with patch.object(server, "MARKET_CLIENTS", {"twelvedata": client}):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                url = f"http://127.0.0.1:{http_server.server_port}/api/market?exchange=twelvedata&symbol=EURUSD&interval=5&asset_class=forex"
+                with urlopen(url) as response:
+                    body = response.read().decode()
+                    payload = json.loads(body)
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(payload["candles"][0]["close"], 1.15)
+                    self.assertEqual(payload["ticker"]["last"], 1.15)
+                    self.assertEqual(payload["market_data"]["candle_source"], "twelvedata")
+                    self.assertNotIn("server-only-test-key", body)
+                self.assertIn("symbol=EUR%2FUSD", urls[0])
+                self.assertIn("interval=5min", urls[0])
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
+    def test_market_quote_endpoint_returns_only_normalized_quote(self) -> None:
+        bybit = FakeMarketClient(sample_candles(), sample_ticker())
+        with patch.object(server, "MARKET_CLIENTS", {"bybit": bybit}):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with urlopen(f"http://127.0.0.1:{http_server.server_port}/api/market/quote?exchange=bybit&symbol=SOLUSDT") as response:
+                    payload = json.loads(response.read())
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(payload["ticker"]["last"], 101)
+                    self.assertEqual(payload["exchange"], "bybit")
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
+    def test_twelve_data_quote_endpoint_routes_forex_and_keeps_key_private(self) -> None:
+        urls = []
+        client = TwelveDataMarketData(
+            "server-only-test-key",
+            lambda url: urls.append(url) or {"close": "1.08", "timestamp": "1735812300"},
+        )
+        with patch.object(server, "MARKET_CLIENTS", {"twelvedata": client}):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                url = f"http://127.0.0.1:{http_server.server_port}/api/market/quote?exchange=twelvedata&symbol=EURUSD&asset_class=forex"
+                with urlopen(url) as response:
+                    body = response.read().decode()
+                    payload = json.loads(body)
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(payload["ticker"]["last"], 1.08)
+                    self.assertEqual(payload["ticker"]["symbol"], "EURUSD")
+                    self.assertNotIn("server-only-test-key", body)
+                self.assertIn("symbol=EUR%2FUSD", urls[0])
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
+    def test_demo_copy_positions_hide_marks_when_public_quotes_are_stale_or_unavailable(self) -> None:
+        stale = FakeMarketClient(sample_candles(), Ticker("bybit", "BTCUSDT", 101, 100, 102, 0, 1))
+        unavailable = FakeMarketClient(sample_candles(), OSError("ticker unavailable"))
+        with patch.object(server, "MARKET_CLIENTS", {"bybit": stale, "binance": unavailable}):
+            accounts, unrealized_pnl = server.live_copy_accounts()
+
+        positions = [position for account in accounts for position in account.positions]
+        self.assertTrue(all(position.mark_price is None for position in positions))
+        self.assertTrue(all(position.unrealized_pnl is None for position in positions))
+        self.assertEqual([position.mark_status for position in positions], ["stale", "stale", "unavailable"])
+        self.assertEqual(unrealized_pnl, 0)
+
+    def test_demo_copy_positions_mark_only_fresh_public_quotes(self) -> None:
+        now = int(datetime.now(timezone.utc).timestamp() * 1000)
+        bybit = FakeMarketClient(sample_candles(), Ticker("bybit", "BTCUSDT", 80_200, 80_199, 80_201, 0, now))
+        binance = FakeMarketClient(sample_candles(), Ticker("binance", "ETHUSDT", 2_326, 2_325, 2_327, 0, now))
+        with patch.object(server, "MARKET_CLIENTS", {"bybit": bybit, "binance": binance}):
+            accounts, unrealized_pnl = server.live_copy_accounts()
+
+        positions = [position for account in accounts for position in account.positions]
+        self.assertTrue(all(position.mark_status == "live" for position in positions))
+        self.assertTrue(all(position.mark_price is not None for position in positions))
+        self.assertTrue(all(position.unrealized_pnl is not None for position in positions))
+        self.assertNotEqual(unrealized_pnl, 0)
+
+    def test_paper_scan_returns_confirmed_risk_approved_candidates_without_opening_trades(self) -> None:
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+        first_timestamp = (now_ms // 60_000 - 9) * 60_000
+        prices = [100, 100, 100, 100, 80, 80, 80, 110]
+        candles = [Candle(first_timestamp + index * 60_000, price - .5, price + 1, price - 1, price, 100) for index, price in enumerate(prices)]
+        client = FakeMarketClient(candles, sample_ticker())
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+
+        with patch.object(server, "MARKET_CLIENTS", {"bybit": client}), patch.object(server, "PAPER_SESSION", session):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with urlopen(f"http://127.0.0.1:{http_server.server_port}/api/paper/scan?exchange=bybit&interval=1&symbols=SOLUSDT") as response:
+                    payload = json.loads(response.read())
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual([item["symbol"] for item in payload["candidates"]], ["SOLUSDT"])
+                    self.assertEqual(payload["candidates"][0]["signal"], "long")
+                    self.assertEqual(session.orders, [])
+                    self.assertEqual(session.positions, [])
             finally:
                 http_server.shutdown()
                 http_server.server_close()

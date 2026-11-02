@@ -10,10 +10,32 @@ from typing import ClassVar
 
 from .behavior import BehaviorEngine
 from .market_data import Candle
-from .models import Rejection, Side, TradeProposal
+from .models import Rejection, RiskLimits, Side, TradeProposal
 from .risk import RiskEngine
 from .strategy import MovingAverageCrossStrategy, Signal
 from .exchanges.paper import PaperExchange
+
+
+POST_TARGET_RISK_LIMITS = RiskLimits(
+    risk_per_trade_percent=0.25,
+    max_daily_loss_percent=0.5,
+    max_open_positions=2,
+    max_leverage=1.0,
+    max_notional_percent=10.0,
+)
+POST_TARGET_MIN_RISK_REWARD = 2.0
+
+
+def daily_profit_target_percent(starting_balance: float) -> float:
+    if starting_balance <= 100:
+        return 10.0
+    if starting_balance <= 10_000:
+        return 10.0 + 5.0 * (starting_balance - 100) / 9_900
+    if starting_balance <= 20_000:
+        return 15.0 + 10.0 * (starting_balance - 10_000) / 10_000
+    if starting_balance <= 30_000:
+        return 25.0 + 5.0 * (starting_balance - 20_000) / 10_000
+    return 30.0
 
 
 @dataclass
@@ -77,6 +99,10 @@ class PaperExecutionSession:
         candle_timestamp_ms: int,
         order_type: str = "market",
     ) -> dict[str, object]:
+        daily_profit = self.daily_profit_status()
+        post_target = bool(daily_profit["target_met"])
+        if post_target:
+            self.apply_daily_profit_lock()
         if side not in {Side.LONG.value, Side.SHORT.value}:
             raise ValueError("Choose Long or Short.")
         if order_type not in {"market", "limit"}:
@@ -95,6 +121,8 @@ class PaperExecutionSession:
             raise ValueError("New paper entries are halted until the unresolved market-data gap is reconciled.")
 
         trade_side = Side(side)
+        pending_count = sum(order["status"] in {"pending", "data_gap"} for order in self.orders)
+        open_position_count = len(self._open_positions())
         proposal = TradeProposal(
             exchange=exchange,
             symbol=symbol,
@@ -104,16 +132,29 @@ class PaperExecutionSession:
             take_profit=take_profit,
             account_equity=self.account_equity,
             current_daily_loss=self._current_daily_loss(),
-            open_positions=len(self._open_positions()),
+            open_positions=open_position_count + pending_count if post_target else open_position_count,
             leverage=leverage,
             estimated_fee=entry_price * self.FEE_RATE * 2,
             estimated_slippage=entry_price * self.SLIPPAGE_RATE * 2,
         )
-        decision = self.risk_engine.validate(proposal)
+        risk_engine = RiskEngine(POST_TARGET_RISK_LIMITS) if post_target else self.risk_engine
+        decision = risk_engine.validate(proposal)
         if isinstance(decision, Rejection):
             self._record_event("paper_rejected", symbol=symbol, side=side, code=decision.code, reason=decision.reason)
             raise ValueError(decision.reason)
+        if post_target and decision.risk_reward_ratio < POST_TARGET_MIN_RISK_REWARD:
+            reason = (
+                f"Daily profit target reached; manual paper orders now require at least "
+                f"{POST_TARGET_MIN_RISK_REWARD:.2f} risk/reward."
+            )
+            self._record_event("paper_rejected", symbol=symbol, side=side, code="post_target_risk_reward", reason=reason)
+            raise ValueError(reason)
         if quantity > decision.quantity:
+            if post_target:
+                raise ValueError(
+                    f"Daily profit target reached; large lot rejected. The risk-approved maximum is "
+                    f"{decision.quantity:.8f} base units for the selected stop and leverage."
+                )
             raise ValueError(
                 f"Quantity exceeds the risk-approved maximum of {decision.quantity:.8f} for the selected stop and leverage."
             )
@@ -138,6 +179,7 @@ class PaperExecutionSession:
             "signal_source": "manual_paper_ticket",
             "risk_reward_ratio": decision.risk_reward_ratio,
             "maximum_loss": quantity * (abs(entry_price - stop_loss) + proposal.estimated_fee + proposal.estimated_slippage),
+            "daily_target_mode": "post_target_strict" if post_target else "standard",
         }
         self.orders.append(record)
         self._last_evaluated_candle[symbol] = max(
@@ -426,7 +468,10 @@ class PaperExecutionSession:
         return gross_pnl - round_trip_costs
 
     def _current_daily_loss(self) -> float:
-        today = datetime.now(timezone.utc).date()
+        return max(0.0, -self._current_daily_realized_pnl())
+
+    def _current_daily_realized_pnl(self, now: datetime | None = None) -> float:
+        today = (now or datetime.now(timezone.utc)).astimezone(timezone.utc).date()
         daily_pnl = 0.0
         for trade in self.history:
             closed_at = trade.get("closed_at")
@@ -438,7 +483,73 @@ class PaperExecutionSession:
                 continue
             if closed_date == today:
                 daily_pnl += float(trade.get("realized_pnl", 0.0))
-        return max(0.0, -daily_pnl)
+        return daily_pnl
+
+    def daily_profit_status(self, now: datetime | None = None) -> dict[str, object]:
+        current_time = now or datetime.now(timezone.utc)
+        today = current_time.astimezone(timezone.utc).date()
+        realized_pnl = self._current_daily_realized_pnl(current_time)
+        starting_balance = self.account_equity - realized_pnl
+        target_percent = daily_profit_target_percent(starting_balance)
+        target_amount = max(0.0, starting_balance * target_percent / 100)
+        target_reached_event = next(
+            (
+                event for event in reversed(self.events)
+                if event.get("type") == "daily_profit_target_reached" and event.get("date") == today.isoformat()
+            ),
+            None,
+        )
+        currently_at_target = starting_balance > 0 and realized_pnl >= target_amount
+        target_met = currently_at_target or target_reached_event is not None
+        return {
+            "date": today.isoformat(),
+            "starting_balance": starting_balance,
+            "realized_pnl": realized_pnl,
+            "target_percent": target_percent,
+            "target_amount": target_amount,
+            "remaining": max(0.0, target_amount - realized_pnl),
+            "target_met": target_met,
+            "currently_at_target": currently_at_target,
+            "target_reached_pnl": (
+                target_reached_event.get("realized_pnl")
+                if target_reached_event is not None
+                else realized_pnl if currently_at_target else None
+            ),
+            "basis": "realized_paper_pnl_only",
+            "guaranteed": False,
+            "manual_risk_limits": {
+                "risk_per_trade_percent": POST_TARGET_RISK_LIMITS.risk_per_trade_percent,
+                "max_daily_loss_percent": POST_TARGET_RISK_LIMITS.max_daily_loss_percent,
+                "max_open_positions": POST_TARGET_RISK_LIMITS.max_open_positions,
+                "max_leverage": POST_TARGET_RISK_LIMITS.max_leverage,
+                "max_notional_percent": POST_TARGET_RISK_LIMITS.max_notional_percent,
+                "min_risk_reward": POST_TARGET_MIN_RISK_REWARD,
+            } if target_met else None,
+        }
+
+    def apply_daily_profit_lock(self) -> bool:
+        status = self.daily_profit_status()
+        if not status["target_met"]:
+            return False
+        date = str(status["date"])
+        already_applied = any(
+            event.get("type") == "daily_profit_target_reached" and event.get("date") == date
+            for event in self.events
+        )
+        if already_applied:
+            return False
+        for order in list(self.orders):
+            if order["status"] == "pending":
+                self.cancel_pending_order(str(order["order_id"]))
+        self._record_event(
+            "daily_profit_target_reached",
+            date=date,
+            starting_balance=status["starting_balance"],
+            realized_pnl=status["realized_pnl"],
+            target_percent=status["target_percent"],
+            target_amount=status["target_amount"],
+        )
+        return True
 
     def snapshot(self, symbol: str | None = None, mark_price: float | None = None) -> dict[str, object]:
         positions = [position for position in self.positions if position["status"] == "open" and (symbol is None or position["symbol"] == symbol)]
@@ -460,6 +571,7 @@ class PaperExecutionSession:
         }
         return {
             "equity": self.account_equity,
+            "daily_profit": self.daily_profit_status(),
             "account_summary": {
                 "starting_balance": self.starting_equity,
                 "equity": self.account_equity + unrealized_pnl,
@@ -481,6 +593,10 @@ class PaperExecutionSession:
             return {"status": "hold", "reason": "No candles were supplied."}
         if interval_ms is not None and interval_ms <= 0:
             raise ValueError("Candle interval must be a positive number of milliseconds.")
+
+        daily_profit = self.daily_profit_status()
+        if daily_profit["target_met"]:
+            self.apply_daily_profit_lock()
 
         ordered_candles = sorted({candle.timestamp_ms: candle for candle in candles}.values(), key=lambda candle: candle.timestamp_ms)
         current_candle = ordered_candles[-1]
@@ -543,6 +659,9 @@ class PaperExecutionSession:
                 self._fill_pending_orders(symbol, candle)
                 self._last_evaluated_candle[symbol] = candle.timestamp_ms
         if closed:
+            daily_profit = self.daily_profit_status()
+            if daily_profit["target_met"]:
+                self.apply_daily_profit_lock()
             behavior = self.behavior_engine.assess(
                 Signal.HOLD,
                 candles,
@@ -556,6 +675,7 @@ class PaperExecutionSession:
                 "reason": "Exit completed; waiting for a fresh candle before re-entry.",
                 "behavioral": behavior.as_dict(),
                 "closed_positions": closed,
+                "daily_profit": daily_profit,
                 **self.snapshot(symbol, current_candle.close),
             }
         self._last_evaluated_candle[symbol] = current_candle.timestamp_ms
@@ -587,6 +707,22 @@ class PaperExecutionSession:
                 "reason": reason,
                 "closed_positions": [],
                 "monitoring_gap": True,
+                **self.snapshot(symbol, current_candle.close),
+            }
+        daily_profit = self.daily_profit_status()
+        if daily_profit["target_met"]:
+            self.apply_daily_profit_lock()
+            reason = (
+                f"Daily realized paper-profit target reached ({daily_profit['target_percent']:.3f}% "
+                f"of ${daily_profit['starting_balance']:.2f}). Automatic entries are paused."
+            )
+            return {
+                "status": "paused",
+                "signal": Signal.HOLD.value,
+                "code": "daily_profit_target",
+                "reason": reason,
+                "daily_profit": daily_profit,
+                "closed_positions": [],
                 **self.snapshot(symbol, current_candle.close),
             }
         signal = self.strategy.signal(candles)
@@ -639,6 +775,18 @@ class PaperExecutionSession:
             return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, entry)}
 
         behavior = self.behavior_engine.assess(signal, candles, risk_reward_ratio=decision.risk_reward_ratio, notional=decision.notional, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()))
+        if behavior.decision == "reject":
+            reason = behavior.reasons[0] if behavior.reasons else "Behavior risk gate rejected the paper entry."
+            self._record_event("paper_rejected", symbol=symbol, signal=signal.value, code="behavior_gate", reason=reason)
+            return {
+                "status": "rejected",
+                "signal": signal.value,
+                "code": "behavior_gate",
+                "reason": reason,
+                "behavioral": behavior.as_dict(),
+                "closed_positions": closed,
+                **self.snapshot(symbol, entry),
+            }
 
         order = self.exchange.submit_paper_order(proposal, decision.quantity)
         record = {

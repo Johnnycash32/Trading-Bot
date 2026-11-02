@@ -42,6 +42,8 @@ class BehaviorAssessment:
 class BehaviorEngine:
     """Turns a strategy result into an observable multi-agent decision."""
 
+    RISK_REWARD_TOLERANCE = 1e-12
+
     def __init__(self, policy: BehaviorPolicy | None = None) -> None:
         self.policy = policy or BehaviorPolicy()
 
@@ -56,7 +58,7 @@ class BehaviorEngine:
             score += 0.10
         if len(candles) >= 8:
             score += 0.10
-        if risk_reward_ratio >= 1.5:
+        if risk_reward_ratio + BehaviorEngine.RISK_REWARD_TOLERANCE >= 1.5:
             score += 0.10
         if abs(closes[-1] - closes[0]) / max(closes[0], 1e-9) >= 0.01:
             score += 0.05
@@ -84,7 +86,7 @@ class BehaviorEngine:
             reasons.append("No market evidence is available.")
         if not risk_approved:
             reasons.append(risk_reason or "Risk commander rejected the proposal.")
-        if risk_reward_ratio and risk_reward_ratio < self.policy.min_risk_reward:
+        if risk_reward_ratio and risk_reward_ratio + self.RISK_REWARD_TOLERANCE < self.policy.min_risk_reward:
             reasons.append(f"Risk/reward {risk_reward_ratio:.2f} is below {self.policy.min_risk_reward:.2f}.")
         if confidence and confidence < self.policy.min_confidence:
             reasons.append(f"Confidence {confidence:.0%} is below {self.policy.min_confidence:.0%}.")

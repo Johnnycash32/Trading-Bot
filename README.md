@@ -1,10 +1,10 @@
-# Trading Bot
+# A.Y.O. — Artificial Yielding Operative
 
-A safety-first foundation for a mobile- and desktop-compatible trading application for Bybit and Binance futures.
+AI Trading & Agent Command Centre: a safety-first, paper-first application coordinating market research, agents, risk analysis, and trading workflows.
 
 ## Current status
 
-This first implementation is deliberately paper-only. It provides:
+This is a paper-first application; production/live broker order routing is not enabled. It provides:
 
 - A shared exchange interface for Bybit and Binance adapters.
 - Explicit paper-trading models.
@@ -18,8 +18,23 @@ This first implementation is deliberately paper-only. It provides:
 - An active-copy tab showing synthetic lead accounts, positions, entry/mark prices, size, unrealized P&L, and stop/target levels.
 - A stateful auto-copy control: turning it off pauses new copies and creates a close-request event while monitoring remains active.
 - Optional read-only Bybit private-position monitoring with Lion-policy filtering; no live orders, transfers, withdrawals, or wallet scraping.
+- A broker directory with locally saved support requests and an explicitly confirmed Bybit testnet-only market-order path. Testnet orders use a dedicated testnet API key and never target the production API.
 
 The existing [Trading Bot.html](../Trading%20Bot.html) is only a visual concept. The Python package in this folder is the beginning of the real application core.
+
+## Market data coverage
+
+Public crypto adapters provide Bybit linear-futures, Binance USD-M futures, and Coinbase USD-spot data. An optional Twelve Data adapter can display mapped Forex, stock, index, commodity, and crypto symbols when a server-side API key and a plan covering the instrument, real-time/delayed status, and intended use are available. The catalog is not proof of feed coverage: exchange/provider symbol availability, plan entitlements, market hours, quotas, and licensing still apply. The adapter currently maps spot gold and silver (`XAUUSD`, `XAGUSD`); commodity futures such as `CL1!` and `GC1!` intentionally fail with a visible unsupported-mapping message. No feed is used to evaluate paper trades except the explicitly supported Bybit/Binance perpetual markets.
+
+To configure Twelve Data, add this line to the ignored local `.env` file and restart the app:
+
+~~~dotenv
+TWELVE_DATA_API_KEY=your-provider-api-key
+~~~
+
+The key is read by the Python server only, is not returned by API endpoints, and must never be pasted into the dashboard, chat, source code, or a commit. Twelve Data chart refresh is throttled to two minutes and its watchlist to five minutes to limit requests; this does not guarantee real-time data or compliance with a particular plan. Its published pricing distinguishes internal non-display access from internal display and business/external-display rights: do not use the free Basic plan for this visible chart unless Twelve Data confirms your use is permitted. Confirm the provider contract, market coverage, request allowance, and data delay for the intended personal or business use before deploying. Chart access does not grant trading permission: paper execution remains restricted to supported crypto perpetuals with separately enforced risk controls. See [Twelve Data pricing and licensing tiers](https://twelvedata.com/pricing.md).
+
+TradingView's published widget documentation describes display widgets, not an API for exporting their underlying market data. TradingView data must not be reverse-engineered or used for automated trading decisions. Official references: [TradingView policies](https://www.tradingview.com/policies/), [widget data FAQ](https://www.tradingview.com/widget-docs/faq/data/), and [widget FAQ](https://www.tradingview.com/widget-docs/faq/general/). A TradingView widget may be embedded only under its terms and does not replace a properly licensed server-side feed.
 
 Paper session orders, positions, closed trades, balance changes, and activity events are saved locally in `.paper-state.json` so they survive a server restart. This file is ignored by Git. A new session starts with the configured starting balance and no fabricated sample trades; its history fills only as paper evaluations create or close positions.
 
@@ -29,7 +44,17 @@ Paper evaluation persists the last processed candle per symbol and replays every
 
 The Paper Trading Positions tab provides per-position and close-all controls. A manual paper close requires an exchange-timestamped quote no more than five seconds old. It prefers the position's exchange and falls back between Bybit and Binance linear futures; it uses the best bid to close a long and the best ask to close a short. A stale, missing, invalid, or unavailable quote refuses the close instead of using a saved mark. The selected quote source and timestamp are recorded in trade history and activity. Displayed unrealized P&L remains based on the most recent paper candle mark and may lag live prices; the UI labels this distinction. Manual close requests are disabled and server-rejected while auto-copy is enabled; disabling auto-copy pauses new copies without discarding open paper positions, which can then be closed manually. This is paper simulation only and is not an exchange order.
 
-The chart uses public Bybit/Binance futures candles and an optional Coinbase USD-spot candle source; its feed label identifies the venue and market type, and unavailable pairs/timeframes fall back only to a supported feed. It does not use or reverse-engineer TradingView's proprietary chart services. The chart renders candle wicks/bodies, numeric price and UTC date/time axes, real per-candle base-unit volume bars, and locally calculated indicators (including Stoch RSI and daily-reset VWAP). Indicator values use the displayed candle history, not TradingView data. A ticker failure does not discard successfully loaded candles; the last candle close is shown with an explicit unavailable-ticker label. Successfully loaded chart data is cached in the browser and can be displayed during a later outage with a prominent saved/not-live warning. Cached chart data is display-only and is never used for trade evaluation or manual closes. If no exchange has supplied candles yet and no browser cache exists, the chart cannot be populated until a feed is reachable; the app reports that condition rather than fabricating market data.
+The paper session also has a daily realized-profit target lock. Its target rate is fixed at 10.00% for balances up to $100, then increases linearly to 15.00% at $10,000, 25.00% at $20,000, and 30.00% at $30,000; it remains capped at 30.00% above that balance. These are aggressive, aspirational paper targets, not realistic expectations or guaranteed returns, and must never be used to justify increasing lot size or bypassing risk controls. The target amount is calculated from the UTC day's starting paper balance and net realized paper P&L; unrealized gains do not count. When reached, the lock pauses strategy entries, disables auto-copy, cancels pre-existing pending paper entries, and stays in force for the rest of that UTC day even if later manual losses reduce realized P&L. Existing positions remain managed by the paper engine. The ticket warns that pursuing more profit will not raise the day's target. Manual paper entries remain available under stricter limits: 0.25% risk per trade, 0.5% daily loss limit, at most two open/pending entries, 1x leverage, 10% notional cap, and a minimum 2.0 net risk/reward ratio. Orders larger than the risk-approved quantity are rejected before placement. These are simulation safeguards, not a way to make trading risk-free. A network/data failure still pauses or rejects actions that require fresh data rather than fabricating a fill.
+
+The profit lock is currently tied only to this local paper account. The separate, explicitly confirmed Bybit testnet connector has no automatic trading and does not share the paper account's balance or P&L. Live real-money routing remains disabled. Any future live feature must first implement account-specific UTC-day starting equity, verified realized P&L, exchange-side protective orders, and fail-closed behavior before applying a daily target policy.
+
+The chart uses public Bybit/Binance futures candles, Coinbase USD-spot candles, or the optional Twelve Data feed described above; its label identifies the source and market type. It does not use or reverse-engineer TradingView's proprietary chart services. The chart renders candle wicks/bodies, numeric price and UTC date/time axes, volume bars only when the feed reports volume, and locally calculated indicators (including Stoch RSI and daily-reset VWAP). A market that does not report volume is labeled as such instead of displaying invented zero-volume bars. Indicator values use the displayed candle history, not TradingView data. A ticker failure does not discard successfully loaded candles; the last candle close is shown with an explicit unavailable-ticker label. Successfully loaded chart data is cached in the browser and can be displayed during a later outage with a prominent saved/not-live warning. Cached chart data is display-only and is never used for trade evaluation or manual closes. If no exchange has supplied candles yet and no browser cache exists, the chart cannot be populated until a feed is reachable; the app reports that condition rather than fabricating market data.
+
+The public lead monitor uses clearly labeled synthetic demo positions, not real exchange trader accounts. It refreshes marks from public exchange tickers, hides P&L when timestamps are stale or unavailable, and places the public and private monitors side by side on wider screens. “Draft in ticket” fetches a fresh executable-feed chart quote and pre-fills a one-times, editable paper ticket with stop/target offsets scaled from the sample position. It never submits an order; a person must inspect the values and explicitly submit the separate paper ticket. Synthetic demo profiles must not be interpreted as verified trader performance or copy recommendations.
+
+The chart's date control displays the current UTC day in `YYYY-MM-DD` while remaining in live mode until a date is explicitly selected. Zoom-in, zoom-out, and reset controls change the visible candle window without changing the candles used by paper evaluation. A bottom navigation bar links to paper trading, public-copy research/positions, the private read-only monitor, and broker connections; unavailable API-backed sections now show their error in place rather than disappearing.
+
+After a newly observed losing paper close, the dashboard scans other supported crypto pairs on the selected Bybit or Binance perpetual feed. The scan uses fully closed candles, the existing strategy, and the same paper risk/behavior gates on an isolated preview session; it does not create preview orders in saved account state. The dashboard switches to the eligible candidate with the highest behavior-engine confidence score and resumes paper evaluation. That score is a heuristic, not a calibrated probability or guarantee. If no candidate passes, automatic paper entries remain paused until a coin is manually selected. This recovery workflow is paper-only and cannot prevent losses or provide exchange-side protection.
 
 The chart-side trade ticket is paper-only. It supports immediate market simulations and candle-triggered limit simulations, editable quantity, leverage (within the risk engine's limit), stop loss, and take profit. Market entries require a fresh executable-side quote; limit fills are simulated at the limit price only after an available candle touches it. The server rejects quantities above the existing stop-based risk allowance. Pending limits can be loaded into the ticket, cancelled, edited, and submitted again. Missing candle history halts pending orders for review. These simulated stops and targets are not exchange-hosted orders, and no ticket action routes to a broker.
 
@@ -62,6 +87,24 @@ $env:BYBIT_READONLY_API_SECRET = "your-read-only-secret"
 ~~~
 
 The dashboard reads private open positions, marks them against public prices, applies the Lion risk policy, and displays only approved positions as paper-copy candidates. It never sends an order. If the key is missing, not read-only, expired, or unavailable, the monitor remains disabled or reports the error without exposing the secret.
+
+## Broker directory and Bybit testnet
+
+The Broker connections panel lists the brokers visible in the supplied TradingView screenshots, including FxPro, Bybit, Pepperstone, Kraken, Binance, and FP Markets. The Bybit entry can verify a dedicated **Bybit testnet** account and show its USDT equity. If its API key has trading permission, the panel also exposes a manually confirmed market-order form that submits only to Bybit's fixed testnet API URL. Live trading is not implemented or enabled.
+
+The app's **Step-by-step Bybit testnet setup** button walks through creating a testnet account, choosing the intended account/subaccount, creating a dedicated testnet API key, saving it locally, and verifying the connection. It copies only a placeholder template; it never asks you to enter a key in the browser.
+
+For the account you intend to use, create a Bybit **testnet** API key from that exact testnet account/subaccount, with only the permissions needed for account verification and (if desired) test orders. Never grant withdrawals, transfers, or wallet permissions. Add the values directly to the ignored local `.env` file in VS Code:
+
+~~~dotenv
+BYBIT_TESTNET_API_KEY=your-testnet-api-key
+BYBIT_TESTNET_API_SECRET=your-testnet-api-secret
+BYBIT_TESTNET_ACCOUNT_LABEL=My testnet subaccount
+~~~
+
+The app reads `.env` during each connection check, so a restart is normally unnecessary after saving. The app does not create, fund, or move money between wallets; the API key must belong to the desired broker account. The testnet connector has no production URL setting and never uses the separate `BYBIT_READONLY_API_KEY` credentials. `.env` is plain text protected by your Windows account; do not share, sync, screenshot, or commit it. Revoke the API key at Bybit if the file or computer may have been exposed.
+
+“Request support” accepts any broker name and saves the request locally in the ignored `.broker-requests.json` file. Requests are not sent to TradingView, the broker, or a remote service. A saved request does not connect an account or enable live trading; each broker needs its own separately implemented and validated adapter.
 
 ## Run the paper demo
 

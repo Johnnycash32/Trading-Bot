@@ -27,6 +27,20 @@ class MovingAverageCrossStrategy:
         self.fast_period = fast_period
         self.slow_period = slow_period
 
+    def trend_confirmed(self, candles: list[Candle], signal: Signal) -> bool:
+        """Require the slow average and last closed price to confirm a candidate direction."""
+        closes = [candle.close for candle in candles]
+        if signal is Signal.HOLD or len(closes) < self.slow_period + 1:
+            return False
+        current_fast = moving_average(closes, self.fast_period)
+        current_slow = moving_average(closes, self.slow_period)
+        previous_slow = moving_average(closes[:-1], self.slow_period)
+        if None in (current_fast, current_slow, previous_slow):
+            return False
+        if signal is Signal.LONG:
+            return current_fast > current_slow and current_slow > previous_slow and closes[-1] > closes[-2]
+        return current_fast < current_slow and current_slow < previous_slow and closes[-1] < closes[-2]
+
     def signal(self, candles: list[Candle]) -> Signal:
         closes = [candle.close for candle in candles]
         if len(closes) < self.slow_period + 1:
@@ -38,9 +52,9 @@ class MovingAverageCrossStrategy:
         if None in (current_fast, current_slow, previous_fast, previous_slow):
             return Signal.HOLD
         if previous_fast <= previous_slow and current_fast > current_slow:
-            return Signal.LONG
+            return Signal.LONG if self.trend_confirmed(candles, Signal.LONG) else Signal.HOLD
         if previous_fast >= previous_slow and current_fast < current_slow:
-            return Signal.SHORT
+            return Signal.SHORT if self.trend_confirmed(candles, Signal.SHORT) else Signal.HOLD
         return Signal.HOLD
 
     def pullback_signal(self, candles: list[Candle]) -> Signal:
@@ -56,8 +70,8 @@ class MovingAverageCrossStrategy:
             return Signal.HOLD
         if current_fast > current_slow and previous_fast > previous_slow:
             if closes[-2] <= previous_fast and closes[-1] > current_fast and closes[-1] > closes[-2]:
-                return Signal.LONG
+                return Signal.LONG if self.trend_confirmed(candles, Signal.LONG) else Signal.HOLD
         if current_fast < current_slow and previous_fast < previous_slow:
             if closes[-2] >= previous_fast and closes[-1] < current_fast and closes[-1] < closes[-2]:
-                return Signal.SHORT
+                return Signal.SHORT if self.trend_confirmed(candles, Signal.SHORT) else Signal.HOLD
         return Signal.HOLD

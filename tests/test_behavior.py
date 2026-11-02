@@ -25,6 +25,10 @@ class BehaviorTests(unittest.TestCase):
         self.assertEqual(result.decision, "reject")
         self.assertIn("Position limit", result.reasons)
 
+    def test_rounding_at_minimum_risk_reward_does_not_reject_signal(self):
+        result = BehaviorEngine().assess(Signal.LONG, self.candles(), risk_reward_ratio=1.5 - 2e-16, account_equity=10_000)
+        self.assertEqual(result.decision, "paper_simulate")
+
 
 if __name__ == "__main__":
     unittest.main()

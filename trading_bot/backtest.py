@@ -84,5 +84,19 @@ def run_backtest(candles: list[Candle], strategy: MovingAverageCrossStrategy, co
         max_drawdown = max(max_drawdown, (peak_equity - equity) / peak_equity * 100)
         position = (signal, current, equity)
 
+    if position is not None:
+        current_side, entry_candle, entry_equity = position
+        current = candles[-1]
+        entry_price = _execution_price(entry_candle.close, current_side, config.slippage_rate, True)
+        exit_price = _execution_price(current.close, current_side, config.slippage_rate, False)
+        quantity = notional / entry_price
+        gross_pnl = quantity * (exit_price - entry_price) * (1 if current_side is Signal.LONG else -1)
+        fees = notional * config.fee_rate + (quantity * exit_price * config.fee_rate)
+        net_pnl = gross_pnl - fees
+        equity += net_pnl
+        completed.append(BacktestTrade(current_side, entry_candle.timestamp_ms, current.timestamp_ms, entry_price, exit_price, notional, net_pnl))
+        peak_equity = max(peak_equity, equity)
+        max_drawdown = max(max_drawdown, (peak_equity - equity) / peak_equity * 100)
+
     wins = sum(1 for trade in completed if trade.net_pnl > 0)
     return BacktestReport(config.initial_equity, equity, equity - config.initial_equity, (equity / config.initial_equity - 1) * 100, max_drawdown, len(completed), wins, wins / len(completed) * 100 if completed else 0.0, tuple(completed))

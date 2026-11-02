@@ -1,7 +1,9 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+from datetime import datetime, timezone
 
+from trading_bot.behavior import BehaviorEngine, BehaviorPolicy
 from trading_bot.market_data import Candle
 from trading_bot.paper_session import PaperExecutionSession
 from trading_bot.strategy import MovingAverageCrossStrategy
@@ -20,6 +22,13 @@ class PaperSessionTests(unittest.TestCase):
         result = PaperExecutionSession().evaluate("bybit", "SOLUSDT", candles([100, 101]))
         self.assertEqual(result["status"], "hold")
 
+    def test_crossover_is_filtered_when_slow_average_confirms_the_opposite_trend(self) -> None:
+        strategy = MovingAverageCrossStrategy(2, 4)
+
+        signal = strategy.signal(candles([100, 80, 70, 60, 65, 68]))
+
+        self.assertEqual(signal.value, "hold")
+
     def test_crossover_creates_simulated_order(self) -> None:
         values = [100, 100, 100, 100, 80, 80, 80, 110]
         session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
@@ -27,6 +36,22 @@ class PaperSessionTests(unittest.TestCase):
         self.assertEqual(result["status"], "simulated")
         self.assertEqual(result["order"]["status"], "simulated")
         self.assertEqual(len(session.orders), 1)
+
+    def test_behavior_daily_loss_gate_blocks_paper_entry(self) -> None:
+        session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))
+        session.behavior_engine = BehaviorEngine(BehaviorPolicy(max_daily_loss_percent=1))
+        session.history.append({
+            "closed_at": datetime.now(timezone.utc).isoformat(),
+            "realized_pnl": -150,
+            "status": "closed",
+        })
+
+        result = session.evaluate("bybit", "SOLUSDT", candles([100, 100, 100, 100, 80, 80, 80, 110]))
+
+        self.assertEqual(result["status"], "rejected")
+        self.assertEqual(result["code"], "behavior_gate")
+        self.assertEqual(session.orders, [])
+        self.assertEqual(session.positions, [])
 
     def test_manual_market_ticket_creates_risk_checked_paper_position(self) -> None:
         session = PaperExecutionSession(strategy=MovingAverageCrossStrategy(2, 4))

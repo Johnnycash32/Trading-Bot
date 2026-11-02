@@ -60,11 +60,13 @@ class ActivePosition:
     symbol: str
     side: str
     entry_price: float
-    mark_price: float
+    mark_price: float | None
     quantity: float
-    unrealized_pnl: float
+    unrealized_pnl: float | None
     stop_loss: float
     take_profit: float
+    mark_status: str = "unavailable"
+    mark_timestamp_ms: int | None = None
 
 
 @dataclass(frozen=True)

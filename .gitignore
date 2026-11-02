@@ -11,3 +11,4 @@ build/
 secrets/
 .paper-state.json
 .paper-state.json.tmp
+.broker-requests.json

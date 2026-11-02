@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Trading Bot paper-trading command centre concept." />
-  <title>Trading Bot | Paper Command Centre</title>
+  <meta name="description" content="A.Y.O. Artificial Yielding Operative — AI Trading & Agent Command Centre." />
+  <title>A.Y.O. | AI Trading &amp; Agent Command Centre</title>
   <style>
     :root{--ink:#173943;--muted:#668087;--blue:#246b88;--deep:#174b68;--mint:#e2f5ef;--mint-2:#bde8d9;--paper:#f5fbfa;--white:#fff;--line:#d9ebe7;--warning:#a96816;--danger:#b64747;--shadow:0 18px 45px rgba(23,75,104,.10)}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,Arial,sans-serif;line-height:1.5}button{font:inherit;cursor:pointer}a{text-decoration:none;color:inherit}
@@ -50,6 +50,139 @@
     @media(max-width:800px){.chart-grid{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto}.chart-card{grid-column:1/-1;grid-row:1}.watchlist-card{grid-column:1;grid-row:2;max-height:370px;min-width:0}.order-panel{grid-column:2;grid-row:2;min-width:0;order:3}.chart{height:clamp(330px,52vh,560px);min-height:330px}.paper-ticket-grid{grid-template-columns:1fr}.paper-ticket-field.wide{grid-column:auto}.ticket-actions{grid-template-columns:1fr}.watchlist-row{font-size:.62rem;gap:3px;grid-template-columns:1.1fr .9fr .7fr;padding:6px 2px}.watchlist-tabs{gap:7px}.asset-summary strong{font-size:.9rem}.paper-ticket-field input,.paper-ticket-field select{font-size:.65rem;padding:7px}.ticket-actions button{font-size:.62rem;padding:8px}.order-panel.card,.watchlist-card.card{padding:10px}.order-panel .panel-title{margin:-10px -10px 8px;padding:9px 10px}.chart .drawing-overlay{pointer-events:none}.drawing-tools{pointer-events:auto}.chart-axis-date{font-size:9px}}
     @media(max-width:390px){.chart-grid{gap:5px}.watchlist-card.card,.order-panel.card{padding:7px}.watchlist-card .panel-title,.order-panel .panel-title{margin:-7px -7px 7px;padding:8px 7px}.watchlist-row{font-size:.57rem}.watchlist-row em{font-size:.54rem}.ticket-safety{font-size:.55rem}.paper-ticket-field label{font-size:.58rem}.ticket-actions button{font-size:.57rem;padding:7px 4px}.chart{height:330px;min-height:330px}.chart-bottom-tools button{padding:0 4px}.chart-tool-status{display:none}}
   </style>
+  <style>
+    .chart-grid{align-items:stretch;grid-template-columns:minmax(0,1fr) minmax(270px,30%);grid-template-rows:minmax(0,1fr)}
+    .chart-card{grid-column:1;grid-row:1;min-width:0}
+    .market-sidebar{display:grid;gap:0;grid-column:2;grid-row:1;grid-template-rows:minmax(230px,1fr) 10px minmax(200px,1fr);height:100%;min-height:0}
+    .market-sidebar .watchlist-card{align-self:stretch;height:100%;max-height:none;min-height:0}
+    .asset-details-resizer{align-items:center;background:transparent;border:0;cursor:row-resize;display:flex;justify-content:center;min-height:10px;touch-action:none}
+    .asset-details-resizer::after{background:#484852;border-radius:99px;content:"";height:3px;width:42px}
+    .asset-details-resizer:hover::after,.asset-details-resizer:focus-visible::after{background:#6aa8ff;width:58px}
+    .asset-details-resizer:focus-visible{outline:2px solid #6aa8ff;outline-offset:-2px}
+    .asset-details-card{min-height:0;overflow:auto}
+    .asset-details-head{align-items:center;display:flex;gap:9px}
+    .asset-details-name{color:#f2f2f4;font-size:.8rem;font-weight:800}
+    .asset-details-symbol{color:#8e8e99;font-size:.62rem}
+    .asset-details-quote{color:#f2f2f4;font-size:1.35rem;font-weight:850;letter-spacing:-.04em;margin:12px 0 2px}
+    .asset-details-change{font-size:.68rem;font-weight:750}
+    .asset-details-grid{display:grid;gap:8px 14px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}
+    .asset-details-grid div{display:grid;gap:2px;min-width:0}
+    .asset-details-grid dt{color:#858591;font-size:.58rem}
+    .asset-details-grid dd{color:#dedee4;font-size:.68rem;font-variant-numeric:tabular-nums;margin:0;overflow-wrap:anywhere}
+    .asset-details-note{color:#777782;font-size:.56rem;line-height:1.4;margin:12px 0 0}
+    .asset-brand-badge{align-items:center;background:color-mix(in srgb,var(--brand-color,#83838f) 16%,#15151c);border:1px solid color-mix(in srgb,var(--brand-color,#83838f) 55%,#24242b);border-radius:50%;color:var(--brand-color,#d7d7de);display:inline-flex;flex:0 0 auto;font-size:.56rem;font-weight:900;height:22px;justify-content:center;line-height:1;width:22px}
+    .asset-brand-badge.large{font-size:.75rem;height:34px;width:34px}
+    .asset-inline{align-items:center;display:inline-flex;gap:6px;min-width:0}
+    .asset-inline .asset-brand-badge{height:18px;width:18px}
+    .watchlist-card .asset-summary{margin-top:auto}
+    .paper-workspace{align-items:start;display:grid;gap:10px;grid-column:1/-1;grid-template-columns:minmax(280px,.42fr) minmax(0,1fr);min-width:0}
+    .paper-workspace>.order-panel,.paper-workspace>.paper-dock{grid-column:auto;grid-row:auto;min-width:0}
+    .paper-workspace>.paper-dock{height:100%}
+    .animal-avatar{align-items:center;background:radial-gradient(circle at 34% 24%,#353543 0,#1b1b25 50%,#111116 76%);border:1px solid color-mix(in srgb,var(--agent-glow,#6aa8ff) 45%,#292930);border-radius:16px;box-shadow:inset 0 1px 5px #ffffff18,0 8px 18px #0005;display:flex;flex:0 0 auto;height:58px;justify-content:center;overflow:hidden;perspective:120px;position:relative;width:58px}
+    .animal-avatar::after{background:radial-gradient(ellipse,#ffffff24,transparent 68%);content:"";height:34px;left:5px;pointer-events:none;position:absolute;top:3px;transform:rotate(-30deg);width:45px}
+    .animal-avatar svg{filter:drop-shadow(0 4px 3px #0008);height:50px;transform:rotateY(-7deg);width:50px}
+    .agent:nth-child(1){--agent-glow:#c38b62}.agent:nth-child(2){--agent-glow:#e9b957}.agent:nth-child(3){--agent-glow:#9c8cff}.agent:nth-child(4){--agent-glow:#e5ad49}.agent:nth-child(5){--agent-glow:#edc246}.agent:nth-child(6){--agent-glow:#f0a3c4}
+    .agent-avatar-raccoon{--agent-glow:#c38b62}.agent-avatar-eagle{--agent-glow:#e9b957}.agent-avatar-hawk{--agent-glow:#9c8cff}.agent-avatar-lion{--agent-glow:#e5ad49}.agent-avatar-cheetah{--agent-glow:#edc246}.agent-avatar-hare{--agent-glow:#f0a3c4}
+    @media(max-width:800px){
+      .content{padding-left:0;padding-right:0}
+      .intro{margin-left:0;margin-right:0}
+      .metrics{margin-left:0;margin-right:0}
+      .dashboard{width:100%}
+      .chart-grid{gap:0;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto}
+      .chart-grid>.chart-card{border-left:0;border-radius:0;border-right:0;grid-column:1;grid-row:1;margin:0;min-width:0;width:100%}
+      .chart-grid>.market-sidebar{grid-column:1;grid-row:2;grid-template-rows:auto 10px minmax(220px,auto);height:auto;min-height:0}
+      .market-sidebar .watchlist-card{height:auto;max-height:none;min-height:0}
+      .asset-details-resizer{cursor:row-resize}
+      .asset-details-card{min-height:220px}
+      .paper-workspace{grid-template-columns:minmax(0,1fr);grid-column:1/-1}
+      .paper-workspace>.paper-dock{height:auto}
+    }
+    @media(max-width:390px){
+      .asset-details-grid{gap:7px;grid-template-columns:repeat(2,minmax(0,1fr))}
+      .agent{align-items:flex-start}
+      .animal-avatar{border-radius:13px;height:46px;width:46px}
+      .animal-avatar svg{height:40px;width:40px}
+    }
+  </style>
+  <style>
+    .main{padding-bottom:58px}
+    .daily-target-notice{background:#17130e;border:1px solid #55401f;border-radius:4px;color:#e4c47d;font-size:.68rem;line-height:1.5;margin:0 0 10px;padding:9px 10px}
+    .daily-target-notice.reached{background:#271417;border-color:#85414a;color:#ffb6bd}
+    .daily-target-notice[hidden]{display:none}
+    .content{padding-bottom:82px}
+    .dashboard,.chart-grid,.market-toolbar,.chart-card,.market-sidebar,.watchlist-card,.asset-details-card{min-width:0}
+    .market-sidebar>.watchlist-card{grid-column:1;grid-row:1}
+    .market-sidebar>.asset-details-resizer{grid-column:1;grid-row:2}
+    .market-sidebar>.asset-details-card{grid-column:1;grid-row:3}
+    .watchlist-row{grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr) minmax(0,.75fr);gap:8px}
+    .watchlist-row>*{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .watchlist-row strong,.watchlist-row em{font-variant-numeric:tabular-nums}
+    .watchlist-row .asset-inline{max-width:100%;overflow:hidden;white-space:nowrap}
+    .watchlist-tabs{flex-wrap:wrap;gap:clamp(8px,2vw,16px)}
+    .watchlist-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+    .watchlist-tabs button{background:transparent;border:0;border-bottom:2px solid transparent;color:#858591;flex:0 0 auto;font-size:.68rem;font-weight:700;padding:7px 5px}
+    .watchlist-tabs button.active{border-bottom-color:#48a8c2;color:#f2f2f4}
+    .watchlist-tabs button:focus-visible{outline:2px solid #48a8c2;outline-offset:1px}
+    .market-feed-placeholder{align-items:center;background:rgba(13,13,17,.94);color:#e2c47e;display:flex;font-size:.82rem;inset:0;justify-content:center;line-height:1.55;padding:24px;position:absolute;text-align:center;z-index:2}
+    .animal-avatar{background:#191922!important;border:1px solid color-mix(in srgb,var(--agent-glow,#6aa8ff) 55%,#292930);box-shadow:none!important;perspective:none!important}
+    .animal-avatar::after{display:none!important}
+    .animal-avatar svg{filter:none!important;transform:none!important;transform-style:flat}
+    .account-monitor-grid{display:grid;gap:12px;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);margin-top:12px}
+    .account-monitor-grid>.card{grid-column:auto;min-width:0}
+    .public-monitor-note,.private-monitor-note{color:#aaaab3;font-size:.72rem;line-height:1.55;margin:9px 0}
+    .copy-prefill-button{background:#182c32;border:1px solid #2c6676;border-radius:4px;color:#8ce4f6;cursor:pointer;font-size:.64rem;font-weight:700;padding:5px 8px;white-space:nowrap}
+    .copy-prefill-button:hover,.copy-prefill-button:focus-visible{background:#203d46;color:#fff;outline:1px solid #48a8c2}
+    .copy-draft-note{color:#8ce4f6;font-size:.66rem;margin:5px 0}
+    #active-copy .panel-title{align-items:flex-start;gap:10px}
+    .bottom-nav{align-items:center;background:#111116;border-top:1px solid #292930;bottom:0;display:flex;gap:6px;justify-content:center;left:0;padding:7px max(8px,env(safe-area-inset-left));position:fixed;right:0;z-index:10}
+    .bottom-nav a{border:1px solid transparent;border-radius:5px;color:#a5a5af;font-size:.7rem;font-weight:700;max-width:22vw;overflow:hidden;padding:8px 10px;text-overflow:ellipsis;white-space:nowrap}
+    .bottom-nav a:hover,.bottom-nav a:focus-visible{background:#24242b;border-color:#393942;color:#fff;outline:none}
+    .dynamic-section-note{color:#9999a4;font-size:.75rem;line-height:1.55;margin:10px 0}
+    .history-control{position:relative}
+    .history-control #history-date{cursor:pointer;height:100%;inset:0;opacity:0;position:absolute;width:100%}
+    .history-date-display{color:#e1e1e6;font:600 .64rem ui-monospace,Consolas,monospace;white-space:nowrap}
+    .chart-zoom-control{align-items:center;background:transparent;border:0;border-radius:3px;color:#a5a5af;display:inline-flex;font-size:.84rem;height:25px;justify-content:center;min-width:28px;padding:0 6px}
+    .chart-zoom-control:hover,.chart-zoom-control:focus-visible{background:#2b2b35;color:#fff;outline:none}
+    @media(max-width:1000px){
+      .content{max-width:none;padding-left:0;padding-right:0}
+      .intro,.metrics{margin-left:0;margin-right:0}
+      .dashboard{display:flex;flex-direction:column;width:100%}
+      .market-toolbar{align-items:stretch;flex-wrap:wrap;gap:8px;width:100%}
+      .symbol-search{flex:1 1 200px;min-width:0}
+      .asset-class,.asset-symbol{flex:1 1 130px;min-width:0}
+      .exchange-picker{flex:1 1 150px;margin-left:0}
+      .exchange-picker select{max-width:100%}
+      .chart-grid{gap:0;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto}
+      .chart-grid>.chart-card{border-left:0;border-radius:0;border-right:0;grid-column:1;grid-row:1;margin:0;width:100%}
+      .chart-grid>.market-sidebar{grid-column:1;grid-row:2;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 10px minmax(220px,auto);height:auto;min-height:0;width:100%}
+      .market-sidebar .watchlist-card{height:auto;max-height:none;min-height:0}
+      .asset-details-card{min-height:220px}
+      .paper-workspace{grid-column:1/-1;grid-template-columns:minmax(0,1fr);width:100%}
+      .paper-workspace>.paper-dock{height:auto}
+    }
+    @media(max-width:700px){.account-monitor-grid{grid-template-columns:minmax(0,1fr)}}
+    @media(max-width:600px){
+      .content{padding-bottom:76px}
+      .market-toolbar{padding:7px}
+      .symbol-search{flex-basis:100%}
+      .symbol-search input{flex:1;min-width:0}
+      .exchange-picker{flex-basis:100%;display:flex;align-items:center;justify-content:space-between}
+      .exchange-picker select{flex:1;margin-left:8px}
+      .market-quote{align-items:center;flex-wrap:wrap;gap:6px 10px}
+      .chart-bottom-tools{flex-wrap:wrap;min-width:0}
+      .history-control{max-width:100%;min-width:0}
+      .history-control input[type=date]{max-width:112px;min-width:0;width:100%}
+      .chart-tool-status{display:none}
+      .bottom-nav{justify-content:space-around}
+      .bottom-nav a{font-size:.64rem;max-width:25vw;padding:8px 5px}
+      .watchlist-card.card,.asset-details-card.card{padding:12px}
+      .watchlist-card .panel-title,.asset-details-card .panel-title{margin:-12px -12px 9px;padding:10px 12px}
+      .watchlist-row{font-size:.64rem;gap:6px;padding:8px 3px}
+      .watchlist-row em{font-size:.62rem}
+      .asset-summary strong{font-size:1rem}
+      .asset-details-grid{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -64,13 +197,13 @@
     <main class="main"><div id="notification-toast" class="notification-toast" hidden></div>
       <header class="topbar"><h1>Good morning, John</h1><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><button class="button danger" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')">Emergency stop</button><button class="hare-corner-toggle" id="hare-corner-toggle" type="button" aria-label="Open Hare news and activity" aria-expanded="false" aria-controls="hare-corner-panel"><span aria-hidden="true">🔔</span><span class="hare-corner-badge" id="hare-corner-badge" hidden>0</span></button></div></header>
       <div class="content" id="overview">
-        <div class="intro"><div><div class="eyebrow">Paper command centre</div><h2>Observe. Validate. Protect.</h2><p>A safe visual foundation for your future Bybit and Binance trading platform.</p></div><div class="intro-note">Public market feeds and the risk engine are connected. Execution remains paper-only and approval-gated.</div></div>
+        <div class="intro"><div><div class="eyebrow">Artificial Yielding Operative</div><h2>A.Y.O.</h2><p>AI Trading &amp; Agent Command Centre</p></div><div class="intro-note">Research, risk analysis, and agent coordination in one command interface. Execution remains paper-only and approval-gated.</div></div>
         <section class="metrics"><article class="card"><div class="metric-label">Paper equity</div><div class="metric-value" id="account-equity-value">$10,000.00</div><div class="small neutral" id="account-equity-note">Starting balance</div></article><article class="card"><div class="metric-label">Available balance</div><div class="metric-value" id="available-balance-value">$8,420.50</div><div class="small" id="available-balance-note">15.8% allocated · waiting for active P&amp;L</div></article><article class="card"><div class="metric-label">Paper P&amp;L</div><div class="metric-value positive" id="account-pnl-value">+$184.20</div><div class="small positive" id="account-pnl-note">Session result</div></article><article class="card"><div class="metric-label">Drawdown</div><div class="metric-value">2.1%</div><div class="small">Within 10% limit</div></article></section>
         <section class="dashboard" id="markets">
-          <div class="market-toolbar"><div class="symbol-search"><span class="toolbar-icon">⌕</span><input id="symbol-search" value="SOLUSDT" aria-label="Search market symbol" placeholder="Search symbol" /><button id="search-symbol" type="button">Load</button></div><select id="asset-class-select" class="asset-class" aria-label="Asset class"><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select><select id="asset-symbol-select" class="asset-symbol" aria-label="Asset symbol"></select><div class="asset-tabs" id="asset-tabs" aria-label="Available assets"></div><label class="exchange-picker">Feed <select id="exchange-select"><option value="bybit">Bybit public</option><option value="binance">Binance public</option></select></label></div>
+          <div class="market-toolbar"><div class="symbol-search"><span class="toolbar-icon">⌕</span><input id="symbol-search" value="SOLUSDT" aria-label="Search market symbol" placeholder="Search symbol" /><button id="search-symbol" type="button">Load</button></div><select id="asset-class-select" class="asset-class" aria-label="Asset class"><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select><select id="asset-symbol-select" class="asset-symbol" aria-label="Asset symbol"></select><div class="asset-tabs" id="asset-tabs" aria-label="Available assets"></div><label class="exchange-picker">Feed <select id="exchange-select"><option value="bybit">Bybit public</option><option value="binance">Binance public</option><option value="twelvedata">Twelve Data · API key</option></select></label></div>
           <div class="chart-grid">
-            <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span>Bybit Perpetual</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button><button class="indicator-button" id="indicator-button" type="button">Indicators</button></span><div class="indicator-menu" id="indicator-menu"><div class="indicator-menu-title">Indicators, metrics, and strategies</div><div class="indicator-menu-grid" id="indicator-menu-grid"></div></div></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="market-updated"></span><span id="chart-refresh-status" class="chart-refresh">Auto refresh: starting</span><span id="paper-signal">Paper signal: waiting</span></div><div class="chart-shell"><div class="drawing-tools"><button title="Crosshair" aria-label="Crosshair">＋</button><button title="Trend line" aria-label="Trend line">╱</button><button title="Horizontal line" aria-label="Horizontal line">━</button><button title="Parallel channel" aria-label="Parallel channel">☷</button><button title="Fibonacci retracement" aria-label="Fibonacci retracement">⌁</button><button title="Brush" aria-label="Brush">◒</button><button title="Text note" aria-label="Text note">T</button><button title="Emoji marker" aria-label="Emoji marker">☺</button><button title="Measure" aria-label="Measure">⌑</button><button title="Zoom" aria-label="Zoom">⊕</button><button title="Magnet mode" aria-label="Magnet mode">♧</button><button title="Lock drawings" aria-label="Lock drawings">▣</button><button title="Toggle visibility" aria-label="Toggle visibility">◉</button><button title="Delete drawings" aria-label="Delete drawings">⌫</button></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public SOLUSDT candlestick chart"></canvas><canvas id="sma-overlay" class="overlay"></canvas><canvas id="ema-overlay" class="overlay"></canvas><canvas id="bollinger-overlay" class="overlay"></canvas><canvas id="vwap-overlay" class="overlay"></canvas><canvas id="drawing-overlay" class="drawing-overlay" aria-label="Interactive chart drawing layer"></canvas></div></div><div class="chart-bottom-tools"><button title="Chart settings" aria-label="Chart settings">⚙</button><button title="Compare symbols" aria-label="Compare symbols">⊕ Compare</button><button title="Log scale" aria-label="Log scale">⌁ Log</button><button title="Auto scale" aria-label="Auto scale">↕ Auto</button><button title="Fullscreen" aria-label="Fullscreen">⛶</button><label class="history-control" title="Historical chart date"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01"/></svg><input id="history-date" type="date" aria-label="Historical chart date" /></label><span id="chart-tool-status" class="chart-tool-status">Crosshair selected</span></div><div class="indicator-pane" data-indicator="volume"><span>Volume</span><div class="volume-bars"></div></div><div class="indicator-pane oscillator" data-indicator="stoch"><span>Stoch RSI</span><canvas id="stoch-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="rsi"><span>RSI 14</span><canvas id="rsi-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="macd"><span>MACD 12 26 9</span><canvas id="macd-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="atr"><span>ATR 14</span><canvas id="atr-chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Prices and candles come from a public read-only Bybit feed.</div></article>
-            <article class="card watchlist-card"><div class="panel-title"><h3>Watchlist</h3><span>Assets</span></div><div class="watchlist-tabs"><b>Crypto</b><span>Forex</span><span>Stocks</span></div><div class="watchlist-row header"><span>Symbol</span><span>Last</span><span>24h</span></div><button class="watchlist-row asset-row active" data-symbol="SOLUSDT"><span>SOLUSDT</span><strong id="watch-sol">—</strong><em id="watch-sol-change">—</em></button><button class="watchlist-row asset-row" data-symbol="BTCUSDT"><span>BTCUSDT</span><strong id="watch-btc">—</strong><em id="watch-btc-change">—</em></button><button class="watchlist-row asset-row" data-symbol="ETHUSDT"><span>ETHUSDT</span><strong id="watch-eth">—</strong><em id="watch-eth-change">—</em></button><button class="watchlist-row asset-row" data-symbol="XRPUSDT"><span>XRPUSDT</span><strong id="watch-xrp">—</strong><em id="watch-xrp-change">—</em></button><div class="asset-summary"><span>Selected asset</span><strong id="watch-selected">SOLUSDT</strong><small>Public market data · Paper mode</small></div></article>
+            <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span>Bybit Perpetual</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button><button class="indicator-button" id="indicator-button" type="button">Indicators</button></span><div class="indicator-menu" id="indicator-menu"><div class="indicator-menu-title">Indicators, metrics, and strategies</div><div class="indicator-menu-grid" id="indicator-menu-grid"></div></div></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="market-updated"></span><span id="chart-refresh-status" class="chart-refresh">Auto refresh: starting</span><span id="paper-signal">Paper signal: waiting</span></div><div class="chart-shell"><div class="drawing-tools"><button title="Crosshair" aria-label="Crosshair">＋</button><button title="Trend line" aria-label="Trend line">╱</button><button title="Horizontal line" aria-label="Horizontal line">━</button><button title="Parallel channel" aria-label="Parallel channel">☷</button><button title="Fibonacci retracement" aria-label="Fibonacci retracement">⌁</button><button title="Brush" aria-label="Brush">◒</button><button title="Text note" aria-label="Text note">T</button><button title="Emoji marker" aria-label="Emoji marker">☺</button><button title="Measure" aria-label="Measure">⌑</button><button title="Zoom" aria-label="Zoom">⊕</button><button title="Magnet mode" aria-label="Magnet mode">♧</button><button title="Lock drawings" aria-label="Lock drawings">▣</button><button title="Toggle visibility" aria-label="Toggle visibility">◉</button><button title="Delete drawings" aria-label="Delete drawings">⌫</button></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public SOLUSDT candlestick chart"></canvas><canvas id="sma-overlay" class="overlay"></canvas><canvas id="ema-overlay" class="overlay"></canvas><canvas id="bollinger-overlay" class="overlay"></canvas><canvas id="vwap-overlay" class="overlay"></canvas><canvas id="drawing-overlay" class="drawing-overlay" aria-label="Interactive chart drawing layer"></canvas></div></div><div class="chart-bottom-tools"><button title="Chart settings" aria-label="Chart settings">⚙</button><button title="Compare symbols" aria-label="Compare symbols">⊕ Compare</button><button title="Log scale" aria-label="Log scale">⌁ Log</button><button title="Auto scale" aria-label="Auto scale">↕ Auto</button><button title="Fullscreen" aria-label="Fullscreen">⛶</button><button class="chart-zoom-control" id="chart-zoom-out" type="button" aria-label="Zoom chart out" title="Zoom chart out">−</button><button class="chart-zoom-control" id="chart-zoom-in" type="button" aria-label="Zoom chart in" title="Zoom chart in">+</button><button class="chart-zoom-control" id="chart-zoom-reset" type="button" aria-label="Reset chart zoom" title="Reset chart zoom">Reset</button><label class="history-control" title="Historical chart date"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01"/></svg><span class="history-date-display" id="history-date-display"></span><input id="history-date" type="date" aria-label="Historical chart date" /></label><span id="chart-tool-status" class="chart-tool-status">Crosshair selected</span></div><div class="indicator-pane" data-indicator="volume"><span>Volume</span><div class="volume-bars"></div></div><div class="indicator-pane oscillator" data-indicator="stoch"><span>Stoch RSI</span><canvas id="stoch-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="rsi"><span>RSI 14</span><canvas id="rsi-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="macd"><span>MACD 12 26 9</span><canvas id="macd-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="atr"><span>ATR 14</span><canvas id="atr-chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Prices and candles come from a public read-only Bybit feed.</div></article>
+            <article class="card watchlist-card"><div class="panel-title"><h3>Watchlist</h3><span>Assets</span></div><div class="watchlist-tabs" role="tablist" aria-label="Watchlist asset class"><button type="button" class="active" data-asset-class="crypto" role="tab" aria-selected="true">Crypto</button><button type="button" data-asset-class="forex" role="tab" aria-selected="false">Forex</button><button type="button" data-asset-class="stocks" role="tab" aria-selected="false">Stocks</button><button type="button" data-asset-class="indices" role="tab" aria-selected="false">Indices</button><button type="button" data-asset-class="commodities" role="tab" aria-selected="false">Commodities</button></div><div class="watchlist-row header"><span>Symbol</span><span>Last</span><span>24h</span></div><div id="watchlist-assets"></div><div class="asset-summary"><span>Selected asset</span><strong id="watch-selected">SOLUSDT</strong><small id="watchlist-feed-note">Public crypto data · Paper mode</small></div></article>
           </div>
           <article class="card order-panel"><div class="state-empty">Loading the paper-only trade ticket…</div></article>
           <article class="card" id="positions"><div class="panel-title"><h3>Risk commander</h3><span>Policy status</span></div><div class="risk-row"><div class="risk-head"><span>Daily loss limit</span><b>18%</b></div><div class="bar"><span class="safe" style="width:18%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Open-position risk</span><b>34%</b></div><div class="bar"><span style="width:34%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Margin utilisation</span><b>42%</b></div><div class="bar"><span class="warn" style="width:42%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Auto-trading</span><b class="neutral">OFF</b></div><div class="small">Analysis and monitoring can continue.</div></div></article>
@@ -78,9 +211,18 @@
           <article class="card wide" id="agents"><div class="panel-title"><h3>Animal agent room</h3><span>Event-driven service states</span></div><div class="agents"><div class="agent"><div class="animal">🦝</div><div><h4>Raccoon · Evidence scout</h4><p>Collecting public evidence</p><span class="status">● Working</span></div></div><div class="agent"><div class="animal">🦅</div><div><h4>Eagle · Signal dispatcher</h4><p>Waiting for confirmation</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦉</div><div><h4>Hawk · Chart examiner</h4><p>Reviewing structure and momentum</p><span class="status">● Monitoring</span></div></div><div class="agent"><div class="animal">🦁</div><div><h4>Lion · Risk commander</h4><p>Hard limits enforced</p><span class="status">● Supervising</span></div></div><div class="agent"><div class="animal">🐆</div><div><h4>Cheetah · Paper execution</h4><p>No live orders permitted</p><span class="status">● Standby</span></div></div><div class="agent"><div class="animal">🐇</div><div><h4>Hare · Notifications</h4><p>All alerts delivered</p><span class="status">● Ready</span></div></div></div><section class="agent-consult" aria-label="On-demand agent review"><label for="agent-consult-select">Review with</label><select id="agent-consult-select"><option value="local">Local paper agents · read-only</option><option value="gemini">Gemini AI · on-demand</option></select><button id="agent-consult-button" type="button">Run review</button><span id="agent-consult-status" role="status">Select an agent to review the current public-market chart.</span><p class="agent-consult-privacy">Gemini receives only the selected symbol, interval, public ticker, and recent public candles when you press Run review. No API key, account details, or orders are sent.</p><div id="agent-consult-result" class="agent-consult-result" aria-live="polite" hidden></div></section><div class="behavior-summary" id="behavior-summary"><div class="behavior-summary-head"><strong>Behavior gate</strong><span>Monitoring</span></div><p>Waiting for the next public-candle evaluation.</p><div class="behavior-gates"></div></div></article>
           <article class="card" id="intelligence"><div class="panel-title"><h3>Trader intelligence</h3><span>Public sources only</span></div><ul class="feed"><li><b>Candidate review</b> · Sample size is being checked<time>Raccoon · 09:42</time></li><li><b>Signal rejected</b> · Risk-to-reward below policy<time>Owl · 09:36</time></li><li><b>Verification pending</b> · Source limitations recorded<time>Raccoon · 09:28</time></li></ul></article>
         </section>
+        <article class="card wide" id="copy-lab"><div class="panel-title"><h3>Public copy research</h3><span>Paper research only</span></div><p class="dynamic-section-note">Loading public copy candidates…</p></article>
+        <section class="account-monitor-grid" id="account-monitor-grid" aria-label="Public and private account monitors">
+          <article class="card" id="active-copy"><div class="panel-title"><h3>Public lead monitor</h3><span>Loading</span></div><p class="dynamic-section-note">Loading sample lead positions and public market marks…</p></article>
+          <article class="card" id="private-account-monitor"><div class="panel-title"><h3>Private account monitor</h3><span>Read-only</span></div><p class="dynamic-section-note">Loading private account status…</p></article>
+        </section>
+        <article class="card wide" id="broker-directory"><div class="panel-title"><h3>Broker connections</h3><span>Testnet only · live execution off</span></div><p class="dynamic-section-note">Loading broker directory…</p></article>
       </div>
       <div class="footer">Python-served paper application · Capital preservation first · No financial advice</div>
     </main>
+    <nav class="bottom-nav" aria-label="Trading app sections">
+      <a href="#markets">Markets</a><a href="#paper-dock">Paper</a><a href="#copy-lab">Public copy</a><a href="#private-account-monitor">Private account</a><a href="#broker-directory">Brokers</a>
+    </nav>
   </div>
   <script>
     async function setupAgentConsult() {
@@ -158,10 +300,18 @@
     let primarySymbol = 'SOLUSDT';
     let selectedExchange = 'bybit';
     let selectedAssetClass = 'crypto';
+    let paperEvaluationSuppressed = false;
     const coinbaseOption=document.createElement('option');coinbaseOption.value='coinbase';coinbaseOption.textContent='Coinbase public spot';document.getElementById('exchange-select').appendChild(coinbaseOption);
     const volumePane=document.querySelector('.indicator-pane[data-indicator="volume"]');volumePane.classList.add('volume-pane');volumePane.innerHTML='<span id="volume-label">Volume · base units · waiting for feed</span><canvas id="volume-chart" class="volume-canvas" aria-label="Actual candle volume by time"></canvas>';
     const chartBottomTools=document.querySelector('.chart-bottom-tools');const chartDateLabel=document.createElement('span');chartDateLabel.id='chart-date-readable';chartDateLabel.className='chart-date-readable';chartDateLabel.textContent='UTC date —';chartBottomTools.insertBefore(chartDateLabel,document.getElementById('chart-tool-status'));
-    document.getElementById('history-date').setAttribute('lang','en-CA');
+    const historyDateInput=document.getElementById('history-date');
+    const historyDateDisplay=document.getElementById('history-date-display');
+    historyDateInput.setAttribute('lang','en-CA');
+    function updateHistoryDateDisplay(){
+      historyDateDisplay.textContent=historyDateInput.value||new Date().toISOString().slice(0,10);
+      historyDateDisplay.title=historyDateInput.value?'Selected historical date':'Today · live chart';
+    }
+    updateHistoryDateDisplay();
     function updateChartDate(candles){
       const selectedDate=document.getElementById('history-date').value;
       const candle=candles[candles.length-1],timestamp=Number(candle?.timestamp_ms);
@@ -170,8 +320,185 @@
       chartDateLabel.title='Dates are displayed as YYYY-MM-DD in UTC.';
     }
     function findAsset(symbol) { return Object.values(assetCatalog).flat().find(asset => asset[0] === symbol); }
-    function renderAssetCatalog(category) { selectedAssetClass = category; const select = document.getElementById('asset-symbol-select'); select.innerHTML = ''; assetCatalog[category].forEach(([symbol,name,supported]) => { const option = document.createElement('option'); option.value = symbol; option.textContent = `${symbol} · ${name}${supported ? '' : ' · catalog'}`; option.title = supported ? `${name} · public paper feed` : `${name} · dedicated feed adapter pending`; select.appendChild(option); }); select.value = assetCatalog[category].some(asset => asset[0] === primarySymbol) ? primarySymbol : assetCatalog[category][0][0]; }
+    function renderAssetCatalog(category) { selectedAssetClass = category; const select = document.getElementById('asset-symbol-select'); select.innerHTML = ''; assetCatalog[category].forEach(([symbol,name,supported]) => { const option = document.createElement('option'); option.value = symbol; const providerSelected=selectedExchange==='twelvedata'; option.textContent = `${symbol} · ${name}${supported||providerSelected ? '' : ' · feed needed'}`; option.title = supported ? `${name} · supported public crypto feed` : providerSelected?`${name} · provider entitlement and symbol availability apply`:`${name} · select a compatible provider to load candles`; select.appendChild(option); }); select.value = assetCatalog[category].some(asset => asset[0] === primarySymbol) ? primarySymbol : assetCatalog[category][0][0]; }
     renderAssetCatalog('crypto');
+    function renderWatchlistCategory(category) {
+      const container=document.getElementById('watchlist-assets');
+      const note=document.getElementById('watchlist-feed-note');
+      if(!container)return;
+      container.replaceChildren();
+      const supported=category==='crypto'||selectedExchange==='twelvedata';
+      const feedNote=category==='crypto'?'Bybit / Binance / Coinbase public crypto data · Paper mode':selectedExchange==='twelvedata'?'Twelve Data · subscription and symbol availability apply · display only':`${category[0].toUpperCase()+category.slice(1)} feed required · No prices fabricated`;
+      if(note)note.textContent=feedNote;
+      document.querySelectorAll('.watchlist-tabs [data-asset-class]').forEach(button=>{
+        const active=button.dataset.assetClass===category;
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-selected',String(active));
+      });
+      for(const [symbol,name] of assetCatalog[category].slice(0,4)){
+        const row=document.createElement('button');
+        row.type='button';
+        row.className='watchlist-row asset-row'+(symbol===primarySymbol?' active':'');
+        row.dataset.symbol=symbol;
+        row.setAttribute('aria-label',`${symbol}, ${name}`);
+        const label=document.createElement('span');
+        label.className='asset-inline';
+        label.append(createAssetBrandBadge(symbol),document.createTextNode(symbol));
+        const price=document.createElement('strong');
+        price.textContent='—';
+        const change=document.createElement('em');
+        change.textContent=supported?'Loading':'Feed needed';
+        row.append(label,price,change);
+        container.appendChild(row);
+      }
+    }
+    const assetBrandColors = {
+      SOLUSDT:['S','#9945ff'],BTCUSDT:['₿','#f7931a'],ETHUSDT:['◆','#627eea'],XRPUSDT:['X','#23292f'],
+      BNBUSDT:['B','#f3ba2f'],ADAUSDT:['A','#0033ad'],DOGEUSDT:['Ð','#c2a633'],AVAXUSDT:['A','#e84142'],
+      LINKUSDT:['L','#2a5ada'],DOTUSDT:['●','#e6007a'],TRXUSDT:['T','#eb0029'],TONUSDT:['T','#0098ea'],
+      LTCUSDT:['Ł','#345d9d'],BCHUSDT:['B','#8dc351'],UNIUSDT:['U','#ff007a'],AAVEUSDT:['A','#b6509e'],
+      SUIUSDT:['S','#6fbcf0'],ZECUSDT:['Z','#f4b728'],XLMUSDT:['✦','#14b6e7'],NEARUSDT:['N','#00c08b'],
+      NVDA:['N','#76b900'],AAPL:['A','#a2aaad'],AMZN:['a','#ff9900'],GOOG:['G','#4285f4'],TSLA:['T','#e82127'],
+      MSFT:['M','#00a4ef'],AMD:['A','#ed1c24'],AVGO:['A','#cc092f'],COIN:['C','#0052ff'],CRWD:['C','#e01f3d'],META:['∞','#0866ff']
+    };
+    function createAssetBrandBadge(symbol, large = false) {
+      const badge = document.createElement('span');
+      const [mark, color] = assetBrandColors[symbol] || [symbol.replace(/USDT$|USD$|USDC$/,'').slice(0,1) || '•','#858591'];
+      badge.className = 'asset-brand-badge' + (large ? ' large' : '');
+      badge.style.setProperty('--brand-color', color);
+      badge.textContent = mark;
+      badge.setAttribute('aria-hidden','true');
+      return badge;
+    }
+    function updateAssetSelectorBrand() {
+      const select=document.getElementById('asset-symbol-select');
+      if(!select)return;
+      const previous=document.getElementById('asset-symbol-brand');
+      const badge=createAssetBrandBadge(select.value);
+      badge.id='asset-symbol-brand';
+      if(previous)previous.replaceWith(badge);
+      else select.before(badge);
+    }
+    function setupAnimalAvatars() {
+      const faces = {
+        raccoon:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="rac-fur" x2="0.8" y2="1"><stop stop-color="#f2d4b8"/><stop offset="1" stop-color="#b97852"/></linearGradient><linearGradient id="rac-mask" x2="0" y2="1"><stop stop-color="#59616e"/><stop offset="1" stop-color="#29303b"/></linearGradient></defs><path fill="#915b45" d="M22 33 14 12q-2-8 7-5l20 18M74 33l8-21q2-8-7-5L55 25"/><path fill="#d5aa89" d="m22 22 17 10-10 4M74 22 57 32l10 4"/><path fill="url(#rac-fur)" d="M18 45Q18 20 48 20t30 25v15q-4 23-30 27-26-4-30-27Z"/><path fill="url(#rac-mask)" d="M19 48q13-20 29-8 16-12 29 8l-7 12q-10-9-22 0-12-9-22 0Z"/><ellipse cx="36" cy="49" rx="3" ry="4" fill="#f7e9d8"/><ellipse cx="60" cy="49" rx="3" ry="4" fill="#f7e9d8"/><circle cx="36" cy="49" r="1.7" fill="#20212a"/><circle cx="60" cy="49" r="1.7" fill="#20212a"/><path fill="#332b31" d="m42 62 6-4 6 4-6 5Z"/><path d="M48 67q-5 7-10 2m10-2q5 7 10 2" fill="none" stroke="#573c3b" stroke-width="2" stroke-linecap="round"/><path d="M25 67h12m-14-5 15 3m33 2H59m14-5-15 3" stroke="#f0ddca" stroke-width="1.3" stroke-linecap="round"/></svg>',
+        eagle:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="eag-head" x2=".8" y2="1"><stop stop-color="#fff5df"/><stop offset="1" stop-color="#c5c6cb"/></linearGradient><linearGradient id="eag-beak" x2="0" y2="1"><stop stop-color="#ffd36c"/><stop offset="1" stop-color="#d88726"/></linearGradient></defs><path fill="#72533d" d="M17 49 9 23l24 12M79 49l8-26-24 12"/><path fill="url(#eag-head)" d="M20 50q0-30 28-32 28 2 28 32v16Q68 83 48 85 28 83 20 66Z"/><path fill="#fff" d="m33 23 5-12 7 13m9-1 8-12 4 14"/><path fill="#3c4658" d="M23 51q12-19 25-8 13-11 25 8-8 12-25 5-17 7-25-5Z"/><ellipse cx="37" cy="49" rx="4" ry="5" fill="#f7e7c7"/><ellipse cx="59" cy="49" rx="4" ry="5" fill="#f7e7c7"/><circle cx="37" cy="50" r="2" fill="#292a30"/><circle cx="59" cy="50" r="2" fill="#292a30"/><path fill="url(#eag-beak)" d="m41 57 14 0-7 17Z"/><path d="M33 78q15 9 30 0" fill="none" stroke="#8c7054" stroke-width="2" stroke-linecap="round"/></svg>',
+        hawk:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="hawk-feather" x2=".8" y2="1"><stop stop-color="#d5cbff"/><stop offset="1" stop-color="#7876b8"/></linearGradient></defs><path fill="#57517f" d="m23 34-8-20 22 13m36 7 8-20-22 13"/><path fill="url(#hawk-feather)" d="M18 48q0-28 30-29 30 1 30 29v15Q71 84 48 85 25 84 18 63Z"/><path fill="#534d79" d="M20 49q10-14 28-8 18-6 28 8l-8 8q-8-9-20-4-12-5-20 4Z"/><circle cx="35" cy="49" r="10" fill="#f0d99c"/><circle cx="61" cy="49" r="10" fill="#f0d99c"/><circle cx="35" cy="49" r="5" fill="#29252f"/><circle cx="61" cy="49" r="5" fill="#29252f"/><circle cx="36" cy="47" r="1.6" fill="#fff"/><circle cx="62" cy="47" r="1.6" fill="#fff"/><path fill="#e3b764" d="m43 60 10 0-5 11Z"/><path d="M48 71v5m-8 2q8 5 16 0" fill="none" stroke="#574d77" stroke-width="2" stroke-linecap="round"/><path d="m24 37 8 4m40-4-8 4" stroke="#fff" stroke-opacity=".6" stroke-width="2"/></svg>',
+        lion:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><radialGradient id="lion-mane" cx=".35" cy=".25"><stop stop-color="#ffd78a"/><stop offset=".62" stop-color="#d98832"/><stop offset="1" stop-color="#8c4a28"/></radialGradient><linearGradient id="lion-face" x2=".8" y2="1"><stop stop-color="#ffe6ad"/><stop offset="1" stop-color="#d3a05f"/></linearGradient></defs><path fill="url(#lion-mane)" d="m48 9 9 9 14-4 3 14 14 7-7 13 7 13-14 7-3 14-14-4-9 9-9-9-14 4-3-14-14-7 7-13-7-13 14-7 3-14 14 4Z"/><path fill="url(#lion-face)" d="M26 48q1-25 22-26 21 1 22 26v14q-7 19-22 20-15-1-22-20Z"/><path fill="#9c613e" d="M26 48q10-14 22-7 12-7 22 7l-6 9q-7-8-16-3-9-5-16 3Z"/><ellipse cx="36" cy="49" rx="3" ry="4" fill="#fff0d3"/><ellipse cx="60" cy="49" rx="3" ry="4" fill="#fff0d3"/><circle cx="36" cy="49" r="1.6" fill="#382922"/><circle cx="60" cy="49" r="1.6" fill="#382922"/><path fill="#754538" d="m42 61 6-4 6 4-6 5Z"/><path d="M48 66q-5 7-10 2m10-2q5 7 10 2" fill="none" stroke="#80523c" stroke-width="2" stroke-linecap="round"/><path d="M33 33q7-7 13-4m4 0q6-3 13 4" fill="none" stroke="#fff2cc" stroke-opacity=".75" stroke-width="2"/></svg>',
+        cheetah:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="cheetah-fur" x2=".8" y2="1"><stop stop-color="#ffe18b"/><stop offset="1" stop-color="#d69a3d"/></linearGradient></defs><path fill="#b87931" d="m23 34-7-21q-2-7 7-4l22 17m28 8 7-21q2-7-7-4L51 27"/><path fill="#f2c56f" d="m23 22 16 9-10 5m44-14-16 9 10 5"/><path fill="url(#cheetah-fur)" d="M19 47q0-27 29-28 29 1 29 28v16Q70 83 48 85 26 83 19 63Z"/><path fill="#412e2a" d="M21 47q11-14 26-7 15-7 28 7l-7 9q-9-8-21-3-12-5-20 3Z"/><ellipse cx="36" cy="49" rx="3" ry="4" fill="#ffefc7"/><ellipse cx="60" cy="49" rx="3" ry="4" fill="#ffefc7"/><circle cx="36" cy="49" r="1.7" fill="#34251f"/><circle cx="60" cy="49" r="1.7" fill="#34251f"/><path fill="#573833" d="m42 62 6-4 6 4-6 5Z"/><path d="M48 67q-5 7-10 2m10-2q5 7 10 2" fill="none" stroke="#6b4432" stroke-width="2" stroke-linecap="round"/><g fill="#3c2b27"><circle cx="28" cy="39" r="1.5"/><circle cx="34" cy="33" r="1.4"/><circle cx="42" cy="29" r="1.3"/><circle cx="68" cy="39" r="1.5"/><circle cx="62" cy="33" r="1.4"/><circle cx="54" cy="29" r="1.3"/></g></svg>',
+        hare:'<svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="hare-fur" x2=".8" y2="1"><stop stop-color="#fff0dc"/><stop offset="1" stop-color="#d9b8cb"/></linearGradient></defs><path fill="url(#hare-fur)" d="M31 38Q21 8 31 5q12-1 15 31m7 0Q55 5 66 7q11 6-1 34"/><path fill="#e9a7c2" d="M32 29Q27 8 32 9q7 1 9 24m18-1q3-23 9-20 5 3-2 23"/><path fill="url(#hare-fur)" d="M20 53q0-26 28-27 28 1 28 27v10Q68 83 48 84 28 83 20 63Z"/><path fill="#b58eac" d="M22 49q10-14 26-7 16-7 26 7l-7 8q-9-8-19-3-10-5-19 3Z"/><ellipse cx="36" cy="50" rx="3" ry="4" fill="#fff4e7"/><ellipse cx="60" cy="50" rx="3" ry="4" fill="#fff4e7"/><circle cx="36" cy="50" r="1.6" fill="#423443"/><circle cx="60" cy="50" r="1.6" fill="#423443"/><path fill="#e58eae" d="m43 61 5-3 5 3-5 4Z"/><path d="M48 65q-5 7-10 2m10-2q5 7 10 2" fill="none" stroke="#8a687d" stroke-width="2" stroke-linecap="round"/><path d="M30 34q7-6 12-3m12 0q5-3 12 3" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/></svg>'
+      };
+      document.querySelectorAll('.agent .animal').forEach((avatar,index)=>{
+        const name=['raccoon','eagle','hawk','lion','cheetah','hare'][index];
+        if(!name)return;
+        avatar.className=`animal-avatar agent-avatar-${name}`;
+        avatar.setAttribute('role','img');
+        avatar.setAttribute('aria-label',`${name} agent mascot`);
+        avatar.innerHTML=faces[name];
+      });
+    }
+    function setMarketSidebarSplit(ratio) {
+      const sidebar=document.querySelector('.market-sidebar');
+      if(!sidebar||matchMedia('(max-width: 1000px)').matches)return;
+      const height=sidebar.clientHeight-10;
+      if(height<430)return;
+      const watchlistHeight=Math.max(230,Math.min(height-200,height*ratio));
+      sidebar.style.gridTemplateRows=`${Math.round(watchlistHeight)}px 10px minmax(200px,1fr)`;
+    }
+    function setupMarketSidebar() {
+      const chartGrid=document.querySelector('.chart-grid'),watchlist=document.querySelector('.watchlist-card');
+      if(!chartGrid||!watchlist)return;
+      const sidebar=document.createElement('div');
+      sidebar.className='market-sidebar';
+      watchlist.parentElement.insertBefore(sidebar,watchlist);
+      sidebar.appendChild(watchlist);
+      const resizer=document.createElement('div');
+      resizer.className='asset-details-resizer';
+      resizer.setAttribute('role','separator');
+      resizer.setAttribute('aria-orientation','horizontal');
+      resizer.setAttribute('aria-label','Resize watchlist and selected market details');
+      resizer.setAttribute('aria-controls','asset-details-card');
+      resizer.tabIndex=0;
+      const details=document.createElement('article');
+      details.className='card asset-details-card';
+      details.id='asset-details-card';
+      details.innerHTML='<div class="asset-details-head"><span id="asset-detail-badge"></span><div><div class="asset-details-name" id="asset-detail-name">Selected market</div><div class="asset-details-symbol" id="asset-detail-symbol">—</div></div></div><div class="asset-details-quote" id="asset-detail-price">—</div><div class="asset-details-change" id="asset-detail-change">Waiting for public quote</div><dl class="asset-details-grid"><div><dt>Visible high</dt><dd id="asset-detail-high">—</dd></div><div><dt>Visible low</dt><dd id="asset-detail-low">—</dd></div><div><dt>Best bid</dt><dd id="asset-detail-bid">—</dd></div><div><dt>Best ask</dt><dd id="asset-detail-ask">—</dd></div><div><dt>Visible volume</dt><dd id="asset-detail-volume">—</dd></div><div><dt>Quote feed</dt><dd id="asset-detail-source">—</dd></div></dl><p class="asset-details-note">Range and volume use candles currently loaded in the chart; they are not 24-hour totals.</p>';
+      sidebar.append(resizer,details);
+      chartGrid.appendChild(sidebar);
+      document.querySelectorAll('.asset-row').forEach(row=>{
+        const symbol=row.dataset.symbol;
+        const label=row.querySelector('span');
+        if(!symbol||!label)return;
+        label.classList.add('asset-inline');
+        label.prepend(createAssetBrandBadge(symbol));
+      });
+      const marketSymbol=document.getElementById('market-symbol');
+      if(marketSymbol){const badge=createAssetBrandBadge(primarySymbol,true);badge.id='asset-header-badge';marketSymbol.before(badge);}
+      const selected=document.getElementById('watch-selected');
+      if(selected){selected.classList.add('asset-inline');selected.prepend(createAssetBrandBadge(primarySymbol));}
+      updateAssetSelectorBrand();
+      const savedRatio=Number(localStorage.getItem('trading-bot-market-sidebar-split'));
+      let currentRatio=Number.isFinite(savedRatio)&&savedRatio>0.2&&savedRatio<0.8?savedRatio:.5;
+      requestAnimationFrame(()=>setMarketSidebarSplit(currentRatio));
+      window.addEventListener('resize',()=>setMarketSidebarSplit(currentRatio));
+      let pointerStartY=0,pointerStartHeight=0;
+      resizer.addEventListener('pointerdown',event=>{
+        if(matchMedia('(max-width: 1000px)').matches)return;
+        event.preventDefault();
+        pointerStartY=event.clientY;
+        pointerStartHeight=watchlist.getBoundingClientRect().height;
+        resizer.setPointerCapture(event.pointerId);
+      });
+      resizer.addEventListener('pointermove',event=>{
+        if(!resizer.hasPointerCapture(event.pointerId))return;
+        const height=sidebar.clientHeight-10,minimum=230,maximum=Math.max(minimum,height-200);
+        const adjusted=Math.max(minimum,Math.min(maximum,pointerStartHeight+event.clientY-pointerStartY));
+        currentRatio=adjusted/height;
+        setMarketSidebarSplit(currentRatio);
+        resizer.setAttribute('aria-valuenow',String(Math.round(currentRatio*100)));
+        localStorage.setItem('trading-bot-market-sidebar-split',String(currentRatio));
+      });
+      resizer.addEventListener('keydown',event=>{
+        if(!['ArrowUp','ArrowDown'].includes(event.key))return;
+        event.preventDefault();
+        const height=sidebar.clientHeight-10;
+        const current=watchlist.getBoundingClientRect().height+(event.key==='ArrowUp'?-20:20);
+        currentRatio=Math.max(.2,Math.min(.8,current/height));
+        setMarketSidebarSplit(currentRatio);
+        localStorage.setItem('trading-bot-market-sidebar-split',String(currentRatio));
+      });
+    }
+    function showSectionLoadError(id, title, error) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.innerHTML = `<div class="panel-title"><h3>${escapePaperHtml(title)}</h3><span class="negative">Unavailable</span></div><p class="dynamic-section-note">${escapePaperHtml(error?.message || error || 'The section could not be loaded.')}</p>`;
+    }
+    function updateAssetDetails(data) {
+      const asset=findAsset(data.symbol||primarySymbol),ticker=data.ticker||{},candles=Array.isArray(data.candles)?data.candles:[];
+      const symbol=data.symbol||primarySymbol;
+      const quote=document.getElementById('asset-detail-price'),change=document.getElementById('asset-detail-change');
+      document.getElementById('asset-detail-name').textContent=asset?.[1]||symbol;
+      document.getElementById('asset-detail-symbol').textContent=symbol;
+      document.getElementById('asset-detail-badge').replaceChildren(createAssetBrandBadge(symbol,true));
+      const headerBadge=document.getElementById('asset-header-badge');
+      if(headerBadge)headerBadge.replaceWith(createAssetBrandBadge(symbol,true));
+      const selected=document.getElementById('watch-selected');
+      if(selected){selected.classList.add('asset-inline');selected.replaceChildren(createAssetBrandBadge(symbol),document.createTextNode(symbol));}
+      quote.textContent=ticker.last!=null&&Number.isFinite(Number(ticker.last))?formatPrice(ticker.last):'—';
+      const changePercent=Number(ticker.change_percent);
+      change.textContent=ticker.change_percent!=null&&Number.isFinite(changePercent)?`${changePercent>=0?'+':''}${changePercent.toFixed(2)}% · 24h change`:'24h change unavailable for this feed';
+      change.className='asset-details-change '+(changePercent>0?'positive':changePercent<0?'negative':'');
+      const highs=candles.map(item=>Number(item.high)).filter(Number.isFinite),lows=candles.map(item=>Number(item.low)).filter(Number.isFinite);
+      document.getElementById('asset-detail-high').textContent=highs.length?formatPrice(Math.max(...highs)):'—';
+      document.getElementById('asset-detail-low').textContent=lows.length?formatPrice(Math.min(...lows)):'—';
+      document.getElementById('asset-detail-bid').textContent=ticker.bid!=null&&Number.isFinite(Number(ticker.bid))?formatPrice(ticker.bid):'—';
+      document.getElementById('asset-detail-ask').textContent=ticker.ask!=null&&Number.isFinite(Number(ticker.ask))?formatPrice(ticker.ask):'—';
+      document.getElementById('asset-detail-volume').textContent=formatVolume(candles.reduce((sum,item)=>sum+Math.max(0,Number(item.volume)||0),0));
+      document.getElementById('asset-detail-source').textContent=ticker.exchange||data.market_data?.ticker_source||data.exchange||'—';
+    }
+    setupAnimalAvatars();
+    setupMarketSidebar();
+    renderWatchlistCategory('crypto');
     function formatPrice(value) { return Number(value).toLocaleString(undefined, {maximumFractionDigits: 4}); }
     const PRICE_AXIS_WIDTH = 70;
     const TIME_AXIS_HEIGHT = 23;
@@ -273,28 +600,95 @@
       return null;
     }
     let lastMarketCandles = [];
+    let chartZoomLevel = 0;
     let lastOpenPositions = [];
     let lastPendingOrders = [];
+    function visibleMarketCandles() {
+      if (!lastMarketCandles.length) return [];
+      const visibleCount=Math.max(20,Math.ceil(lastMarketCandles.length/Math.pow(1.3,chartZoomLevel)));
+      return lastMarketCandles.slice(-visibleCount);
+    }
+    function redrawMarketVisuals() {
+      const candles=visibleMarketCandles();
+      if(!candles.length)return;
+      drawCandles(document.getElementById('price-chart'),candles);
+      drawIndicators(candles);
+      drawVolumeChart(candles);
+      renderPositionOverlay([...lastOpenPositions,...lastPendingOrders],candles);
+    }
     function renderMarketChart(data) {
       if (!Array.isArray(data.candles) || !data.candles.length) throw new Error('The market feed returned no chart candles.');
+      document.querySelector('.market-feed-placeholder')?.remove();
+      updateAssetDetails(data);
       lastMarketCandles = data.candles;
-      drawCandles(document.getElementById('price-chart'), data.candles);
-      drawIndicators(data.candles);
-      drawVolumeChart(data.candles);
-      renderPositionOverlay([...lastOpenPositions,...lastPendingOrders]);
-      document.getElementById('volume-label').textContent = `Volume · base units · ${data.market_data?.candle_source || data.exchange}`;
+      redrawMarketVisuals();
+      const hasReportedVolume=data.candles.some(candle=>candle.volume!==null&&Number.isFinite(Number(candle.volume)));
+      document.getElementById('volume-label').textContent = hasReportedVolume?`Volume · reported units · ${data.market_data?.candle_source || data.exchange}`:`Volume · not reported by ${data.market_data?.candle_source || data.exchange}`;
       updateChartDate(data.candles);
       const pairLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
-      if(pairLabel)pairLabel.textContent=(data.market_data?.candle_source||data.exchange)==='coinbase'?'Coinbase Spot':'Public Perpetual';
+      if(pairLabel)pairLabel.textContent=(data.market_data?.candle_source||data.exchange)==='coinbase'?'Coinbase Spot':data.exchange==='twelvedata'?`Twelve Data · ${selectedAssetClass}`:'Public Perpetual';
+    }
+    function showUnavailableAssetFeed(symbol, message = '') {
+      lastMarketCandles=[];
+      document.querySelectorAll('.chart canvas,.indicator-pane canvas').forEach(canvas=>{
+        const context=canvas.getContext('2d');
+        if(context)context.clearRect(0,0,canvas.width,canvas.height);
+      });
+      renderPositionOverlay([...lastOpenPositions,...lastPendingOrders],[]);
+      const chart=document.querySelector('.chart');
+      let placeholder=chart.querySelector('.market-feed-placeholder');
+      if(!placeholder){placeholder=document.createElement('div');placeholder.className='market-feed-placeholder';chart.appendChild(placeholder);}
+      const asset=findAsset(symbol);
+      const categoryName=selectedAssetClass[0].toUpperCase()+selectedAssetClass.slice(1);
+      placeholder.textContent=message||`${categoryName} chart feed is not connected for ${symbol}. Select a supported crypto market or connect a licensed ${categoryName.toLowerCase()} data provider.`;
+      document.getElementById('market-price').textContent='—';
+      document.getElementById('market-change').textContent='No live feed';
+      document.getElementById('market-updated').textContent='—';
+      document.getElementById('market-symbol').textContent=symbol;
+      const feedLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
+      if(feedLabel)feedLabel.textContent=`${categoryName} feed required`;
+      const headerBadge=document.getElementById('asset-header-badge');
+      if(headerBadge)headerBadge.replaceWith(createAssetBrandBadge(symbol,true));
+      const selected=document.getElementById('watch-selected');
+      if(selected)selected.replaceChildren(createAssetBrandBadge(symbol),document.createTextNode(symbol));
+      const detailBadge=document.getElementById('asset-detail-badge');
+      if(detailBadge)detailBadge.replaceChildren(createAssetBrandBadge(symbol,true));
+      document.getElementById('market-status').textContent=message||`${asset?.[1]||symbol} is listed in the catalog, but this app has no ${categoryName.toLowerCase()} candle/ticker adapter.`;
+      document.getElementById('volume-label').textContent='Volume · feed required';
+      const chartDate=document.getElementById('chart-date-readable');
+      if(chartDate)chartDate.textContent='UTC date —';
+      const detailName=document.getElementById('asset-detail-name');
+      if(detailName)detailName.textContent=asset?.[1]||symbol;
+      const detailSymbol=document.getElementById('asset-detail-symbol');
+      if(detailSymbol)detailSymbol.textContent=symbol;
+      const detailPrice=document.getElementById('asset-detail-price');
+      if(detailPrice)detailPrice.textContent='—';
+      const detailChange=document.getElementById('asset-detail-change');
+      if(detailChange)detailChange.textContent='Feed required';
+      for(const id of ['asset-detail-high','asset-detail-low','asset-detail-bid','asset-detail-ask','asset-detail-volume']){const field=document.getElementById(id);if(field)field.textContent='—';}
+      const source=document.getElementById('asset-detail-source');
+      if(source)source.textContent='Not connected';
     }
     async function loadMarket(symbol, prefix) {
       const status = document.getElementById(prefix + '-status');
       const asset = findAsset(symbol);
-      if (asset && !asset[2]) { status.textContent = `${asset[1]} is in the paper asset catalog. A dedicated public ${selectedExchange} adapter is not connected yet.`; return; }
+      if (selectedExchange!=='twelvedata'&&selectedAssetClass!=='crypto') {
+        const message=`Select Twelve Data as the feed to load ${selectedAssetClass} candles; no compatible feed is selected.`;
+        const name=asset?.[1]||symbol;
+        if(prefix==='market')showUnavailableAssetFeed(symbol,message);
+        status.textContent=`${name} is catalogued; ${message}`;
+        return;
+      }
+      if(asset&&!asset[2]&&selectedExchange!=='twelvedata') {
+        const message=`${asset[1]} requires the Twelve Data feed or a compatible provider.`;
+        if(prefix==='market')showUnavailableAssetFeed(symbol,message);
+        status.textContent=message;
+        return;
+      }
       const historyDate = document.getElementById('history-date').value;
       const cacheKey = marketChartCacheKey(selectedExchange, symbol, selectedInterval, historyDate);
       try {
-        const historyQuery = historyDate ? '&history_date=' + encodeURIComponent(historyDate) : ''; const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=' + selectedInterval + historyQuery);
+        const historyQuery = historyDate ? '&history_date=' + encodeURIComponent(historyDate) : ''; const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + encodeURIComponent(symbol) + '&interval=' + selectedInterval + '&asset_class=' + encodeURIComponent(selectedAssetClass) + historyQuery);
         const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Feed unavailable');
         if (prefix === 'market') {
           renderMarketChart(data);
@@ -318,7 +712,9 @@
             : '';
         status.textContent = historyDate
           ? `Paper orders only. Historical candles ending ${historyDate} from ${candleSource}${sourceNote}.${tickerNote}`
-          : `Paper orders only. Live public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
+          : selectedExchange==='twelvedata'
+            ? `Display-only provider data from ${candleSource}; timing follows your provider plan · refreshed just now${tickerNote}`
+            : `Paper orders only. Live public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
         if(prefix==='market')updateTicketReference(Number(ticker.last||data.candles[data.candles.length-1].close));
       } catch (error) {
         if (prefix === 'market') {
@@ -340,13 +736,39 @@
               return;
             }
           }
+          showUnavailableAssetFeed(symbol,error.message);
         }
         status.textContent = error.message + ' Paper dashboard remains available. No saved chart is available to display offline.';
       }
     }
+    let lastTwelveDataWatchlistAt=0;
     async function loadWatchlist() {
-      const assets = [['SOLUSDT','watch-sol','watch-sol-change'],['BTCUSDT','watch-btc','watch-btc-change'],['ETHUSDT','watch-eth','watch-eth-change'],['XRPUSDT','watch-xrp','watch-xrp-change']];
-      await Promise.all(assets.map(async ([symbol, priceId, changeId]) => { try { const response = await fetch('/api/market?exchange=' + selectedExchange + '&symbol=' + symbol + '&interval=1'); const data = await response.json(); if (!response.ok) return; document.getElementById(priceId).textContent = formatPrice(data.ticker.last); const change = data.ticker.change_percent; const element = document.getElementById(changeId); element.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%'; element.className = change >= 0 ? 'positive' : 'negative'; } catch (_) {} }));
+      if(selectedExchange==='twelvedata'){
+        const now=Date.now();
+        if(now-lastTwelveDataWatchlistAt<300000)return;
+        lastTwelveDataWatchlistAt=now;
+      }
+      const rows=[...document.querySelectorAll('#watchlist-assets .asset-row')];
+      await Promise.all(rows.map(async row=>{
+        const symbol=row.dataset.symbol,price=row.querySelector('strong'),change=row.querySelector('em');
+        if(!symbol||!price||!change)return;
+        if(selectedAssetClass!=='crypto'&&selectedExchange!=='twelvedata'){
+          price.textContent='—';change.textContent='Feed needed';change.className='';
+          return;
+        }
+        try{
+          const response=await fetch('/api/market/quote?exchange='+selectedExchange+'&symbol='+encodeURIComponent(symbol)+'&asset_class='+encodeURIComponent(selectedAssetClass));
+          const data=await response.json();
+          if(!response.ok)throw new Error(data.error||`Market feed returned ${response.status}.`);
+          price.textContent=formatPrice(data.ticker.last);
+          const changePercent=Number(data.ticker.change_percent);
+          change.textContent=Number.isFinite(changePercent)?`${changePercent>=0?'+':''}${changePercent.toFixed(2)}%`:'—';
+          change.className=Number.isFinite(changePercent)?(changePercent>=0?'positive':'negative'):'';
+          row.title='';
+        }catch(error){
+          price.textContent='—';change.textContent='Unavailable';change.className='negative';row.title=error.message;
+        }
+      }));
     }
     let popupNotificationsEnabled = localStorage.getItem('trading-bot-popup-notifications') !== 'false';
     const seenNotifications = new Set();
@@ -506,6 +928,7 @@
       const panel=document.querySelector('.order-panel');if(!panel)return;
       panel.id='order-panel';
       panel.innerHTML=`<div class="panel-title"><h3>Trade ticket</h3><span class="ticket-mode-badge">PAPER ONLY</span></div>
+        <div class="daily-target-notice" id="daily-target-notice" role="status" aria-live="polite" hidden></div>
         <form class="paper-ticket-form" id="paper-ticket-form">
           <div class="paper-ticket-grid">
             <input name="side" type="hidden" value="long" />
@@ -546,12 +969,13 @@
       updateTicketExchangeAvailability();
     }
     function updateTicketExchangeAvailability(){
-      const isPerpetual=selectedExchange!=='coinbase',form=document.getElementById('paper-ticket-form');
+      const isPerpetual=['bybit','binance'].includes(selectedExchange)&&selectedAssetClass==='crypto',form=document.getElementById('paper-ticket-form');
       if(!form)return;
       form.querySelectorAll('button[type="submit"]').forEach(button=>button.disabled=!isPerpetual);
       const status=document.getElementById('ticket-status');
-      if(!isPerpetual){status.className='ticket-status';status.textContent='Coinbase is a spot chart feed only. Select Bybit or Binance public perpetual feed for paper tickets.';}
-      else if(status.textContent.startsWith('Coinbase is a spot'))status.textContent='Paper simulation only. No broker order is sent.';
+      if(selectedAssetClass!=='crypto'){status.className='ticket-status';status.textContent='Paper tickets are crypto-only. A chart-data feed does not provide an execution adapter.';}
+      else if(!isPerpetual){status.className='ticket-status';status.textContent='This is a chart-only feed. Select Bybit or Binance public perpetual feed for paper tickets.';}
+      else if(status.textContent.startsWith('This is a chart-only')||status.textContent.startsWith('Paper tickets are crypto-only'))status.textContent='Paper simulation only. No broker order is sent.';
     }
     function addPaperDock() {
       if (document.getElementById('paper-dock')) return;
@@ -560,8 +984,11 @@
       dock.innerHTML = '<div class="paper-dock-head"><div class="paper-dock-title"><h3>Paper Trading</h3><span class="paper-dock-live">● PAPER MODE</span></div><span class="small">Active positions and account activity</span><button class="paper-dock-toggle" id="paper-dock-toggle" type="button" aria-expanded="true">Collapse</button></div><div class="paper-dock-body"><div class="paper-dock-account" id="paper-dock-account"><span>Equity <strong>—</strong></span><span>Realized P&amp;L <strong>—</strong></span><span>Unrealized P&amp;L <strong>—</strong></span><span>Available funds <strong>—</strong></span><span>Margin buffer <strong>100%</strong></span></div><div class="paper-dock-tabs" role="tablist" aria-label="Paper trading views"><button class="paper-dock-tab active" data-dock-tab="positions" role="tab" type="button">Positions</button><button class="paper-dock-tab" data-dock-tab="orders" role="tab" type="button">Orders</button><button class="paper-dock-tab" data-dock-tab="history" role="tab" type="button">Order history</button><button class="paper-dock-tab" data-dock-tab="balance" role="tab" type="button">Balance history</button><button class="paper-dock-tab" data-dock-tab="trades" role="tab" type="button">Trade history</button><button class="paper-dock-tab" data-dock-tab="analytics" role="tab" type="button">Analytics</button></div><div class="paper-dock-panel" id="paper-dock-panel" role="tabpanel"><div class="paper-dock-empty">Loading active paper positions…</div></div></div>';
       const chartGrid=document.querySelector('.chart-grid');
       if(!chartGrid)throw new Error('Chart grid is unavailable for paper trading layout.');
-      chartGrid.appendChild(orderPanel);
-      chartGrid.insertAdjacentElement('afterend',dock);
+      const workspace=document.createElement('section');
+      workspace.className='paper-workspace';
+      workspace.setAttribute('aria-label','Paper order ticket and trading panel');
+      chartGrid.insertAdjacentElement('afterend',workspace);
+      workspace.append(orderPanel,dock);
       const dialog = document.createElement('dialog'); dialog.id = 'paper-detail-dialog'; dialog.className = 'paper-detail-dialog';
       dialog.innerHTML = '<div class="paper-detail-head"><h3 id="paper-detail-title">Paper record details</h3><button class="paper-detail-close" type="button" aria-label="Close paper details">Close</button></div><div class="paper-detail-content"><dl id="paper-detail-list"></dl></div>';
       document.body.appendChild(dialog);
@@ -767,51 +1194,68 @@
     }
     async function loadCopyCandidates() {
       const intelligence = document.getElementById('intelligence');
-      if (!intelligence || document.getElementById('copy-lab')) return;
+      if (!intelligence || document.getElementById('copy-lab')?.dataset.loaded === 'true') return;
       try {
         const response = await fetch('/api/copy/candidates');
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Copy research unavailable');
+        document.getElementById('copy-lab')?.remove();
         const card = document.createElement('article');
         card.className = 'card wide'; card.id = 'copy-lab';
+        card.dataset.loaded = 'true';
         card.innerHTML = '<div class="panel-title"><h3>Copy strategy lab</h3><span>Paper research only</span></div><div class="feed">' + data.candidates.map(item => { const p = item.profile, a = item.assessment; const color = a.eligible ? 'positive' : 'negative'; return `<div class="risk-row"><div class="risk-head"><span>${p.display_name} · ${p.profile_id}</span><b class="${color}">${a.eligible ? 'eligible' : 'blocked'}</b></div><div class="small">Evidence ${a.evidence_score}/100 · MDD ${p.max_drawdown_percent}% · Sharpe ${p.sharpe_ratio} · ${p.closed_trades} trades</div><div class="small">${a.reasons[0] || 'Paper approval required before any future live mode.'}</div></div>`; }).join('') + '</div>';
         intelligence.parentNode.insertBefore(card, intelligence.nextSibling);
-      } catch (_) {}
+      } catch (error) { showSectionLoadError('copy-lab','Public copy research',error); }
     }
     let activeCopyData = null;
+    let activeCopyEntries = [];
     let activeCopySearch = '';
     let activeCopySort = 'risk';
+    let publicCopyRefreshInFlight = false;
     function renderActiveCopyRows() {
       const tbody = document.querySelector('#active-copy tbody'); if (!tbody || !activeCopyData) return;
       let entries = activeCopyData.accounts.flatMap(account => account.positions.map(position => ({account, position})));
       const query = activeCopySearch.trim().toLowerCase();
       if (query) entries = entries.filter(({account, position}) => `${account.display_name} ${account.profile_id} ${account.exchange} ${position.symbol} ${position.side}`.toLowerCase().includes(query));
       entries.sort((left, right) => { const leftPnl = Number(left.position.unrealized_pnl), rightPnl = Number(right.position.unrealized_pnl); if (activeCopySort === 'pnl-high') return rightPnl - leftPnl; if (activeCopySort === 'pnl-low') return leftPnl - rightPnl; if (activeCopySort === 'account') return left.account.display_name.localeCompare(right.account.display_name); if (activeCopySort === 'symbol') return left.position.symbol.localeCompare(right.position.symbol); return 0; });
-      tbody.innerHTML = entries.length ? entries.map(({account, position}) => { const pnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'copy-long' : 'copy-short'; return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td><td class="lion-qualified">Qualified</td></tr>`; }).join('') : '<tr><td colspan="9">No public accounts or positions match this search.</td></tr>';
+      activeCopyEntries=entries;
+      tbody.innerHTML = entries.length ? entries.map(({account, position},index) => {
+        const live=position.mark_status==='live'&&Number.isFinite(Number(position.mark_price))&&Number.isFinite(Number(position.unrealized_pnl));
+        const pnl=Number(position.unrealized_pnl),sideClass=position.side==='long'?'copy-long':'copy-short';
+        const mark=live?Number(position.mark_price).toLocaleString():'—';
+        const markTime=live&&position.mark_timestamp_ms?new Date(position.mark_timestamp_ms).toLocaleTimeString():'';
+        const markLabel=live?`Live mark · ${markTime}`:position.mark_status==='stale'?'Stale mark · P&L hidden':'Mark unavailable';
+        return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${mark}<br><span class="small">${markLabel}</span></td><td>${Number(position.quantity)}</td><td class="${live?(pnl>=0?'positive':'negative'):''}">${live?signedMoney(pnl):'—'}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td><td class="neutral">Demo only</td><td><button class="copy-prefill-button" type="button" data-prefill-copy="${index}">Draft in ticket</button></td></tr>`;
+      }).join('') : '<tr><td colspan="10">No sample lead positions match this search.</td></tr>';
     }
     function setupActiveCopyTools(data) {
       activeCopyData = data;
-      const title = document.querySelector('#active-copy .panel-title'); const table = document.querySelector('#active-copy table'); if (!title || !table) return;
-      const header = table.querySelector('thead tr'); if (header && !header.querySelector('.lion-header')) header.insertAdjacentHTML('beforeend', '<th class="lion-header">Lion gate</th>');
+      const card=document.getElementById('active-copy');
+      const title = card?.querySelector('.panel-title'); const table = card?.querySelector('table'); if (!title || !table) return;
+      const header = table.querySelector('thead tr'); if (header && !header.querySelector('.lion-header')) header.insertAdjacentHTML('beforeend', '<th class="lion-header">Risk status</th><th>Action</th>');
       const tools = document.createElement('div'); tools.className = 'copy-table-tools'; tools.innerHTML = '<button class="copy-tool-button" id="copy-search-button" type="button" aria-label="Search public copy traders" title="Search public copy traders">⌕</button><input class="copy-search" id="copy-search" type="search" placeholder="Search accounts" aria-label="Search public copy traders" /><button class="copy-tool-button" id="copy-sort-button" type="button" aria-label="Sort active copy traders" title="Sort active copy traders">⇅</button><select class="copy-sort" id="copy-sort" aria-label="Sort active copy traders"><option value="risk">Lion-qualified first</option><option value="pnl-high">P&amp;L: high to low</option><option value="pnl-low">P&amp;L: low to high</option><option value="account">Account: A–Z</option><option value="symbol">Symbol: A–Z</option></select>';
       title.insertAdjacentElement('afterend', tools);
       const search = tools.querySelector('#copy-search'); const sort = tools.querySelector('#copy-sort'); search.value = activeCopySearch; sort.value = activeCopySort;
       tools.querySelector('#copy-search-button').addEventListener('click', () => { search.classList.toggle('visible'); tools.querySelector('#copy-search-button').classList.toggle('active', search.classList.contains('visible')); if (search.classList.contains('visible')) search.focus(); });
       tools.querySelector('#copy-sort-button').addEventListener('click', () => { sort.classList.toggle('visible'); tools.querySelector('#copy-sort-button').classList.toggle('active', sort.classList.contains('visible')); });
       search.addEventListener('input', event => { activeCopySearch = event.target.value; renderActiveCopyRows(); }); sort.addEventListener('change', event => { activeCopySort = event.target.value; renderActiveCopyRows(); });
+      table.querySelector('tbody').addEventListener('click',event=>{
+        const button=event.target.closest('[data-prefill-copy]');
+        if(button)draftCopiedTrade(Number(button.dataset.prefillCopy));
+      });
       renderActiveCopyRows();
     }
     async function loadPrivatePositions() {
       try {
-        const response = await fetch('/api/private/positions'); const data = await response.json(); if (!response.ok) return;
-        document.getElementById('private-account-monitor')?.remove();
-        const anchor = document.getElementById('active-copy') || document.getElementById('copy-lab') || document.getElementById('intelligence'); if (!anchor) return;
-        const card = document.createElement('article'); card.className = 'card wide'; card.id = 'private-account-monitor';
+        const response = await fetch('/api/private/positions'); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Private account monitor is unavailable.');
+        const container=document.getElementById('account-monitor-grid');if(!container)return;
+        const card = document.createElement('article'); card.className = 'card'; card.id = 'private-account-monitor';
         if (!data.configured) { card.innerHTML = '<div class="panel-title"><h3>Private account monitor</h3><span>Not connected</span></div><p class="private-monitor-note">Private positions are disabled until a <strong>read-only Bybit API key</strong> is configured locally. No credentials are requested in the browser or stored in this app.</p>'; }
         else if (data.error) { card.innerHTML = `<div class="panel-title"><h3>Private account monitor</h3><span class="negative">Unavailable</span></div><p class="private-monitor-note">${data.error}</p>`; }
         else { const rows = data.positions.filter(position => position.lion_approved).map(position => `<tr><td>${position.symbol}</td><td>${position.side.toUpperCase()}</td><td>${Number(position.size).toLocaleString()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td class="${Number(position.unrealized_pnl) >= 0 ? 'positive' : 'negative'}">${signedMoney(position.unrealized_pnl)}</td><td class="lion-qualified">Lion approved</td></tr>`).join(''); const hidden = data.positions.length - data.positions.filter(position => position.lion_approved).length; card.innerHTML = `<div class="panel-title"><h3>Private account monitor</h3><span>Read-only · Paper copy</span></div><p class="private-monitor-note">Equity ${money(data.equity)} · ${hidden} position(s) hidden by Lion risk policy. Approved positions may be simulated in paper mode.</p><div class="private-position-table"><table><thead><tr><th>Symbol</th><th>Side</th><th>Size</th><th>Entry</th><th>Mark</th><th>Unrealized P&amp;L</th><th>Gate</th></tr></thead><tbody>${rows || '<tr><td colspan="7">No private positions passed the Lion policy.</td></tr>'}</tbody></table></div>`; }
-        anchor.parentNode.insertBefore(card, anchor.nextSibling);
-      } catch (_) {}
+        const existing=document.getElementById('private-account-monitor');
+        if(existing)container.replaceChild(card,existing);else container.appendChild(card);
+      } catch (error) { showSectionLoadError('private-account-monitor','Private account monitor',error); }
     }
     async function loadBrokerDirectory() {
       try {
@@ -822,9 +1266,12 @@
         const card = document.createElement('article');
         card.className = 'card wide';
         card.id = 'broker-directory';
+        card.dataset.loaded = 'true';
         card.innerHTML = '<div class="panel-title"><h3>Broker connections</h3><span>Testnet only · live execution off</span></div><p class="broker-directory-note">Connect only to a broker-owned account or subaccount. This app cannot create or fund wallets. Use credentials created for the exact account you want to target. Unsupported brokers are saved as local requests; they are not sent externally.</p><div class="broker-directory-grid" id="broker-directory-grid"></div><div class="broker-connection-status" id="broker-connection-status" role="status"></div><button class="broker-request-open" id="broker-setup-open" type="button">Step-by-step Bybit testnet setup</button><form class="broker-test-order" id="broker-test-order" hidden><label>Symbol<input name="symbol" value="SOLUSDT" maxlength="20" pattern="[A-Za-z0-9]{2,20}" required /></label><label>Side<select name="side"><option value="Buy">Buy</option><option value="Sell">Sell</option></select></label><label>Quantity<input name="quantity" type="number" min="0.00000001" step="any" value="0.01" required /></label><button class="broker-test-submit" type="submit">Submit testnet market order</button><label class="broker-test-confirm"><input name="confirm" type="checkbox" required /> I understand this sends a Bybit TESTNET order only.</label></form><button class="broker-request-open" id="broker-request-open" type="button">＋ Request another broker</button><div class="broker-request-list" id="broker-request-list"></div><dialog class="broker-request-dialog" id="broker-request-dialog"><form class="broker-request-form" id="broker-request-form"><h3>Request a broker connection</h3><p>This request is stored locally for you to review. It does not contact the broker or enable account access.</p><label>Broker name<input name="broker_name" maxlength="80" required placeholder="Enter any broker" /></label><label>Requested connection<select name="requested_mode"><option value="read-only">Read-only monitoring</option><option value="testnet">Demo / testnet trading</option><option value="live">Live-trading support (not enabled)</option></select></label><label>Notes<textarea name="notes" maxlength="500" placeholder="Platform, market type, or account/subaccount details (never enter API keys here)"></textarea></label><div role="status" aria-live="polite"></div><footer><button type="button" data-close>Cancel</button><button type="submit">Save request</button></footer></form></dialog><dialog class="broker-setup-dialog" id="broker-setup-dialog"><section class="broker-setup-guide"><h3>Connect a Bybit testnet account</h3><p>This guide is for a fake-money test account, not your live wallet. This app does not open or fund wallets.</p><ol><li><strong>Open Bybit Testnet.</strong> Create or sign into a testnet account at <a href="https://testnet.bybit.com/" target="_blank" rel="noopener noreferrer">testnet.bybit.com</a>. Testnet funds are separate from real funds.</li><li><strong>Choose the account you want the bot to see.</strong> If you use a subaccount, create the API key inside that exact testnet account. The app uses the account belonging to the key; it does not switch accounts by ID.</li><li><strong>Create a dedicated API key.</strong> In Bybit testnet API management, create a key for this bot. Give it only the access needed for account verification and, later, test orders. Never allow withdrawals, transfers, or wallet permissions. You can start with read-only; the test order form stays disabled until order permission is verified.</li><li><strong>Save it directly in the local project file.</strong> Open <code>C:\\Users\\Hp\\Desktop\\Hacking Class and Tools\\Trading Bot\\.env</code> in VS Code. Add the lines below, replace only the values after <code>=</code>, then save. Do not paste either key into this page, chat, screenshots, or source code. The key stays in the ignored local file; it is not sent to an AI service.</li><li><strong>Verify the connection.</strong> Return here and click <em>Check Bybit testnet connection</em>. The app will verify the key with Bybit Testnet and show the account label and testnet equity. If verification fails, check the testnet account and key permissions; the app does not show the secret.</li></ol><pre id="broker-env-template">BYBIT_TESTNET_API_KEY=replace-with-testnet-api-key\nBYBIT_TESTNET_API_SECRET=replace-with-testnet-api-secret\nBYBIT_TESTNET_ACCOUNT_LABEL=My testnet subaccount</pre><p class="broker-setup-warning">The .env file is stored as plain text on this computer. Keep your Windows account protected, do not sync/share this file, and never commit it. The project ignores .env, but still check Git changes before publishing. Revoke the key at Bybit if the computer or file may have been exposed.</p><div class="broker-setup-actions"><button type="button" id="broker-env-copy">Copy settings template</button><button type="button" id="broker-setup-check">Check Bybit testnet connection</button><button type="button" data-close>Close guide</button></div><div id="broker-setup-status" role="status" aria-live="polite"></div></section></dialog>';
-        const anchor = document.getElementById('private-account-monitor') || document.getElementById('active-copy') || document.getElementById('copy-lab') || document.getElementById('intelligence');
-        anchor?.parentNode.insertBefore(card, anchor.nextSibling);
+        const monitorGrid=document.getElementById('account-monitor-grid');
+        const anchor=document.getElementById('copy-lab')||document.getElementById('intelligence');
+        if(monitorGrid)monitorGrid.insertAdjacentElement('afterend',card);
+        else anchor?.parentNode.insertBefore(card,anchor.nextSibling);
 
         const status = card.querySelector('#broker-connection-status');
         const grid = card.querySelector('#broker-directory-grid');
@@ -976,6 +1423,7 @@
       } catch (error) {
         const existing = document.getElementById('broker-connection-status');
         if (existing) existing.textContent = error.message;
+        else showSectionLoadError('broker-directory','Broker connections',error);
       }
     }
     function openBrokerRequest(brokerName) {
@@ -998,8 +1446,9 @@
       }
     }
     async function loadActiveCopy(force = false) {
-      const anchor = document.getElementById('copy-lab') || document.getElementById('intelligence');
-      if (!anchor || (!force && document.getElementById('active-copy'))) return;
+      const container=document.getElementById('account-monitor-grid');
+      if (!container || publicCopyRefreshInFlight || (!force && document.getElementById('active-copy')?.dataset.loaded === 'true')) return;
+      publicCopyRefreshInFlight=true;
       try {
         const response = await fetch('/api/copy/active');
         const data = await response.json();
@@ -1009,22 +1458,88 @@
         if (document.querySelector('.paper-dock-tab.active')?.dataset.dockTab === 'positions') renderTradeDockTab('positions');
         const copiedTrade = data.accounts.flatMap(account => account.positions.map(position => ({account, position})))[0];
         if (control.auto_trade_enabled && copiedTrade) displayCopiedTrade(copiedTrade.account, copiedTrade.position);
-        document.getElementById('active-copy')?.remove();
         const card = document.createElement('article');
-        card.className = 'card wide'; card.id = 'active-copy';
-        const rows = data.accounts.flatMap(account => account.positions.map(position => { const pnl = Number(position.unrealized_pnl); const sideClass = position.side === 'long' ? 'copy-long' : 'copy-short'; return `<tr><td><strong class="copy-profile">${account.display_name}</strong><br><span class="small copy-exchange">${account.profile_id} · ${account.exchange}</span></td><td>${position.symbol}</td><td class="${sideClass}">${position.side.toUpperCase()}</td><td>${Number(position.entry_price).toLocaleString()}</td><td>${Number(position.mark_price).toLocaleString()}</td><td>${Number(position.quantity)}</td><td class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}</td><td>${Number(position.stop_loss).toLocaleString()} / ${Number(position.take_profit).toLocaleString()}</td></tr>`; })).join('');
-        card.innerHTML = `<div class="panel-title"><h3>Active copy traders</h3><div class="copy-control"><div class="copy-switch-setting"><strong>Auto-copy</strong><span id="copy-switch-note">When on, qualified signals can open new paper copies. Turning it off pauses new copies; existing positions stay open.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-copy" aria-checked="${control.auto_trade_enabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${control.auto_trade_enabled ? 'On' : 'Off'}</span></div></div></div><div class="copy-notice" id="copy-notice">${control.last_action}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody>${rows || '<tr><td colspan="8">No active copied positions.</td></tr>'}</tbody></table></div>`;
-        anchor.parentNode.insertBefore(card, anchor.nextSibling);
+        card.className = 'card'; card.id = 'active-copy';
+        card.dataset.loaded = 'true';
+        const enabled=Boolean(control.auto_trade_enabled);
+        card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><div class="copy-control"><div class="copy-switch-setting"><strong>Auto-copy</strong><span id="copy-switch-note">When on, qualified signals may open paper copies. This never enables live orders.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-copy" aria-checked="${enabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${enabled?'On':'Off'}</span></div></div></div><p class="public-monitor-note">Demo lead profiles are synthetic examples, not real exchange trader accounts. Marks and P&amp;L use only fresh public ticker data. “Draft in ticket” loads an editable paper order and never submits it.</p><div class="copy-notice" id="copy-notice">${escapePaperHtml(control.last_action)}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Live mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody></tbody></table></div>`;
+        const oldCard=document.getElementById('active-copy');
+        if(oldCard)container.replaceChild(card,oldCard);else container.prepend(card);
         setupActiveCopyTools(data);
-        const copyToggle = document.getElementById('copy-toggle'); copyToggle.title = control.auto_trade_enabled ? 'Pause new copies; existing positions remain open' : 'Enable new paper copies after confirmation';
-        document.getElementById('copy-toggle').addEventListener('click', async () => {
-          const enabled = document.getElementById('copy-toggle').getAttribute('aria-checked') !== 'true';
-          const message = enabled ? 'Enable auto-copy? New paper positions may be created when a qualified signal passes the risk gates.' : 'Disable auto-copy? New copies will stop. Existing positions remain open and can then be closed manually.';
-          if (!window.confirm(message)) return;
-          const update = await fetch('/api/copy/control', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({enabled})});
-          if (update.ok) { const result = await update.json(); addNotification(enabled ? 'Auto-copy enabled' : 'Close request created', result.control.last_action, enabled ? 'warn' : 'alert'); await loadActiveCopy(true); }
+        const toggle=card.querySelector('#copy-toggle');
+        toggle.title=enabled?'Pause new copies; existing positions remain open':'Enable qualified paper copies after confirmation';
+        toggle.addEventListener('click',async()=>{
+          const nextEnabled=toggle.getAttribute('aria-checked')!=='true';
+          const message=nextEnabled?'Enable auto-copy? Qualified signals may create paper positions under the existing risk gates.':'Pause auto-copy? New entries stop; existing paper positions remain open.';
+          if(!window.confirm(message))return;
+          try{
+            const update=await fetch('/api/copy/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:nextEnabled})});
+            const result=await update.json();
+            if(!update.ok)throw new Error(result.error||'Could not update auto-copy.');
+            addNotification(nextEnabled?'Auto-copy enabled':'Auto-copy paused',result.control.last_action,nextEnabled?'warn':'alert');
+            await loadActiveCopy(true);
+          }catch(error){
+            addNotification('Auto-copy unchanged',error.message,'alert');
+            await loadActiveCopy(true);
+          }
         });
-      } catch (_) {}
+      } catch (error) { showSectionLoadError('active-copy','Public lead monitor',error); }
+      finally { publicCopyRefreshInFlight=false; }
+    }
+    async function draftCopiedTrade(index) {
+      const selected=activeCopyEntries[index];
+      if(!selected)return;
+      const {account,position}=selected;
+      const symbol=String(position.symbol||'').toUpperCase();
+      const side=String(position.side||'').toLowerCase();
+      if(!/^[A-Z0-9]{2,20}$/.test(symbol)||!['long','short'].includes(side)){
+        addNotification('Trade draft unavailable','The sample position has an invalid symbol or side. No order was placed.','alert');return;
+      }
+      const exchangeName=String(account.exchange||'').toLowerCase();
+      const exchange=exchangeName.includes('binance')?'binance':'bybit';
+      const entry=Number(position.entry_price),stop=Number(position.stop_loss),target=Number(position.take_profit),quantity=Number(position.quantity);
+      if(![entry,stop,target,quantity].every(Number.isFinite)||entry<=0||stop<=0||target<=0||quantity<=0){
+        addNotification('Trade draft unavailable','The sample position has invalid size or price levels. No order was placed.','alert');return;
+      }
+      try{
+        if(selectedExchange!==exchange){selectedExchange=exchange;document.getElementById('exchange-select').value=exchange;}
+        if(primarySymbol!==symbol){
+          paperEvaluationSuppressed=true;
+          try{selectAsset(symbol);}finally{paperEvaluationSuppressed=false;}
+        }
+        const response=await fetch(`/api/market?exchange=${exchange}&symbol=${encodeURIComponent(symbol)}&interval=${selectedInterval}&asset_class=crypto`);
+        const market=await response.json();
+        if(!response.ok)throw new Error(market.error||'A fresh quote could not be loaded.');
+        const quote=Number(market.ticker?.last);
+        if(!Number.isFinite(quote)||quote<=0)throw new Error('The market feed did not provide a valid current price.');
+        const quoteTimestamp=Number(market.ticker?.timestamp_ms),quoteAge=Date.now()-quoteTimestamp;
+        if(market.market_data?.ticker_unavailable||!Number.isFinite(quoteTimestamp)||quoteAge < -2000||quoteAge > 5000)throw new Error('The feed did not provide a fresh exchange-timestamped quote.');
+        if((side==='long'&&(stop>=entry||target<=entry))||(side==='short'&&(stop<=entry||target>=entry)))throw new Error('The sample stop and target do not match the position side.');
+        const riskFraction=Math.abs(entry-stop)/entry,rewardFraction=Math.abs(target-entry)/entry;
+        if(side==='short'&&quote*(1-rewardFraction)<=0)throw new Error('The copied target cannot be scaled to the current price.');
+        const form=document.getElementById('paper-ticket-form');
+        if(!form)throw new Error('The paper trade ticket is unavailable.');
+        form.elements.order_type.value='market';
+        document.getElementById('ticket-limit-field').hidden=true;
+        form.elements.entry_price.required=false;
+        form.elements.side.value=side;
+        form.elements.quantity.value=String(quantity);
+        form.elements.leverage.value='1';
+        form.elements.entry_price.value=String(quote);
+        form.elements.stop_loss.value=String(side==='long'?quote*(1-riskFraction):quote*(1+riskFraction));
+        form.elements.take_profit.value=String(side==='long'?quote*(1+rewardFraction):quote*(1-rewardFraction));
+        ['entry_price','stop_loss','take_profit'].forEach(name=>form.elements[name].dataset.touched='true');
+        document.querySelectorAll('.ticket-actions button[data-side]').forEach(button=>button.classList.toggle('selected',button.dataset.side===side));
+        updateTicketReference(quote);
+        const status=document.getElementById('ticket-status');
+        status.className='ticket-status';
+        status.textContent=`Draft copied from ${account.display_name} for review. Check the live price, quantity, stop, and target; adjust them before choosing Paper ${side}. Nothing has been placed.`;
+        document.getElementById('order-panel').scrollIntoView({behavior:'smooth',block:'center'});
+        form.elements.quantity.focus({preventScroll:true});
+        addNotification('Paper trade draft ready',`${side.toUpperCase()} ${symbol} · live price loaded · no order submitted`,'info');
+      }catch(error){
+        addNotification('Trade draft not prepared',`${error.message} No order was placed.`,'alert');
+      }
     }
     function displayCopiedTrade(account, position) {
       const symbol = String(position.symbol || '').toUpperCase();
@@ -1038,6 +1553,14 @@
     }
     async function evaluatePaper(symbol) {
       const badge = document.getElementById('paper-signal');
+      if(paperEvaluationSuppressed){badge.textContent='Paper signal: paused for manual draft';return;}
+      if (selectedAssetClass!=='crypto') { badge.textContent = 'Paper signal: crypto markets only'; badge.title = 'Forex, stocks, indices, and commodities need a data and execution adapter before paper evaluation can be enabled.'; badge.className = 'paper-signal'; return; }
+      if (!['bybit','binance'].includes(selectedExchange)) { badge.textContent = 'Paper signal: execution feed required'; badge.title = 'Chart-only feeds do not provide a supported paper execution venue. Select Bybit or Binance public perpetual feed.'; badge.className = 'paper-signal'; return; }
+      if (lossRecoveryPaused) {
+        badge.textContent = 'Paper signal: paused after setback';
+        badge.title = 'New automatic entries are paused until you select a coin or a risk-approved alternative is found.';
+        return;
+      }
       const asset = findAsset(symbol);
       if (asset && !asset[2]) { badge.textContent = 'Paper signal: catalog only'; badge.title = 'Dedicated market adapter required for this asset class.'; badge.className = 'paper-signal'; return; }
       if (document.getElementById('history-date').value) { badge.textContent = 'Paper signal: paused'; badge.title = 'Paper evaluation is disabled while viewing historical chart data.'; badge.className = 'paper-signal'; return; }
@@ -1052,12 +1575,69 @@
         renderBehavior(data.behavioral);
       } catch (error) { badge.textContent = 'Paper signal: unavailable'; badge.title = error.message; }
     }
+    let observedClosedTradeIds = null;
+    let lossRecoveryInFlight = false;
+    let lossRecoveryPaused = false;
+    const recoveryDateKey=new Date().toISOString().slice(0,10);
+    let recoveryExcludedSymbols=new Set();
+    try {
+      const savedRecovery=JSON.parse(localStorage.getItem('trading-bot-loss-recovery')||'null');
+      if(savedRecovery?.date===recoveryDateKey&&Array.isArray(savedRecovery.symbols))recoveryExcludedSymbols=new Set(savedRecovery.symbols);
+    } catch (error) { console.error('Could not restore the paper loss-recovery exclusions.',error); }
+    function observePaperLosses(history) {
+      const closed=Array.isArray(history)?history.filter(trade=>trade.status==='closed'):[];
+      const currentIds=new Set(closed.map(trade=>String(trade.order_id||`${trade.symbol}-${trade.closed_at||trade.updated_at||''}`)));
+      if(observedClosedTradeIds===null){observedClosedTradeIds=currentIds;return;}
+      const newLoss=closed.find(trade=>Number(trade.realized_pnl)<0&&!observedClosedTradeIds.has(String(trade.order_id||`${trade.symbol}-${trade.closed_at||trade.updated_at||''}`)));
+      observedClosedTradeIds=currentIds;
+      if(newLoss&&!lossRecoveryInFlight)void reselectAfterPaperLoss(newLoss);
+    }
+    async function reselectAfterPaperLoss(trade) {
+      lossRecoveryInFlight=true;
+      lossRecoveryPaused=true;
+      const losingSymbol=String(trade.symbol||primarySymbol).toUpperCase();
+      recoveryExcludedSymbols.add(losingSymbol);
+      try { localStorage.setItem('trading-bot-loss-recovery',JSON.stringify({date:recoveryDateKey,symbols:[...recoveryExcludedSymbols]})); }
+      catch(error){console.error('Could not persist the paper loss-recovery exclusions.',error);}
+      const badge=document.getElementById('paper-signal');
+      badge.textContent='Paper signal: scanning alternatives';
+      badge.title=`A losing paper trade closed on ${losingSymbol}; scanning other supported coins for a fresh risk-approved signal.`;
+      document.getElementById('chart-tool-status').textContent=`Setback on ${losingSymbol} · scanning supported coins`;
+      try {
+        if(!['bybit','binance'].includes(selectedExchange))throw new Error('Choose Bybit or Binance perpetual data to scan paper-trading alternatives.');
+        const symbols=assetCatalog.crypto
+          .filter(([symbol,,supported])=>supported&&symbol!==losingSymbol&&!recoveryExcludedSymbols.has(symbol))
+          .map(([symbol])=>symbol);
+        if(!symbols.length)throw new Error('No untried supported coins remain in today’s recovery scan.');
+        const query=new URLSearchParams({exchange:selectedExchange,interval:selectedInterval,symbols:symbols.join(','),exclude:[...recoveryExcludedSymbols].join(',')});
+        const response=await fetch('/api/paper/scan?'+query.toString());
+        const data=await response.json();
+        if(!response.ok)throw new Error(data.error||'Alternative coin scan failed.');
+        const candidate=data.candidates?.[0];
+        if(!candidate)throw new Error('No other coin had a fresh confirmed signal that passed the existing paper risk gates. Automatic entries remain paused.');
+        lossRecoveryPaused=false;
+        selectAsset(candidate.symbol,{automaticRecovery:true});
+        const notice=`After the ${losingSymbol} loss, switched paper chart to ${candidate.symbol}: fresh ${String(candidate.signal).toUpperCase()} signal passed risk checks. This is not a loss-prevention guarantee.`;
+        document.getElementById('chart-tool-status').textContent=`Recovery scan · ${candidate.symbol} ${String(candidate.signal).toUpperCase()} · paper only`;
+        badge.textContent=`Paper signal: ${candidate.symbol} scan approved`;
+        badge.title=notice;
+        addNotification('Paper recovery scan',notice,'warn');
+      } catch(error) {
+        badge.textContent='Paper signal: paused after setback';
+        badge.title=error.message;
+        document.getElementById('chart-tool-status').textContent='New paper entries paused · review market scan';
+        addNotification('Paper entries paused after setback',error.message,'alert');
+      } finally { lossRecoveryInFlight=false; }
+    }
     async function loadPaperState() {
       try {
         const response = await fetch('/api/paper/state');
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Paper state unavailable');
+        observePaperLosses(data.history);
         lastOpenPositions=data.open_positions||[];lastPendingOrders=(data.orders||[]).filter(order=>['pending','data_gap'].includes(order.status));
+        renderDailyProfitNotice(data.daily_profit);
+        if(data.daily_profit?.target_met&&autoCopyEnabled)await loadActiveCopy(true);
         document.getElementById('paper-equity-value').textContent = '$' + Number(data.equity).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) + ' equity';
         const availableFunds=document.getElementById('ticket-available');if(availableFunds)availableFunds.textContent=money(data.account_summary?.available_balance||0);
         const open = document.getElementById('open-positions-list');
@@ -1075,6 +1655,26 @@
     }
     function money(value) { return '$' + Number(value).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
     function signedMoney(value) { const amount = Number(value); return (amount >= 0 ? '+' : '-') + money(Math.abs(amount)); }
+    function renderDailyProfitNotice(policy) {
+      const notice=document.getElementById('daily-target-notice');
+      if(!notice||!policy)return;
+      const target=Number(policy.target_amount||0);
+      const realized=Number(policy.realized_pnl||0);
+      notice.hidden=false;
+      notice.classList.toggle('reached',Boolean(policy.target_met));
+      if(policy.target_met){
+        const limits=policy.manual_risk_limits||{};
+        const reached=policy.currently_at_target?`Daily paper target met: ${signedMoney(realized)} / ${money(target)}.`:`Daily paper target was met earlier (+${money(policy.target_reached_pnl||target)}); current realized P&L is ${signedMoney(realized)}.`;
+        notice.textContent=`${reached} Automatic entries stay off for today. Trying for more profit will not raise today's target. Large lots are blocked; manual paper orders are capped at ${limits.risk_per_trade_percent}% risk per trade, ${limits.max_leverage}× leverage, ${limits.max_open_positions} open/pending entries, and ${limits.max_notional_percent}% notional, with at least ${limits.min_risk_reward}:1 reward/risk. Oversized orders are rejected before placement. This is not a live-account target or a profit guarantee.`;
+      }else{
+        notice.textContent=`Daily paper target: ${signedMoney(realized)} / ${money(target)} (${Number(policy.target_percent).toFixed(2)}%). This is an aggressive, non-guaranteed goal—not a reason to increase lot size or bypass risk limits. Never chase the target; entries still require fresh data and all risk gates.`;
+      }
+      const leverage=document.getElementById('ticket-leverage');
+      if(leverage){
+        [...leverage.options].forEach(option=>{option.disabled=Boolean(policy.target_met)&&Number(option.value)>Number(policy.manual_risk_limits?.max_leverage||1);});
+        if(policy.target_met&&Number(leverage.value)>Number(policy.manual_risk_limits?.max_leverage||1))leverage.value='1';
+      }
+    }
     async function loadAccountSummary() {
       try {
         const response = await fetch('/api/account/summary'); const data = await response.json(); if (!response.ok) return;
@@ -1109,10 +1709,11 @@
         const labelCount = Math.max(2, Math.floor(plotWidth / 155));
         ctx.textBaseline = 'top'; ctx.fillStyle = '#858591';
         for (let i=0;i<=labelCount;i++) {
-          const index = Math.min(lastMarketCandles.length - 1, Math.round(i * (lastMarketCandles.length - 1) / labelCount));
+          const visibleCandles=visibleMarketCandles();
+          const index = Math.min(visibleCandles.length - 1, Math.round(i * (visibleCandles.length - 1) / labelCount));
           if (index < 0) continue;
           ctx.textAlign = i === 0 ? 'left' : i === labelCount ? 'right' : 'center';
-          ctx.fillText(chartTimestampLabel(lastMarketCandles[index].timestamp_ms, selectedInterval), i * plotWidth / labelCount, plotHeight + 3);
+          ctx.fillText(chartTimestampLabel(visibleCandles[index].timestamp_ms, selectedInterval), i * plotWidth / labelCount, plotHeight + 3);
         }
       }
       lines.forEach(line => {
@@ -1139,22 +1740,25 @@
       const axisWidth = 48, bottomSpace = 17, plotWidth = Math.max(1,width-axisWidth), plotHeight = Math.max(1,height-bottomSpace);
       canvas.width = width*scale; canvas.height = height*scale; canvas.style.width=width+'px'; canvas.style.height=height+'px';
       const ctx=canvas.getContext('2d'); ctx.setTransform(scale,0,0,scale,0,0); ctx.clearRect(0,0,width,height);
-      const values=candles.map(item => Math.max(0,Number(item.volume)||0)), max=Math.max(...values,0), step=plotWidth/candles.length, barWidth=Math.max(1,Math.min(10,step*.68));
+      const values=candles.map(item => item.volume===null||item.volume===undefined?null:Math.max(0,Number(item.volume)||0));
+      const reported=values.filter(Number.isFinite);
+      if(!reported.length){ctx.fillStyle='#9999a4';ctx.font='11px Arial';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('Volume not reported by this market feed',10,8);return;}
+      const max=Math.max(...reported,0), step=plotWidth/candles.length, barWidth=Math.max(1,Math.min(10,step*.68));
       ctx.strokeStyle='#24242c';ctx.fillStyle='#9999a4';ctx.font='9px Arial';ctx.textAlign='right';ctx.textBaseline='middle';
       for(let tick=0;tick<=2;tick++){const value=max*(1-tick/2),y=plotHeight*tick/2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(plotWidth,y);ctx.stroke();ctx.fillText(formatVolume(value),width-4,y);}
-      values.forEach((value,index)=>{const candle=candles[index],barHeight=max>0?value/max*(plotHeight-3):0;if(barHeight<=0)return;ctx.fillStyle=Number(candle.close)>=Number(candle.open)?'rgba(22,185,121,.68)':'rgba(237,64,83,.68)';ctx.fillRect(index*step+(step-barWidth)/2,plotHeight-barHeight,barWidth,barHeight);});
+      values.forEach((value,index)=>{if(value===null)return;const candle=candles[index],barHeight=max>0?value/max*(plotHeight-3):0;if(barHeight<=0)return;ctx.fillStyle=Number(candle.close)>=Number(candle.open)?'rgba(22,185,121,.68)':'rgba(237,64,83,.68)';ctx.fillRect(index*step+(step-barWidth)/2,plotHeight-barHeight,barWidth,barHeight);});
       const labelCount=Math.max(2,Math.floor(plotWidth/155));ctx.fillStyle='#858591';ctx.textBaseline='top';
       for(let i=0;i<=labelCount;i++){const index=Math.min(candles.length-1,Math.round(i*(candles.length-1)/labelCount));ctx.textAlign=i===0?'left':i===labelCount?'right':'center';ctx.fillText(chartTimestampLabel(candles[index].timestamp_ms,selectedInterval),i*plotWidth/labelCount,plotHeight+3);}
     }
-    function renderPositionOverlay(positions=lastOpenPositions) {
+    function renderPositionOverlay(positions=lastOpenPositions,candles=visibleMarketCandles()) {
       const chart=document.querySelector('.chart'); if(!chart)return;
       let canvas=document.getElementById('position-overlay');
       if(!canvas){canvas=document.createElement('canvas');canvas.id='position-overlay';canvas.className='position-overlay';chart.insertBefore(canvas,document.getElementById('drawing-overlay'));}
       const width=chart.clientWidth-PRICE_AXIS_WIDTH,height=chart.clientHeight-TIME_AXIS_HEIGHT,scale=window.devicePixelRatio||1;
       canvas.width=Math.max(1,width)*scale;canvas.height=Math.max(1,height)*scale;canvas.style.width=Math.max(1,width)+'px';canvas.style.height=Math.max(1,height)+'px';
       const ctx=canvas.getContext('2d');ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,width,height);
-      if(!lastMarketCandles.length)return;
-      const prices=lastMarketCandles.flatMap(c=>[Number(c.high),Number(c.low)]),rawMax=Math.max(...prices),rawMin=Math.min(...prices),pad=(rawMax-rawMin||rawMax*.002||1)*.06,max=rawMax+pad,min=rawMin-pad,range=max-min||1;
+      if(!candles.length)return;
+      const prices=candles.flatMap(c=>[Number(c.high),Number(c.low)]),rawMax=Math.max(...prices),rawMin=Math.min(...prices),pad=(rawMax-rawMin||rawMax*.002||1)*.06,max=rawMax+pad,min=rawMin-pad,range=max-min||1;
       const visible=positions.filter(position=>position.symbol===primarySymbol);
       visible.forEach(position=>{
         const pending=position.status==='pending';
@@ -1194,25 +1798,42 @@
     }
     let chartRefreshTimer = null;
     let chartRefreshInFlight = false;
-    async function refreshChartLoop() { if (chartRefreshTimer) { clearTimeout(chartRefreshTimer); chartRefreshTimer = null; } if (document.visibilityState !== 'visible') { document.getElementById('chart-refresh-status').textContent = 'Auto refresh: paused'; return; } if (!chartRefreshInFlight) { chartRefreshInFlight = true; document.getElementById('chart-refresh-status').textContent = 'Auto refresh: updating'; try { await loadMarket(primarySymbol, 'market'); document.getElementById('chart-refresh-status').textContent = 'Auto refresh: every 5s'; } finally { chartRefreshInFlight = false; } } chartRefreshTimer = setTimeout(refreshChartLoop, 5000); }
+    async function refreshChartLoop() { if (chartRefreshTimer) { clearTimeout(chartRefreshTimer); chartRefreshTimer = null; } if (document.visibilityState !== 'visible') { document.getElementById('chart-refresh-status').textContent = 'Auto refresh: paused'; return; } const refreshMs=selectedExchange==='twelvedata'?120000:5000; if (!chartRefreshInFlight) { chartRefreshInFlight = true; document.getElementById('chart-refresh-status').textContent = 'Auto refresh: updating'; try { await loadMarket(primarySymbol, 'market'); document.getElementById('chart-refresh-status').textContent = `Auto refresh: every ${refreshMs/1000}s`; } finally { chartRefreshInFlight = false; } } chartRefreshTimer = setTimeout(refreshChartLoop, refreshMs); }
     function startChartRefreshLoop() { if (document.visibilityState === 'visible') refreshChartLoop(); }
-    function refreshMarkets() { loadMarket(primarySymbol, 'market'); loadWatchlist(); evaluatePaper(primarySymbol); startChartRefreshLoop(); }
+    function refreshMarkets() { loadMarket(primarySymbol, 'market'); loadWatchlist(); updateTicketExchangeAvailability(); evaluatePaper(primarySymbol); startChartRefreshLoop(); }
     document.querySelectorAll('.timeframe').forEach(button => button.addEventListener('click', () => { selectedInterval = button.dataset.interval; document.querySelectorAll('.timeframe').forEach(item => item.classList.toggle('active', item.dataset.interval === selectedInterval)); refreshMarkets(); }));
-    function selectAsset(symbol) { primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; resetTicketPriceFields(); refreshMarkets(); }
-    document.querySelectorAll('.asset-row').forEach(button => button.addEventListener('click', () => selectAsset(button.dataset.symbol)));
-    document.getElementById('asset-class-select').addEventListener('change', event => { selectedAssetClass = event.target.value; selectAsset(assetCatalog[selectedAssetClass][0][0]); });
+    function selectAsset(symbol, options = {}) { if (!options.automaticRecovery) lossRecoveryPaused=false; const category=Object.keys(assetCatalog).find(name=>assetCatalog[name].some(asset=>asset[0]===symbol)); if(category){selectedAssetClass=category;document.getElementById('asset-class-select').value=category;} primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; updateAssetSelectorBrand(); renderWatchlistCategory(selectedAssetClass); resetTicketPriceFields(); refreshMarkets(); }
+    document.getElementById('watchlist-assets').addEventListener('click',event=>{const row=event.target.closest('.asset-row');if(row)selectAsset(row.dataset.symbol);});
+    document.querySelector('.watchlist-tabs').addEventListener('click',event=>{const button=event.target.closest('[data-asset-class]');if(button)selectAssetClass(button.dataset.assetClass);});
+    function selectAssetClass(category) {
+      if(!assetCatalog[category])return;
+      selectedAssetClass=category;
+      document.getElementById('asset-class-select').value=category;
+      const symbol=assetCatalog[category].some(asset=>asset[0]===primarySymbol)?primarySymbol:assetCatalog[category][0][0];
+      selectAsset(symbol);
+    }
+    document.getElementById('asset-class-select').addEventListener('change', event => selectAssetClass(event.target.value));
     document.getElementById('asset-symbol-select').addEventListener('change', event => selectAsset(event.target.value));
-    document.getElementById('history-date').addEventListener('change', event => { const value = event.target.value; document.getElementById('chart-tool-status').textContent = value ? 'Historical mode: ' + value : 'Live mode selected'; refreshMarkets(); });
+    document.getElementById('history-date').addEventListener('change', event => { const value = event.target.value; updateHistoryDateDisplay(); document.getElementById('chart-tool-status').textContent = value ? 'Historical mode: ' + value : 'Live mode selected'; refreshMarkets(); });
     document.getElementById('search-symbol').addEventListener('click', () => { const symbol = document.getElementById('symbol-search').value.trim().toUpperCase(); if (/^[A-Z0-9]{5,15}$/.test(symbol)) selectAsset(symbol); });
     document.getElementById('symbol-search').addEventListener('keydown', event => { if (event.key === 'Enter') document.getElementById('search-symbol').click(); });
-    document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; resetTicketPriceFields(); updateTicketExchangeAvailability(); refreshMarkets(); });
+    document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; renderAssetCatalog(selectedAssetClass); renderWatchlistCategory(selectedAssetClass); resetTicketPriceFields(); updateTicketExchangeAvailability(); refreshMarkets(); });
     const toolbarIconPaths = { 'Crosshair':'<circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>', 'Trend line':'<path d="M4 18 10 12 14 15 21 6"/><path d="M17 6h4v4"/>', 'Horizontal line':'<path d="M3 12h18"/><path d="M6 8v8M18 8v8"/>', 'Parallel channel':'<path d="m4 17 7-7M8 21l7-7M9 10l5 5"/>', 'Fibonacci retracement':'<path d="M4 5h16M4 9h16M4 13h16M4 17h16M4 21h16"/><path d="m5 5 14 16"/>', 'Brush':'<path d="m14 4 6 6-9 9-6 1 1-6 8-10Z"/><path d="m12 6 6 6"/>', 'Text note':'<path d="M4 5h16M12 5v14M8 19h8"/>', 'Emoji marker':'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>', 'Measure':'<path d="m4 17 13-13 3 3L7 20H4v-3Z"/><path d="m9 15 2 2M12 12l2 2M15 9l2 2"/>', 'Zoom':'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M10.5 7v7M7 10.5h7"/>', 'Magnet mode':'<path d="M6 4v8a6 6 0 0 0 12 0V4"/><path d="M6 4h4v8a2 2 0 0 0 4 0V4h4M6 8h4M14 8h4"/>', 'Lock drawings':'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>', 'Toggle visibility':'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>', 'Delete drawings':'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', 'Chart settings':'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>', 'Compare symbols':'<path d="M4 18V6M4 18h16"/><path d="m7 14 3-4 3 2 5-6"/>', 'Log scale':'<path d="M5 19V5M5 19h14"/><path d="M8 15h3M8 11h6M8 7h9"/>', 'Auto scale':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M12 7v10M9 10l3-3 3 3M9 14l3 3 3-3"/>', 'Fullscreen':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 1 2-2v-3"/>' };
     function toolbarIcon(title) { return `<svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${toolbarIconPaths[title] || ''}</svg>`; }
-    document.querySelectorAll('.drawing-tools button,.chart-bottom-tools button').forEach(button => { const label = button.title; const text = label === 'Compare symbols' ? 'Compare' : label === 'Log scale' ? 'Log' : label === 'Auto scale' ? 'Auto' : ''; button.innerHTML = toolbarIcon(label) + (text ? `<span>${text}</span>` : ''); });
+    document.querySelectorAll('.drawing-tools button,.chart-bottom-tools button:not(.chart-zoom-control)').forEach(button => { const label = button.title; const text = label === 'Compare symbols' ? 'Compare' : label === 'Log scale' ? 'Log' : label === 'Auto scale' ? 'Auto' : ''; button.innerHTML = toolbarIcon(label) + (text ? `<span>${text}</span>` : ''); });
     document.querySelectorAll('.drawing-tools button').forEach(button => button.addEventListener('click', () => { const title = button.title; if (title === 'Delete drawings') { drawings = []; renderDrawings(); document.getElementById('chart-tool-status').textContent = 'Drawings cleared'; return; } if (title === 'Toggle visibility') { drawingsVisible = !drawingsVisible; drawingCanvas.style.opacity = drawingsVisible ? '1' : '0'; document.getElementById('chart-tool-status').textContent = drawingsVisible ? 'Drawings visible' : 'Drawings hidden'; return; } if (title === 'Lock drawings') { drawingsLocked = !drawingsLocked; document.getElementById('chart-tool-status').textContent = drawingsLocked ? 'Drawings locked' : 'Drawings unlocked'; return; } drawingTool = title; document.querySelectorAll('.drawing-tools button').forEach(item => item.classList.remove('active')); button.classList.add('active'); document.getElementById('chart-tool-status').textContent = title + ' selected'; }));
     document.querySelector('.drawing-tools button').classList.add('active');
-    document.querySelectorAll('.chart-bottom-tools button').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
-    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); configurePaperTicket(); addPaperDock(); loadPaperStatus(); setupAgentConsult(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); loadBrokerDirectory(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000);
+    function setChartZoom(level) {
+      chartZoomLevel=Math.max(0,Math.min(8,level));
+      redrawMarketVisuals();
+      const percent=Math.round(Math.pow(1.3,chartZoomLevel)*100);
+      document.getElementById('chart-tool-status').textContent=`Chart zoom ${percent}%`;
+    }
+    document.getElementById('chart-zoom-in').addEventListener('click',()=>setChartZoom(chartZoomLevel+1));
+    document.getElementById('chart-zoom-out').addEventListener('click',()=>setChartZoom(chartZoomLevel-1));
+    document.getElementById('chart-zoom-reset').addEventListener('click',()=>setChartZoom(0));
+    document.querySelectorAll('.chart-bottom-tools button:not(.chart-zoom-control)').forEach(button => button.addEventListener('click', async () => { if (button.title === 'Fullscreen') { const chartCard = document.querySelector('.chart-card'); if (!document.fullscreenElement && chartCard.requestFullscreen) await chartCard.requestFullscreen(); else if (document.exitFullscreen) await document.exitFullscreen(); } document.getElementById('chart-tool-status').textContent = button.title + ' selected'; }));
+    document.addEventListener('visibilitychange', startChartRefreshLoop); window.addEventListener('resize', () => { resizeDrawingCanvas(); redrawMarketVisuals(); refreshMarkets(); }); setIndicatorVisibility(); addNotificationSection(); configurePaperTicket(); addPaperDock(); loadPaperStatus(); setupAgentConsult(); refreshMarkets(); loadPaperState(); loadCopyCandidates(); loadPrivatePositions(); loadBrokerDirectory(); setTimeout(loadActiveCopy, 100); setInterval(loadPaperState, 5000); setInterval(loadTradeDock, 5000); setInterval(loadPrivatePositions, 10000); setInterval(() => { if (document.visibilityState === 'visible') { loadWatchlist(); evaluatePaper(primarySymbol); } }, 30000); setInterval(() => { if (document.visibilityState === 'visible') loadActiveCopy(true); }, 15000);
   </script>
 </body>
 </html>
