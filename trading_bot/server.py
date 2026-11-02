@@ -19,6 +19,7 @@ from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMar
 from .paper_session import PaperExecutionSession
 from .private_accounts import private_account_snapshot
 from .strategy import MovingAverageCrossStrategy
+from trader_sources import HyperliquidMonitor
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,7 @@ MARKET_CLIENTS = {
 PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
 COPY_LAB = CopyStrategyLab()
+HYPERLIQUID_MONITOR = HyperliquidMonitor()
 COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_action": "Monitoring remains active; new paper copies are paused."}
 PAPER_AVAILABLE_BALANCE = 8_420.50
 SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]{2,20}$")
@@ -558,12 +560,23 @@ class AppHandler(BaseHTTPRequestHandler):
             return
         if request.path == "/api/copy/active":
             try:
-                synchronize_daily_profit_lock()
+                with PAPER_LOCK:
+                    synchronize_daily_profit_lock()
+                    COPY_CONTROL["auto_trade_enabled"] = False
+                    COPY_CONTROL["close_request"] = False
+                    COPY_CONTROL["last_action"] = "Hyperliquid fills are monitored for paper analysis only; automatic copies are disabled."
             except (OSError, ValueError) as exc:
                 self._send(500, json.dumps({"error": f"Could not synchronize paper profit policy: {exc}"}).encode(), "application/json; charset=utf-8")
                 return
-            accounts, unrealized_pnl = live_copy_accounts()
-            self._send(200, json.dumps({"mode": "paper", "control": COPY_CONTROL, "accounts": [account.as_dict() for account in accounts], "account_summary": {"starting_balance": 10_000.0, "available_balance": PAPER_AVAILABLE_BALANCE + unrealized_pnl, "equity": 10_000.0 + unrealized_pnl, "unrealized_pnl": unrealized_pnl, "realized_pnl": 0.0}}).encode(), "application/json; charset=utf-8")
+            HYPERLIQUID_MONITOR.start()
+            payload = HYPERLIQUID_MONITOR.snapshot()
+            payload.update(
+                {
+                    "mode": "paper",
+                    "control": dict(COPY_CONTROL),
+                }
+            )
+            self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/account/summary":
             with PAPER_LOCK:
@@ -951,6 +964,12 @@ class AppHandler(BaseHTTPRequestHandler):
                     "error": "The daily paper-profit target has been met. Automatic paper trading cannot be re-enabled today.",
                     "control": COPY_CONTROL,
                     "daily_profit": daily_profit,
+                }).encode(), "application/json; charset=utf-8")
+                return
+            if enabled:
+                self._send(409, json.dumps({
+                    "error": "Automatic copies are disabled until verified Hyperliquid events are integrated with paper risk sizing.",
+                    "control": {**COPY_CONTROL, "auto_trade_enabled": False},
                 }).encode(), "application/json; charset=utf-8")
                 return
             COPY_CONTROL["auto_trade_enabled"] = enabled

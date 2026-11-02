@@ -97,6 +97,33 @@ class PaperCloseApiTests(unittest.TestCase):
         with response:
             return response.status, json.loads(response.read())
 
+    def test_public_copy_monitor_uses_hyperliquid_snapshot_and_keeps_auto_copy_off(self) -> None:
+        class FakeMonitor:
+            started = False
+
+            def start(self) -> None:
+                self.started = True
+
+            def snapshot(self) -> dict[str, object]:
+                return {
+                    "traders": [{"source_trader_id": "0x" + "1" * 40}],
+                    "events": [],
+                    "monitor": {"state": "connecting", "connected": False},
+                }
+
+        monitor = FakeMonitor()
+        server.COPY_CONTROL["auto_trade_enabled"] = True
+        with patch.object(server, "HYPERLIQUID_MONITOR", monitor):
+            with urlopen(self.base_url + "/api/copy/active", timeout=2) as response:
+                body = json.loads(response.read())
+
+        self.assertTrue(monitor.started)
+        self.assertEqual(body["traders"][0]["source_trader_id"], "0x" + "1" * 40)
+        self.assertFalse(body["control"]["auto_trade_enabled"])
+        self.assertFalse(server.COPY_CONTROL["auto_trade_enabled"])
+        status, _ = self.post_json("/api/copy/control", {"enabled": True})
+        self.assertEqual(status, 409)
+
     def test_historical_chart_data_cannot_mutate_paper_trading_state(self) -> None:
         request = Request(self.base_url + "/api/paper/evaluate?exchange=bybit&symbol=SOLUSDT&interval=1&history_date=2026-01-01")
         with self.assertRaises(HTTPError) as raised:

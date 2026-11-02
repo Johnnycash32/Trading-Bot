@@ -213,7 +213,7 @@
         </section>
         <article class="card wide" id="copy-lab"><div class="panel-title"><h3>Public copy research</h3><span>Paper research only</span></div><p class="dynamic-section-note">Loading public copy candidates…</p></article>
         <section class="account-monitor-grid" id="account-monitor-grid" aria-label="Public and private account monitors">
-          <article class="card" id="active-copy"><div class="panel-title"><h3>Public lead monitor</h3><span>Loading</span></div><p class="dynamic-section-note">Loading sample lead positions and public market marks…</p></article>
+          <article class="card" id="active-copy"><div class="panel-title"><h3>Public lead monitor</h3><span>Loading</span></div><p class="dynamic-section-note">Loading Hyperliquid public wallet discovery and verified fill events…</p></article>
           <article class="card" id="private-account-monitor"><div class="panel-title"><h3>Private account monitor</h3><span>Read-only</span></div><p class="dynamic-section-note">Loading private account status…</p></article>
         </section>
         <article class="card wide" id="broker-directory"><div class="panel-title"><h3>Broker connections</h3><span>Testnet only · live execution off</span></div><p class="dynamic-section-note">Loading broker directory…</p></article>
@@ -1209,6 +1209,7 @@
     }
     let activeCopyData = null;
     let activeCopyEntries = [];
+    let activeHyperliquidEvents = [];
     let activeCopySearch = '';
     let activeCopySort = 'risk';
     let publicCopyRefreshInFlight = false;
@@ -1453,38 +1454,73 @@
         const response = await fetch('/api/copy/active');
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Active copy data unavailable');
-        const control = data.control;
-        autoCopyEnabled = control.auto_trade_enabled;
-        if (document.querySelector('.paper-dock-tab.active')?.dataset.dockTab === 'positions') renderTradeDockTab('positions');
-        const copiedTrade = data.accounts.flatMap(account => account.positions.map(position => ({account, position})))[0];
-        if (control.auto_trade_enabled && copiedTrade) displayCopiedTrade(copiedTrade.account, copiedTrade.position);
+        autoCopyEnabled = false;
+        const traders = Array.isArray(data.traders) ? data.traders : [];
+        const events = Array.isArray(data.events) ? data.events : [];
+        const monitor = data.monitor || {};
+        const pnl = value => value == null || !Number.isFinite(Number(value)) ? 'Unavailable' : Number(value).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:2});
+        const freshness = monitor.last_event_received_at ? `Last event received ${new Date(monitor.last_event_received_at).toLocaleString()}` : 'No fill received in this session yet';
+        const connections = monitor.connection_groups ? `WebSocket ${monitor.connected_groups||0}/${monitor.connection_groups} groups connected` : 'WebSocket connection pending';
+        const status = monitor.error ? `Monitor error: ${monitor.error}` : `${monitor.connected ? connections : `Monitor ${monitor.state || 'starting'} · ${connections}`} · ${freshness} · paper analysis only`;
+        const traderRows = traders.map((trader,index) => `<tr><td>${index+1}</td><td><code title="${escapePaperHtml(trader.source_trader_id)}">${escapePaperHtml(trader.source_trader_id)}</code></td><td class="${Number(trader.month_pnl)>=0?'positive':'negative'}">${pnl(trader.month_pnl)}</td><td>${pnl(trader.account_value)}</td><td>${trader.month_roi==null?'Unavailable':`${(Number(trader.month_roi)*100).toFixed(2)}%`}</td></tr>`).join('');
+        activeHyperliquidEvents = events;
+        const eventRows = events.map((event,index) => `<tr><td>${event.timestamp?new Date(event.timestamp).toLocaleString():'Unavailable'}</td><td><code>${escapePaperHtml(event.source_trader_id||'')}</code></td><td>${escapePaperHtml(event.instrument||'')}</td><td class="${event.direction==='long'?'copy-long':'copy-short'}">${escapePaperHtml(event.direction||'').toUpperCase()}</td><td>${escapePaperHtml(event.event_type||'')}</td><td>${Number(event.price).toLocaleString()}</td><td>${Number(event.quantity).toLocaleString()}</td><td>${event.delivery_source==='websocket'?'Live WebSocket':event.delivery_source==='websocket_snapshot'?'WebSocket snapshot':'REST backfill'}</td><td>${event.source_verified===true?'Verified source':'Unverified'}</td><td>${event.source_verified===true?`<button class="copy-tool-button" type="button" data-draft-hyperliquid="${index}">Draft ticket</button>`:'—'}</td></tr>`).join('');
         const card = document.createElement('article');
         card.className = 'card'; card.id = 'active-copy';
         card.dataset.loaded = 'true';
-        const enabled=Boolean(control.auto_trade_enabled);
-        card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><div class="copy-control"><div class="copy-switch-setting"><strong>Auto-copy</strong><span id="copy-switch-note">When on, qualified signals may open paper copies. This never enables live orders.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-copy" aria-checked="${enabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${enabled?'On':'Off'}</span></div></div></div><p class="public-monitor-note">Demo lead profiles are synthetic examples, not real exchange trader accounts. Marks and P&amp;L use only fresh public ticker data. “Draft in ticket” loads an editable paper order and never submits it.</p><div class="copy-notice" id="copy-notice">${escapePaperHtml(control.last_action)}</div><div class="active-copy-table"><table><thead><tr><th>Lead account</th><th>Symbol</th><th>Side</th><th>Entry</th><th>Live mark</th><th>Size</th><th>Unrealized P&amp;L</th><th>Stop / Target</th></tr></thead><tbody></tbody></table></div>`;
+        card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><span>Hyperliquid · paper analysis only</span></div><p class="public-monitor-note">${escapePaperHtml(status)}. Wallet discovery uses Hyperliquid's public but undocumented leaderboard endpoint; individual fills come from its documented public user-fills stream. This monitor does not submit orders. Automatic copying is disabled. Wallet addresses do not verify a trader's real-world identity.</p><div class="copy-notice">${traders.length} discovered wallets · ${events.length} recent verified fills shown${monitor.backfill_websocket_duplicate_count?` · ${monitor.backfill_websocket_duplicate_count} REST/WebSocket duplicates suppressed`:''}</div><h4>Top monthly P&amp;L wallets</h4><div class="active-copy-table"><table><thead><tr><th>Rank</th><th>Public wallet</th><th>Month P&amp;L</th><th>Account value</th><th>Month ROI</th></tr></thead><tbody>${traderRows||'<tr><td colspan="5">No public trader profiles are currently available.</td></tr>'}</tbody></table></div><h4>Recent individual fills</h4><div class="active-copy-table"><table><thead><tr><th>Timestamp</th><th>Source wallet</th><th>Instrument</th><th>Position</th><th>Change</th><th>Fill price</th><th>Fill size</th><th>Delivery</th><th>Verification</th><th>Action</th></tr></thead><tbody>${eventRows||'<tr><td colspan="10">Waiting for verified Hyperliquid wallet fills.</td></tr>'}</tbody></table></div>`;
         const oldCard=document.getElementById('active-copy');
         if(oldCard)container.replaceChild(card,oldCard);else container.prepend(card);
-        setupActiveCopyTools(data);
-        const toggle=card.querySelector('#copy-toggle');
-        toggle.title=enabled?'Pause new copies; existing positions remain open':'Enable qualified paper copies after confirmation';
-        toggle.addEventListener('click',async()=>{
-          const nextEnabled=toggle.getAttribute('aria-checked')!=='true';
-          const message=nextEnabled?'Enable auto-copy? Qualified signals may create paper positions under the existing risk gates.':'Pause auto-copy? New entries stop; existing paper positions remain open.';
-          if(!window.confirm(message))return;
-          try{
-            const update=await fetch('/api/copy/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:nextEnabled})});
-            const result=await update.json();
-            if(!update.ok)throw new Error(result.error||'Could not update auto-copy.');
-            addNotification(nextEnabled?'Auto-copy enabled':'Auto-copy paused',result.control.last_action,nextEnabled?'warn':'alert');
-            await loadActiveCopy(true);
-          }catch(error){
-            addNotification('Auto-copy unchanged',error.message,'alert');
-            await loadActiveCopy(true);
-          }
-        });
+        card.querySelectorAll('[data-draft-hyperliquid]').forEach(button=>button.addEventListener('click',()=>draftHyperliquidFill(Number(button.dataset.draftHyperliquid))));
       } catch (error) { showSectionLoadError('active-copy','Public lead monitor',error); }
       finally { publicCopyRefreshInFlight=false; }
+    }
+    async function draftHyperliquidFill(index) {
+      const event=activeHyperliquidEvents[index];
+      if(!event||event.source_verified!==true||!['long','short'].includes(event.direction)){
+        addNotification('Trade draft unavailable','The fill is not source-verified or has no supported direction. No order was placed.','alert');return;
+      }
+      const coin=String(event.instrument||'').toUpperCase();
+      const symbol=coin.endsWith('USDT')?coin:`${coin}USDT`;
+      if(!/^[A-Z0-9]{2,20}$/.test(symbol)||!assetCatalog.crypto.some(asset=>asset[0]===symbol)){
+        addNotification('Trade draft unavailable',`No supported Bybit/Binance paper pair is mapped for Hyperliquid instrument ${coin||'unknown'}. Choose a market manually; no order was placed.`,'alert');return;
+      }
+      const exchange=['bybit','binance'].includes(selectedExchange)?selectedExchange:'bybit';
+      try{
+        if(selectedExchange!==exchange){selectedExchange=exchange;document.getElementById('exchange-select').value=exchange;}
+        if(primarySymbol!==symbol){
+          paperEvaluationSuppressed=true;
+          try{selectAsset(symbol);}finally{paperEvaluationSuppressed=false;}
+        }
+        const response=await fetch(`/api/market?exchange=${exchange}&symbol=${encodeURIComponent(symbol)}&interval=${selectedInterval}&asset_class=crypto`);
+        const market=await response.json();
+        if(!response.ok)throw new Error(market.error||'A fresh quote could not be loaded.');
+        const quote=Number(market.ticker?.last);
+        const quoteTimestamp=Number(market.ticker?.timestamp_ms),quoteAge=Date.now()-quoteTimestamp;
+        if(!Number.isFinite(quote)||quote<=0||market.market_data?.ticker_unavailable||!Number.isFinite(quoteTimestamp)||quoteAge < -2000||quoteAge > 5000)throw new Error('The feed did not provide a fresh exchange-timestamped quote.');
+        const form=document.getElementById('paper-ticket-form');
+        if(!form)throw new Error('The paper trade ticket is unavailable.');
+        form.elements.order_type.value='market';
+        document.getElementById('ticket-limit-field').hidden=true;
+        form.elements.entry_price.required=false;
+        form.elements.side.value=event.direction;
+        form.elements.quantity.value='';
+        form.elements.leverage.value='1';
+        form.elements.entry_price.value=String(quote);
+        form.elements.stop_loss.value='';
+        form.elements.take_profit.value='';
+        ['entry_price','stop_loss','take_profit'].forEach(name=>form.elements[name].dataset.touched='true');
+        document.querySelectorAll('.ticket-actions button[data-side]').forEach(button=>button.classList.toggle('selected',button.dataset.side===event.direction));
+        updateTicketReference(quote);
+        const status=document.getElementById('ticket-status');
+        status.className='ticket-status';
+        status.textContent=`Editable draft from Hyperliquid wallet ${String(event.source_trader_id).slice(0,8)}… for review. Lead size and stops were not copied; enter your own quantity, stop, and target. Nothing has been placed.`;
+        document.getElementById('order-panel').scrollIntoView({behavior:'smooth',block:'center'});
+        form.elements.quantity.focus({preventScroll:true});
+        addNotification('Paper ticket draft ready',`${event.direction.toUpperCase()} ${symbol} · enter your own size and risk levels · no order submitted`,'info');
+      }catch(error){
+        addNotification('Trade draft not prepared',`${error.message} No order was placed.`,'alert');
+      }
     }
     async function draftCopiedTrade(index) {
       const selected=activeCopyEntries[index];

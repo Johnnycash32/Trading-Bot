@@ -11,4 +11,4 @@ dependencies = ["websocket-client>=1.8"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["trading_bot*"]
+include = ["trading_bot*", "trader_sources*"]
