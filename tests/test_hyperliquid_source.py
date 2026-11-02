@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import json
 import unittest
-from threading import Barrier, Event
+from threading import Event
 from typing import Callable, Iterator
 from urllib.request import Request
 
 import websocket
 
 from trader_sources.base import TraderEvent
-from trader_sources.hyperliquid_source import HyperliquidSource
+from trader_sources.hyperliquid_source import HyperliquidMonitor, HyperliquidSource
 
 
 ADDRESS = "0x" + "1" * 40
@@ -279,36 +279,53 @@ class HyperliquidSourceTests(unittest.TestCase):
         self.assertEqual(events[0].delivery_source, "websocket")
         self.assertEqual(events[0].event_type, "position_opened")
 
-    def test_discovery_top_twenty_is_split_with_hyperliquid_fifteen_user_limit(self) -> None:
+    def test_stream_rejects_more_than_hyperliquid_user_limit(self) -> None:
         wallets = [f"0x{index:040x}" for index in range(1, 17)]
-        batches: list[list[str]] = []
-        barrier = Barrier(2)
         stop_event = Event()
 
+        with self.assertRaisesRegex(ValueError, "at most 15 users"):
+            list(HyperliquidSource().stream_events(wallets, stop_event))
+
+    def test_monitor_only_subscribes_top_fifteen_and_reports_unmonitored_wallets(self) -> None:
+        traders = [
+            {"source_trader_id": f"0x{index:040x}", "month_pnl": 20 - index}
+            for index in range(1, 21)
+        ]
+        stream_started = Event()
+        stream_finished = Event()
+        subscribed: list[str] = []
+
         class TestSource(HyperliquidSource):
-            def _stream_batch(
+            def discover_traders(self, limit: int = 20) -> list[dict[str, object]]:
+                return traders[:limit]
+
+            def stream_events(
                 self,
-                addresses: list[str],
+                trader_ids: list[str],
                 stop_event: Event,
-                status_callback: Callable[[dict[str, object]], None] | None,
+                status_callback: Callable[[dict[str, object]], None] | None = None,
             ) -> Iterator[TraderEvent]:
-                batches.append(addresses)
-                if status_callback is not None:
-                    status_callback({"connected": True})
-                barrier.wait(timeout=2)
-                while not stop_event.is_set():
-                    stop_event.wait(0.01)
-                yield from ()
+                subscribed.extend(trader_ids)
+                stream_started.set()
+                try:
+                    stop_event.wait(2)
+                    yield from ()
+                finally:
+                    stream_finished.set()
 
-        def on_status(update: dict[str, object]) -> None:
-            if update.get("connected_groups") == 2:
-                stop_event.set()
+        monitor = HyperliquidMonitor(TestSource())
+        monitor.start()
+        self.assertTrue(stream_started.wait(2))
+        monitor.stop()
+        self.assertTrue(stream_finished.wait(2))
 
-        events = list(TestSource().stream_events(wallets, stop_event, on_status))
-
-        self.assertEqual(events, [])
-        self.assertEqual(sorted(len(batch) for batch in batches), [1, 15])
-        self.assertEqual({address for batch in batches for address in batch}, set(wallets))
+        snapshot = monitor.snapshot()
+        status = snapshot["monitor"]
+        self.assertEqual(len(snapshot["traders"]), 20)
+        self.assertEqual(len(subscribed), 15)
+        self.assertEqual(status["discovered_count"], 20)
+        self.assertEqual(status["monitored_count"], 15)
+        self.assertEqual(status["unmonitored_count"], 5)
 
 
 if __name__ == "__main__":

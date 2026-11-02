@@ -24,6 +24,7 @@ INFO_URL = "https://api.hyperliquid.xyz/info"
 WEBSOCKET_URL = "wss://api.hyperliquid.xyz/ws"
 ADDRESS_PATTERN = re.compile(r"^0x[a-fA-F0-9]{40}$")
 MAX_BACKOFF_SECONDS = 30
+MAX_TRACKED_USERS = 15
 MAX_USERS_PER_WEBSOCKET = 15
 MAX_EVENT_IDS = 20_000
 MAX_EVENTS = 500
@@ -273,6 +274,10 @@ class HyperliquidSource(TraderEventSource):
         addresses = list(dict.fromkeys(address.lower() for address in trader_ids if ADDRESS_PATTERN.fullmatch(address)))
         if not addresses:
             raise ValueError("At least one valid Hyperliquid wallet address is required.")
+        if len(addresses) > MAX_TRACKED_USERS:
+            raise ValueError(
+                f"Hyperliquid permits tracking at most {MAX_TRACKED_USERS} users at a time."
+            )
 
         batches = [
             addresses[index:index + MAX_USERS_PER_WEBSOCKET]
@@ -298,6 +303,8 @@ class HyperliquidSource(TraderEventSource):
                 combined["connected"] = any(connection_states)
                 combined["connected_groups"] = sum(connection_states)
                 combined["connection_groups"] = len(batches)
+                combined["connection_group"] = batch_index + 1
+                combined["tracked_wallet_count"] = len(batches[batch_index])
                 combined["backfill_websocket_duplicate_count"] = sum(duplicate_counts)
             status_callback(combined)
 
@@ -574,12 +581,16 @@ class HyperliquidMonitor:
         while not self._stop.is_set():
             try:
                 traders = self.source.discover_traders(limit=20)
+                monitored_traders = traders[:MAX_TRACKED_USERS]
                 with self._lock:
                     self._traders = traders
                     self._status.update(
                         {
                             "state": "connecting",
                             "discovered_count": len(traders),
+                            "monitored_count": len(monitored_traders),
+                            "unmonitored_count": len(traders) - len(monitored_traders),
+                            "monitoring_limit": MAX_TRACKED_USERS,
                             "discovered_at": datetime.now(timezone.utc).isoformat(),
                             "error": None,
                             "discovery_source": "public_undocumented_leaderboard",
@@ -588,7 +599,7 @@ class HyperliquidMonitor:
                 if not traders:
                     raise ValueError("Hyperliquid leaderboard returned no valid wallet addresses.")
                 for event in self.source.stream_events(
-                    [str(trader["source_trader_id"]) for trader in traders],
+                    [str(trader["source_trader_id"]) for trader in monitored_traders],
                     self._stop,
                     self._update_status,
                 ):
