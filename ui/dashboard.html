@@ -1619,7 +1619,8 @@
         const response = await fetch('/api/copy/active');
         const data = await readJsonResponse(response, 'Public lead monitor');
         if (!response.ok) throw new Error(data.error || 'Active copy data unavailable');
-        autoCopyEnabled = false;
+        const controlState = data.control || {};
+        autoCopyEnabled = controlState.auto_trade_enabled === true;
         const traders = Array.isArray(data.traders) ? data.traders : [];
         const events = Array.isArray(data.events) ? data.events : [];
         const monitor = data.monitor || {};
@@ -1636,8 +1637,36 @@
         card.className = 'card'; card.id = 'active-copy';
         card.dataset.loaded = 'true';
         card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><span>Hyperliquid · paper analysis only</span></div><p class="public-monitor-note">${escapePaperHtml(status)}. Wallet discovery uses Hyperliquid's public but undocumented leaderboard endpoint; individual fills come from its documented public user-fills stream. This monitor does not submit orders. Automatic copying is disabled. Wallet addresses do not verify a trader's real-world identity.</p><div class="copy-notice">${traders.length} discovered wallets · ${monitoredCount} subscribed${unmonitoredCount?` · ${unmonitoredCount} not monitored due to Hyperliquid's 15-user limit`:''} · ${events.length} recent verified fills shown${monitor.backfill_websocket_duplicate_count?` · ${monitor.backfill_websocket_duplicate_count} REST/WebSocket duplicates suppressed`:''}</div><h4>Top monthly P&amp;L wallets</h4><div class="active-copy-table"><table><thead><tr><th>Rank</th><th>Public wallet</th><th>Month P&amp;L</th><th>Account value</th><th>Month ROI</th><th>Monitor status</th></tr></thead><tbody>${traderRows||'<tr><td colspan="6">No public trader profiles are currently available.</td></tr>'}</tbody></table></div><h4>Recent individual fills</h4><div class="active-copy-table"><table><thead><tr><th>Timestamp</th><th>Source wallet</th><th>Instrument</th><th>Position</th><th>Change</th><th>Fill price</th><th>Fill size</th><th>Delivery</th><th>Verification</th><th>Action</th></tr></thead><tbody>${eventRows||'<tr><td colspan="10">Waiting for verified Hyperliquid wallet fills.</td></tr>'}</tbody></table></div>`;
+        const copyControl = document.createElement('div');
+        copyControl.className = 'copy-control';
+        copyControl.innerHTML = `<div class="copy-switch-setting"><strong>Auto-trade</strong><span id="copy-switch-note">Paper-only. Enabling is blocked until verified fills are integrated with paper risk sizing.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-trade" aria-checked="${autoCopyEnabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${autoCopyEnabled ? 'On' : 'Off'}</span></div>`;
+        const panelTitle = card.querySelector('.panel-title');
+        panelTitle.querySelector('span').replaceWith(copyControl);
         const oldCard=document.getElementById('active-copy');
         if(oldCard)container.replaceChild(card,oldCard);else container.prepend(card);
+        const toggle = card.querySelector('#copy-toggle');
+        toggle.title = autoCopyEnabled ? 'Pause automatic paper copies; existing positions remain open' : 'Automatic paper copies are currently blocked by the paper risk integration';
+        toggle.addEventListener('click', async () => {
+          const nextEnabled = toggle.getAttribute('aria-checked') !== 'true';
+          const message = nextEnabled
+            ? 'Attempt to enable automatic paper trading? The server may refuse while verified fills are not integrated with paper risk sizing.'
+            : 'Pause automatic paper copies? Existing paper positions remain open.';
+          if (!window.confirm(message)) return;
+          try {
+            const update = await fetch('/api/copy/control', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({enabled: nextEnabled})
+            });
+            const result = await update.json();
+            if (!update.ok) throw new Error(result.error || 'Could not update auto-trade.');
+            addNotification(nextEnabled ? 'Auto-trade enabled' : 'Auto-trade paused', result.control.last_action, nextEnabled ? 'warn' : 'alert');
+            await loadActiveCopy(true);
+          } catch (error) {
+            addNotification('Auto-trade unchanged', error.message, 'alert');
+            await loadActiveCopy(true);
+          }
+        });
         card.querySelectorAll('[data-draft-hyperliquid]').forEach(button=>button.addEventListener('click',()=>draftHyperliquidFill(Number(button.dataset.draftHyperliquid))));
       } catch (error) { showSectionLoadError('active-copy','Public lead monitor',error); }
       finally { publicCopyRefreshInFlight=false; }
