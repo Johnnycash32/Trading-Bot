@@ -231,6 +231,11 @@ class HyperliquidSource(TraderEventSource):
             raise ValueError("Hyperliquid fill has no startPosition; its position change cannot be inferred.")
         before_size = fill_start
         after_size = before_size + (quantity if side == "B" else -quantity)
+        fill_timestamp_ms = int(timestamp_ms)
+        if int(state_timestamp) < fill_timestamp_ms:
+            raise ValueError("Clearinghouse state predates the fill.")
+        if abs(state_position - after_size) > max(1e-8, abs(after_size) * 1e-6):
+            raise ValueError("Clearinghouse position does not confirm the fill transition.")
         if before_size == 0 and after_size != 0:
             event_type = "position_opened"
         elif before_size != 0 and after_size == 0:
@@ -245,7 +250,7 @@ class HyperliquidSource(TraderEventSource):
             raise ValueError("Fill did not produce an inferable position-size change.")
 
         direction_size = after_size if after_size != 0 else before_size
-        timestamp_value = int(timestamp_ms)
+        timestamp_value = fill_timestamp_ms
         event_timestamp = datetime.fromtimestamp(timestamp_value / 1000, tz=timezone.utc)
         return TraderEvent(
             source_trader_id=address.lower(),
@@ -533,8 +538,14 @@ class HyperliquidSource(TraderEventSource):
 class HyperliquidMonitor:
     """Background collector exposed read-only to the paper dashboard."""
 
-    def __init__(self, source: HyperliquidSource | None = None) -> None:
+    def __init__(
+        self,
+        source: HyperliquidSource | None = None,
+        *,
+        event_callback: Callable[[TraderEvent], None] | None = None,
+    ) -> None:
         self.source = source or HyperliquidSource()
+        self._event_callback = event_callback
         self._lock = Lock()
         self._stop = Event()
         self._thread: Thread | None = None
@@ -615,6 +626,11 @@ class HyperliquidMonitor:
                         self._events.appendleft(event.as_dict())
                         self._status["last_event_received_at"] = datetime.now(timezone.utc).isoformat()
                         self._status["latest_event_timestamp"] = event.timestamp
+                    if self._event_callback is not None:
+                        try:
+                            self._event_callback(event)
+                        except Exception:
+                            LOGGER.exception("Hyperliquid event callback failed for %s.", event.event_id)
                 retry_seconds = 1
             except Exception as exc:
                 LOGGER.exception("Hyperliquid trader discovery or monitoring failed.")

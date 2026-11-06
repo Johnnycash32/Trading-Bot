@@ -223,6 +223,22 @@
     @media(prefers-reduced-motion:reduce){#agents .animal-avatar{animation:none!important;will-change:auto}}
     @media(max-width:480px){.agent-animation-toggle{font-size:.6rem;padding:4px 6px}}
   </style>
+  <style>
+    .copy-settings{background:#15151b;border:1px solid #30303a;border-radius:4px;margin:12px 0;padding:12px}
+    .copy-settings-head,.copy-settings-fields,.copy-wallet-actions{align-items:center;display:flex;flex-wrap:wrap;gap:8px}
+    .copy-settings-head{justify-content:space-between}
+    .copy-settings-fields{margin-top:10px}
+    .copy-settings label{color:#aaaab3;display:grid;font-size:.64rem;gap:4px}
+    .copy-settings input[type=number]{background:#1b1b22;border:1px solid #3c3c47;border-radius:4px;color:#f4f4f5;padding:6px;width:86px}
+    .copy-settings button{background:#202027;border:1px solid #3a3a46;border-radius:4px;color:#c5c5ce;font-size:.64rem;padding:6px 9px}
+    .copy-settings button:hover:not(:disabled),.copy-settings button:focus-visible{background:#2b2b35;color:#fff}
+    .copy-settings button:disabled,.copy-settings input:disabled{cursor:not-allowed;opacity:.5}
+    .copy-settings-status{color:#9e9ea9;font-size:.64rem}
+    .copy-settings-status.error{color:#ff9da7}
+    .copy-wallet-check{accent-color:#16b979;height:14px;width:14px}
+    .active-copy-table .copy-wallet-cell{text-align:center}
+    @media(max-width:700px){.copy-settings-head{align-items:flex-start;flex-direction:column}.copy-settings-fields{align-items:flex-end}.copy-settings-fields label{font-size:.6rem}}
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -1171,6 +1187,7 @@
       document.querySelectorAll('[data-dock-tab]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-dock-tab]').forEach(item => item.classList.toggle('active', item === button)); renderTradeDockTab(button.dataset.dockTab); }));
     }
     let autoCopyEnabled = false;
+    let paperCopySettingsDirty = false;
     let paperDetailItems = [];
     function escapePaperHtml(value) { return String(value ?? '—').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
     function formatWalletAddress(value) {
@@ -1613,12 +1630,17 @@
     }
     async function loadActiveCopy(force = false) {
       const container=document.getElementById('account-monitor-grid');
-      if (!container || publicCopyRefreshInFlight || (!force && document.getElementById('active-copy')?.dataset.loaded === 'true')) return;
+      if (!container || publicCopyRefreshInFlight || paperCopySettingsDirty || (!force && document.getElementById('active-copy')?.dataset.loaded === 'true')) return;
       publicCopyRefreshInFlight=true;
       try {
         const response = await fetch('/api/copy/active');
         const data = await readJsonResponse(response, 'Public lead monitor');
         if (!response.ok) throw new Error(data.error || 'Active copy data unavailable');
+        const settingsResponse = await fetch('/api/copy/settings');
+        const settingsData = await readJsonResponse(settingsResponse, 'Paper-copy settings');
+        if (!settingsResponse.ok) throw new Error(settingsData.error || 'Paper-copy settings unavailable');
+        let copySettings = settingsData.settings;
+        const selectedWallets = new Set(copySettings.selected_wallets || []);
         const controlState = data.control || {};
         autoCopyEnabled = controlState.auto_trade_enabled === true;
         const traders = Array.isArray(data.traders) ? data.traders : [];
@@ -1630,27 +1652,33 @@
         const freshness = monitor.last_event_received_at ? `Last event received ${new Date(monitor.last_event_received_at).toLocaleString()}` : 'No fill received in this session yet';
         const connections = monitor.connection_groups ? `WebSocket ${monitor.connected_groups||0}/${monitor.connection_groups} groups connected` : 'WebSocket connection pending';
         const status = monitor.error ? `Monitor error: ${monitor.error}` : `${monitor.connected ? connections : `Monitor ${monitor.state || 'starting'} · ${connections}`} · ${freshness} · paper analysis only`;
-        const traderRows = traders.map((trader,index) => `<tr><td>${index+1}</td><td><code title="${escapePaperHtml(trader.source_trader_id)}">${escapePaperHtml(formatWalletAddress(trader.source_trader_id))}</code></td><td class="${Number(trader.month_pnl)>=0?'positive':'negative'}">${pnl(trader.month_pnl)}</td><td>${pnl(trader.account_value)}</td><td>${trader.month_roi==null?'Unavailable':`${(Number(trader.month_roi)*100).toFixed(2)}%`}</td><td>${index<monitoredCount?'Subscribed':'Not subscribed (15-user limit)'}</td></tr>`).join('');
+        const traderRows = traders.map((trader,index) => `<tr><td>${index+1}</td><td class="copy-wallet-cell">${index<monitoredCount?`<input class="copy-wallet-check" type="checkbox" data-copy-wallet="${escapePaperHtml(trader.source_trader_id)}" aria-label="Select ${escapePaperHtml(formatWalletAddress(trader.source_trader_id))} for paper copying" ${selectedWallets.has(trader.source_trader_id)?'checked':''} ${autoCopyEnabled?'disabled':''}>`:'—'}</td><td><code title="${escapePaperHtml(trader.source_trader_id)}">${escapePaperHtml(formatWalletAddress(trader.source_trader_id))}</code></td><td class="${Number(trader.month_pnl)>=0?'positive':'negative'}">${pnl(trader.month_pnl)}</td><td>${pnl(trader.account_value)}</td><td>${trader.month_roi==null?'Unavailable':`${(Number(trader.month_roi)*100).toFixed(2)}%`}</td><td>${index<monitoredCount?'Subscribed':'Not subscribed (15-user limit)'}</td></tr>`).join('');
         activeHyperliquidEvents = events;
         const eventRows = events.map((event,index) => `<tr><td>${event.timestamp?new Date(event.timestamp).toLocaleString():'Unavailable'}</td><td><code title="${escapePaperHtml(event.source_trader_id||'')}">${escapePaperHtml(formatWalletAddress(event.source_trader_id))}</code></td><td>${escapePaperHtml(event.instrument||'')}</td><td class="${event.direction==='long'?'copy-long':'copy-short'}">${escapePaperHtml(event.direction||'').toUpperCase()}</td><td>${escapePaperHtml(event.event_type||'')}</td><td>${Number(event.price).toLocaleString()}</td><td>${Number(event.quantity).toLocaleString()}</td><td>${event.delivery_source==='websocket'?'Live WebSocket':event.delivery_source==='websocket_snapshot'?'WebSocket snapshot':'REST backfill'}</td><td>${event.source_verified===true?'Verified source':'Unverified'}</td><td>${event.source_verified===true?`<button class="copy-tool-button" type="button" data-draft-hyperliquid="${index}">Draft ticket</button>`:'—'}</td></tr>`).join('');
         const card = document.createElement('article');
         card.className = 'card'; card.id = 'active-copy';
         card.dataset.loaded = 'true';
-        card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><span>Hyperliquid · paper analysis only</span></div><p class="public-monitor-note">${escapePaperHtml(status)}. Wallet discovery uses Hyperliquid's public but undocumented leaderboard endpoint; individual fills come from its documented public user-fills stream. This monitor does not submit orders. Automatic copying is disabled. Wallet addresses do not verify a trader's real-world identity.</p><div class="copy-notice">${traders.length} discovered wallets · ${monitoredCount} subscribed${unmonitoredCount?` · ${unmonitoredCount} not monitored due to Hyperliquid's 15-user limit`:''} · ${events.length} recent verified fills shown${monitor.backfill_websocket_duplicate_count?` · ${monitor.backfill_websocket_duplicate_count} REST/WebSocket duplicates suppressed`:''}</div><h4>Top monthly P&amp;L wallets</h4><div class="active-copy-table"><table><thead><tr><th>Rank</th><th>Public wallet</th><th>Month P&amp;L</th><th>Account value</th><th>Month ROI</th><th>Monitor status</th></tr></thead><tbody>${traderRows||'<tr><td colspan="6">No public trader profiles are currently available.</td></tr>'}</tbody></table></div><h4>Recent individual fills</h4><div class="active-copy-table"><table><thead><tr><th>Timestamp</th><th>Source wallet</th><th>Instrument</th><th>Position</th><th>Change</th><th>Fill price</th><th>Fill size</th><th>Delivery</th><th>Verification</th><th>Action</th></tr></thead><tbody>${eventRows||'<tr><td colspan="10">Waiting for verified Hyperliquid wallet fills.</td></tr>'}</tbody></table></div>`;
+        card.innerHTML = `<div class="panel-title"><h3>Public lead monitor</h3><span>Hyperliquid · paper analysis only</span></div><p class="public-monitor-note">${escapePaperHtml(status)}. Wallet discovery uses Hyperliquid's public but undocumented leaderboard endpoint; individual fills come from its documented public user-fills stream. Auto-trade only opens paper positions for fresh verified position-open events from selected wallets. Increases, reductions, closes, reversals, REST backfill, and WebSocket snapshots are not copied. Open copied positions are managed server-side using closed 1-minute candles, independent of the selected chart. Existing risk controls apply; no exchange orders are sent. Wallet addresses do not verify a trader's real-world identity.</p><div class="copy-settings"><div class="copy-settings-head"><strong>Copy settings · <span id="copy-wallet-count">${selectedWallets.size}</span> of ${monitoredCount} monitored wallets selected</strong><span class="copy-settings-status" id="copy-settings-status">${escapePaperHtml(settingsData.copy_status?.last_message || 'Select wallets and save settings before enabling paper auto-trade.')}</span></div><div class="copy-settings-fields"><label>Stop loss %<input id="copy-stop-loss" type="number" min="0.1" max="10" step="0.1" value="${Number(copySettings.stop_loss_percent).toFixed(1)}" ${autoCopyEnabled?'disabled':''}></label><label>Take profit %<input id="copy-take-profit" type="number" min="0.1" max="50" step="0.1" value="${Number(copySettings.take_profit_percent).toFixed(1)}" ${autoCopyEnabled?'disabled':''}></label><label>Leverage<input id="copy-leverage" type="number" min="1" max="2" step="0.1" value="${Number(copySettings.leverage).toFixed(1)}" ${autoCopyEnabled?'disabled':''}></label><div class="copy-wallet-actions"><button type="button" data-copy-select-all ${autoCopyEnabled?'disabled':''}>Select all monitored</button><button type="button" data-copy-clear ${autoCopyEnabled?'disabled':''}>Clear selection</button><button type="button" id="copy-settings-save" ${autoCopyEnabled?'disabled':''}>Save settings</button></div></div></div><div class="copy-notice">${traders.length} discovered wallets · ${monitoredCount} subscribed${unmonitoredCount?` · ${unmonitoredCount} not monitored due to Hyperliquid's 15-user limit`:''} · ${events.length} recent verified fills shown${monitor.backfill_websocket_duplicate_count?` · ${monitor.backfill_websocket_duplicate_count} REST/WebSocket duplicates suppressed`:''}</div><div class="copy-settings-head"><h4>Top monthly P&amp;L wallets</h4><span class="small">Choose which monitored wallets may trigger paper entries</span></div><div class="active-copy-table"><table><thead><tr><th>Rank</th><th>Copy</th><th>Public wallet</th><th>Month P&amp;L</th><th>Account value</th><th>Month ROI</th><th>Monitor status</th></tr></thead><tbody>${traderRows||'<tr><td colspan="7">No public trader profiles are currently available.</td></tr>'}</tbody></table></div><h4>Recent individual fills</h4><div class="active-copy-table"><table><thead><tr><th>Timestamp</th><th>Source wallet</th><th>Instrument</th><th>Position</th><th>Change</th><th>Fill price</th><th>Fill size</th><th>Delivery</th><th>Verification</th><th>Action</th></tr></thead><tbody>${eventRows||'<tr><td colspan="10">Waiting for verified Hyperliquid wallet fills.</td></tr>'}</tbody></table></div>`;
         const copyControl = document.createElement('div');
         copyControl.className = 'copy-control';
-        copyControl.innerHTML = `<div class="copy-switch-setting"><strong>Auto-trade</strong><span id="copy-switch-note">Paper-only. Enabling is blocked until verified fills are integrated with paper risk sizing.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-trade" aria-checked="${autoCopyEnabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${autoCopyEnabled ? 'On' : 'Off'}</span></div>`;
+        copyControl.innerHTML = `<div class="copy-switch-setting"><strong>Auto-trade · paper only</strong><span id="copy-switch-note">Copies only new verified opens from selected wallets, with saved brackets and the app risk engine. Requires a connected fill stream.</span></div><div class="copy-switch-wrap"><button class="copy-switch" id="copy-toggle" type="button" role="switch" aria-label="Auto-trade, paper only" aria-checked="${autoCopyEnabled}" aria-describedby="copy-switch-note copy-switch-state"><span class="copy-switch-track"><span class="copy-switch-thumb"></span></span></button><span class="copy-switch-state" id="copy-switch-state">${autoCopyEnabled ? 'On' : 'Off'}</span></div>`;
         const panelTitle = card.querySelector('.panel-title');
         panelTitle.querySelector('span').replaceWith(copyControl);
         const oldCard=document.getElementById('active-copy');
         if(oldCard)container.replaceChild(card,oldCard);else container.prepend(card);
+        const monitoringWarnings = Object.values(settingsData.copy_status?.monitoring_warnings || {});
+        if (monitoringWarnings.length) {
+          const copyStatus = card.querySelector('#copy-settings-status');
+          copyStatus.textContent = `Position monitoring warning: ${monitoringWarnings.join('; ')}`;
+          copyStatus.classList.add('error');
+        }
         const toggle = card.querySelector('#copy-toggle');
-        toggle.title = autoCopyEnabled ? 'Pause automatic paper copies; existing positions remain open' : 'Automatic paper copies are currently blocked by the paper risk integration';
+        toggle.title = autoCopyEnabled ? 'Pause new automatic paper entries; existing positions remain open' : 'Enable paper copying for the selected monitored wallets';
         toggle.addEventListener('click', async () => {
           const nextEnabled = toggle.getAttribute('aria-checked') !== 'true';
           const message = nextEnabled
-            ? 'Attempt to enable automatic paper trading? The server may refuse while verified fills are not integrated with paper risk sizing.'
-            : 'Pause automatic paper copies? Existing paper positions remain open.';
+            ? `Enable paper auto-trade for ${selectedWallets.size} selected wallet(s)? Only fresh verified position opens are copied; local ${copySettings.stop_loss_percent}% stop / ${copySettings.take_profit_percent}% target and existing risk limits apply. No exchange orders will be placed.`
+            : 'Pause new automatic paper entries? Existing paper positions remain open.';
           if (!window.confirm(message)) return;
           try {
             const update = await fetch('/api/copy/control', {
@@ -1660,13 +1688,69 @@
             });
             const result = await update.json();
             if (!update.ok) throw new Error(result.error || 'Could not update auto-trade.');
-            addNotification(nextEnabled ? 'Auto-trade enabled' : 'Auto-trade paused', result.control.last_action, nextEnabled ? 'warn' : 'alert');
+            addNotification(nextEnabled?'Paper auto-trade enabled':'Paper auto-trade paused',result.control.last_action,nextEnabled?'warn':'alert');
             await loadActiveCopy(true);
           } catch (error) {
-            addNotification('Auto-trade unchanged', error.message, 'alert');
+            addNotification('Paper auto-trade unchanged',error.message,'alert');
             await loadActiveCopy(true);
           }
         });
+        const saveCopySettings = async () => {
+          const statusElement = card.querySelector('#copy-settings-status');
+          const button = card.querySelector('#copy-settings-save');
+          const selected = [...card.querySelectorAll('[data-copy-wallet]:checked')].map(input => input.dataset.copyWallet);
+          const payload = {
+            selected_wallets: selected,
+            stop_loss_percent: Number(card.querySelector('#copy-stop-loss').value),
+            take_profit_percent: Number(card.querySelector('#copy-take-profit').value),
+            leverage: Number(card.querySelector('#copy-leverage').value)
+          };
+          button.disabled = true;
+          statusElement.classList.remove('error');
+          statusElement.textContent = 'Saving paper-copy settings…';
+          try {
+            const saved = await fetch('/api/copy/settings', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            const result = await readJsonResponse(saved, 'Paper-copy settings');
+            if (!saved.ok) throw new Error(result.error || 'Could not save paper-copy settings.');
+            copySettings = result.settings;
+            selectedWallets.clear();
+            result.settings.selected_wallets.forEach(wallet => selectedWallets.add(wallet));
+            paperCopySettingsDirty = false;
+            toggle.disabled = false;
+            statusElement.textContent = `${result.settings.selected_wallets.length} wallet(s) selected · ${result.settings.leverage}x · ${result.settings.stop_loss_percent}% stop / ${result.settings.take_profit_percent}% target`;
+            addNotification('Paper-copy settings saved', 'Only new verified position opens from selected wallets are eligible.', 'info');
+            card.querySelector('#copy-wallet-count').textContent = String(result.settings.selected_wallets.length);
+          } catch (error) {
+            statusElement.classList.add('error');
+            statusElement.textContent = error.message;
+            addNotification('Paper-copy settings unchanged', error.message, 'alert');
+          } finally {
+            button.disabled = autoCopyEnabled;
+          }
+        };
+        card.querySelector('#copy-settings-save').addEventListener('click', saveCopySettings);
+        const markCopySettingsDirty = () => {
+          paperCopySettingsDirty = true;
+          toggle.disabled = true;
+          const statusElement = card.querySelector('#copy-settings-status');
+          statusElement.classList.remove('error');
+          statusElement.textContent = 'Unsaved changes · save settings before enabling paper auto-trade.';
+        };
+        card.querySelectorAll('[data-copy-wallet]').forEach(input => input.addEventListener('change', () => {
+          card.querySelector('#copy-wallet-count').textContent = String(card.querySelectorAll('[data-copy-wallet]:checked').length);
+          markCopySettingsDirty();
+        }));
+        card.querySelector('[data-copy-select-all]').addEventListener('click', () => {
+          card.querySelectorAll('[data-copy-wallet]').forEach(input => { input.checked = true; });
+          card.querySelector('#copy-wallet-count').textContent = String(card.querySelectorAll('[data-copy-wallet]:checked').length);
+          markCopySettingsDirty();
+        });
+        card.querySelector('[data-copy-clear]').addEventListener('click', () => {
+          card.querySelectorAll('[data-copy-wallet]').forEach(input => { input.checked = false; });
+          card.querySelector('#copy-wallet-count').textContent = '0';
+          markCopySettingsDirty();
+        });
+        card.querySelectorAll('#copy-stop-loss,#copy-take-profit,#copy-leverage').forEach(input => input.addEventListener('input', markCopySettingsDirty));
         card.querySelectorAll('[data-draft-hyperliquid]').forEach(button=>button.addEventListener('click',()=>draftHyperliquidFill(Number(button.dataset.draftHyperliquid))));
       } catch (error) { showSectionLoadError('active-copy','Public lead monitor',error); }
       finally { publicCopyRefreshInFlight=false; }
@@ -1785,6 +1869,7 @@
     }
     async function evaluatePaper(symbol) {
       const badge = document.getElementById('paper-signal');
+      if(lastOpenPositions.some(position=>position.source_event_id&&position.symbol===symbol)){badge.textContent='Paper signal: copy position monitored server-side';return;}
       if(paperEvaluationSuppressed){badge.textContent='Paper signal: paused for manual draft';return;}
       if (selectedAssetClass!=='crypto') { badge.textContent = 'Paper signal: crypto markets only'; badge.title = 'Forex, stocks, indices, and commodities need a data and execution adapter before paper evaluation can be enabled.'; badge.className = 'paper-signal'; return; }
       if (!['bybit','binance'].includes(selectedExchange)) { badge.textContent = 'Paper signal: execution feed required'; badge.title = 'Chart-only feeds do not provide a supported paper execution venue. Select Bybit or Binance public perpetual feed.'; badge.className = 'paper-signal'; return; }

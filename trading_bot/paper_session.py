@@ -78,6 +78,11 @@ class PaperExecutionSession:
     def record_agent_event(self, agent: str, status: str, **details: object) -> None:
         self._record_event("agent_analysis", agent=agent, status=status, **details)
 
+    def record_paper_copy_event(self, status: str, **details: object) -> None:
+        if status not in {"opened", "skipped"}:
+            raise ValueError("Unsupported paper-copy event status.")
+        self._record_event(f"paper_copy_{status}", **details)
+
     def _record_balance(self, label: str, change: float) -> None:
         self.balance_history.append({
             "timestamp": self._timestamp(),
@@ -98,6 +103,10 @@ class PaperExecutionSession:
         leverage: float,
         candle_timestamp_ms: int,
         order_type: str = "market",
+        *,
+        signal_source: str = "manual_paper_ticket",
+        source_event_id: str | None = None,
+        source_trader_id: str | None = None,
     ) -> dict[str, object]:
         daily_profit = self.daily_profit_status()
         post_target = bool(daily_profit["target_met"])
@@ -176,11 +185,15 @@ class PaperExecutionSession:
             "initial_stop_loss": stop_loss,
             "initial_stop_distance": abs(entry_price - stop_loss),
             "leverage": leverage,
-            "signal_source": "manual_paper_ticket",
+            "signal_source": signal_source,
             "risk_reward_ratio": decision.risk_reward_ratio,
             "maximum_loss": quantity * (abs(entry_price - stop_loss) + proposal.estimated_fee + proposal.estimated_slippage),
             "daily_target_mode": "post_target_strict" if post_target else "standard",
         }
+        if source_event_id is not None:
+            record["source_event_id"] = source_event_id
+        if source_trader_id is not None:
+            record["source_trader_id"] = source_trader_id
         self.orders.append(record)
         self._last_evaluated_candle[symbol] = max(
             self._last_evaluated_candle.get(symbol, candle_timestamp_ms),
@@ -198,6 +211,90 @@ class PaperExecutionSession:
         if order_type == "market":
             self._open_manual_position(record, entry_price, candle_timestamp_ms)
         return deepcopy(record)
+
+    def submit_risk_sized_paper_copy(
+        self,
+        exchange: str,
+        symbol: str,
+        side: str,
+        entry_price: float,
+        stop_loss_percent: float,
+        take_profit_percent: float,
+        leverage: float,
+        candle_timestamp_ms: int,
+        *,
+        source_event_id: str,
+        source_trader_id: str,
+    ) -> dict[str, object]:
+        if side not in {Side.LONG.value, Side.SHORT.value}:
+            raise ValueError("Choose Long or Short.")
+        if not all(isfinite(value) for value in (entry_price, stop_loss_percent, take_profit_percent, leverage)):
+            raise ValueError("Paper-copy order values must be finite numbers.")
+        if entry_price <= 0 or stop_loss_percent <= 0 or take_profit_percent <= 0:
+            raise ValueError("Paper-copy price and bracket percentages must be positive.")
+        direction = 1 if side == Side.LONG.value else -1
+        stop_loss = entry_price * (1 - direction * stop_loss_percent / 100)
+        take_profit = entry_price * (1 + direction * take_profit_percent / 100)
+        daily_profit = self.daily_profit_status()
+        post_target = bool(daily_profit["target_met"])
+        if post_target:
+            self.apply_daily_profit_lock()
+        pending_count = sum(order["status"] in {"pending", "data_gap"} for order in self.orders)
+        proposal = TradeProposal(
+            exchange=exchange,
+            symbol=symbol,
+            side=Side(side),
+            entry_price=entry_price,
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            account_equity=self.account_equity,
+            current_daily_loss=self._current_daily_loss(),
+            open_positions=len(self._open_positions()) + (pending_count if post_target else 0),
+            leverage=leverage,
+            estimated_fee=entry_price * self.FEE_RATE * 2,
+            estimated_slippage=entry_price * self.SLIPPAGE_RATE * 2,
+        )
+        risk_engine = RiskEngine(POST_TARGET_RISK_LIMITS) if post_target else self.risk_engine
+        decision = risk_engine.validate(proposal)
+        if isinstance(decision, Rejection):
+            self._record_event(
+                "paper_rejected",
+                symbol=symbol,
+                side=side,
+                code=decision.code,
+                reason=decision.reason,
+                source_event_id=source_event_id,
+            )
+            raise ValueError(decision.reason)
+        if post_target and decision.risk_reward_ratio < POST_TARGET_MIN_RISK_REWARD:
+            reason = (
+                f"Daily profit target reached; paper copies require at least "
+                f"{POST_TARGET_MIN_RISK_REWARD:.2f} risk/reward."
+            )
+            self._record_event(
+                "paper_rejected",
+                symbol=symbol,
+                side=side,
+                code="post_target_risk_reward",
+                reason=reason,
+                source_event_id=source_event_id,
+            )
+            raise ValueError(reason)
+        return self.submit_manual_order(
+            exchange,
+            symbol,
+            side,
+            decision.quantity,
+            entry_price,
+            stop_loss,
+            take_profit,
+            leverage,
+            candle_timestamp_ms,
+            order_type="market",
+            signal_source="verified_hyperliquid_paper_copy",
+            source_event_id=source_event_id,
+            source_trader_id=source_trader_id,
+        )
 
     def cancel_pending_order(self, order_id: str) -> dict[str, object] | None:
         order = next((item for item in self.orders if item["order_id"] == order_id), None)

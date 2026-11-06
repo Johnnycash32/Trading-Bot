@@ -126,6 +126,30 @@ class HyperliquidSourceTests(unittest.TestCase):
                 delivery_source="websocket",
             )
 
+    def test_fill_is_rejected_when_clearinghouse_state_disagrees(self) -> None:
+        fill = {
+            "coin": "BTC",
+            "side": "B",
+            "time": 1_700_000_000_000,
+            "px": "50000",
+            "sz": "1",
+            "tid": 99,
+            "startPosition": "0",
+        }
+        state = {
+            "time": 1_700_000_001_000,
+            "assetPositions": [{"position": {"coin": "BTC", "szi": "0.5"}}],
+        }
+
+        with self.assertRaisesRegex(ValueError, "does not confirm"):
+            HyperliquidSource.normalize_fill(
+                ADDRESS,
+                fill,
+                state,
+                state_checked_at_ms=1_700_000_001_000,
+                delivery_source="websocket",
+            )
+
     def test_rest_backfill_and_websocket_snapshot_deduplicate_same_fill(self) -> None:
         fill = {
             "coin": "BTC",
@@ -263,7 +287,10 @@ class HyperliquidSourceTests(unittest.TestCase):
 
             def clearinghouse_state(self, address: str) -> dict[str, object]:
                 self_test.assertEqual(address, ADDRESS)
-                return {"time": 1_700_000_001_000, "assetPositions": []}
+                return {
+                    "time": 1_700_000_001_000,
+                    "assetPositions": [{"position": {"coin": "ETH", "szi": "-0.5"}}],
+                }
 
         self_test = self
         connection = FakeWebSocket()
@@ -326,6 +353,54 @@ class HyperliquidSourceTests(unittest.TestCase):
         self.assertEqual(status["discovered_count"], 20)
         self.assertEqual(status["monitored_count"], 15)
         self.assertEqual(status["unmonitored_count"], 5)
+
+    def test_monitor_forwards_verified_events_to_the_copy_adapter(self) -> None:
+        event = TraderEvent(
+            source_trader_id=ADDRESS,
+            exchange="Hyperliquid",
+            delivery_source="websocket",
+            instrument="BTC",
+            direction="long",
+            price=50_000,
+            quantity=0.1,
+            timestamp="2026-01-01T00:00:00+00:00",
+            event_id="verified-fill",
+            event_type="position_opened",
+            source_verified=True,
+            timestamp_ms=1_767_225_600_000,
+            state_timestamp_ms=1_767_225_600_001,
+            state_checked_at_ms=1_767_225_600_001,
+            state_position_size=0.1,
+        )
+        received = Event()
+        forwarded: list[TraderEvent] = []
+
+        class TestSource(HyperliquidSource):
+            def discover_traders(self, limit: int = 20) -> list[dict[str, object]]:
+                return [{"source_trader_id": ADDRESS}]
+
+            def stream_events(
+                self,
+                trader_ids: list[str],
+                stop_event: Event,
+                status_callback: Callable[[dict[str, object]], None] | None = None,
+            ) -> Iterator[TraderEvent]:
+                yield event
+                stop_event.set()
+
+        def capture(item: TraderEvent) -> None:
+            forwarded.append(item)
+            received.set()
+
+        monitor = HyperliquidMonitor(TestSource(), event_callback=capture)
+        monitor.start()
+        self.assertTrue(received.wait(2))
+        monitor.stop()
+        if monitor._thread is not None:
+            monitor._thread.join(timeout=2)
+
+        self.assertEqual(forwarded, [event])
+        self.assertEqual(monitor.snapshot()["events"][0]["event_id"], event.event_id)
 
 
 if __name__ == "__main__":

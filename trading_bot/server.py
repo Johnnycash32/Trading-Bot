@@ -5,11 +5,12 @@ import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy, deepcopy
+from dataclasses import replace
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from math import isfinite
 from pathlib import Path
-from threading import RLock
+from threading import Event, RLock, Thread
 from urllib.parse import parse_qs, urlsplit
 
 from .broker_connections import BrokerRequestStore, BybitTestnetAccount, BybitTestnetConfig, broker_directory_payload
@@ -17,11 +18,20 @@ from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyS
 from .exchanges.paper import PaperExchange
 from .gemini_agent import GeminiAnalysisAgent, gemini_config
 from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMarketData, TwelveDataMarketData
+from .paper_copy import (
+    PaperCopyEventWorker,
+    PaperCopySettings,
+    candidate_rejection,
+    destination_symbol,
+    load_settings,
+    save_settings,
+)
 from .paper_session import PaperExecutionSession
 from .private_accounts import private_account_snapshot
 from .strategy import MovingAverageCrossStrategy
 from trader_sources.chart_provider import ChartProvider
 from trader_sources import HyperliquidMonitor
+from trader_sources.base import TraderEvent
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +42,7 @@ AGENT_AVATAR_FILES = {
     for name in ("raccoon", "eagle", "hawk", "lion", "cheetah", "hare")
 }
 PAPER_STATE_FILE = PROJECT_ROOT / ".paper-state.json"
+PAPER_COPY_SETTINGS_FILE = PROJECT_ROOT / ".paper-copy-settings.json"
 BROKER_REQUESTS_FILE = PROJECT_ROOT / ".broker-requests.json"
 BROKER_REQUESTS = BrokerRequestStore(BROKER_REQUESTS_FILE)
 MARKET_CLIENTS = {
@@ -43,7 +54,8 @@ MARKET_CLIENTS = {
 PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
 COPY_LAB = CopyStrategyLab()
-HYPERLIQUID_MONITOR = HyperliquidMonitor()
+COPY_SETTINGS = load_settings(PAPER_COPY_SETTINGS_FILE)
+COPY_STATUS: dict[str, object] = {"last_result": None, "last_message": None, "last_event_at": None}
 CHART_PROVIDER = ChartProvider()
 COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_action": "Monitoring remains active; new paper copies are paused."}
 PAPER_AVAILABLE_BALANCE = 8_420.50
@@ -272,6 +284,245 @@ def fresh_open_quote(exchange: str, symbol: str, side: str) -> tuple[float, str,
     raise RuntimeError("No fresh executable entry quote is available (" + "; ".join(errors) + ").")
 
 
+MAX_COPY_ENTRY_SLIPPAGE_PERCENT = 1.0
+COPY_POSITION_MONITOR_INTERVAL_MS = 60_000
+COPY_POSITION_MONITOR_PERIOD_SECONDS = 30
+
+
+def fresh_copy_open_quote(symbol: str, side: str) -> tuple[float, str, int]:
+    """Resolve a fresh executable quote from supported USDT perpetual venues only."""
+
+    errors: list[str] = []
+    now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+    for venue in ("bybit", "binance"):
+        try:
+            ticker = MARKET_CLIENTS[venue].ticker(symbol)
+            timestamp_ms = ticker.timestamp_ms
+            if timestamp_ms is None:
+                raise ValueError("quote has no exchange timestamp")
+            age_ms = now_ms - timestamp_ms
+            if age_ms < -CLOSE_QUOTE_FUTURE_TOLERANCE_MS or age_ms > CLOSE_QUOTE_MAX_AGE_MS:
+                raise ValueError(f"quote is stale ({age_ms} ms old)")
+            price = ticker.ask if side == "long" else ticker.bid
+            if price is None or not isfinite(price) or price <= 0:
+                raise ValueError(f"quote has no valid {side}-entry price")
+            return float(price), f"{venue}_{'ask' if side == 'long' else 'bid'}", timestamp_ms
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+            errors.append(f"{venue}: {exc}")
+    raise RuntimeError("No fresh Bybit or Binance perpetual entry quote is available (" + "; ".join(errors) + ").")
+
+
+def _copy_event_processed(event_id: str) -> bool:
+    if event_id in COPY_SETTINGS.processed_event_ids:
+        return True
+    return any(
+        item.get("source_event_id") == event_id
+        for item in (*PAPER_SESSION.orders, *PAPER_SESSION.events)
+    )
+
+
+def _record_copy_result(event: TraderEvent, status: str, message: str, order: dict[str, object] | None = None) -> None:
+    global COPY_SETTINGS
+    processed_ids = (*COPY_SETTINGS.processed_event_ids, event.event_id)[-20_000:]
+    COPY_SETTINGS = replace(COPY_SETTINGS, processed_event_ids=processed_ids)
+    details: dict[str, object] = {
+        "source_event_id": event.event_id,
+        "source_trader_id": event.source_trader_id,
+        "instrument": event.instrument,
+        "direction": event.direction,
+        "message": message,
+    }
+    if order is not None:
+        details["order_id"] = order["order_id"]
+        details["symbol"] = order["symbol"]
+        details["quantity"] = order["quantity"]
+    PAPER_SESSION.record_paper_copy_event(status, **details)
+    PAPER_SESSION.save(PAPER_STATE_FILE)
+    save_settings(PAPER_COPY_SETTINGS_FILE, COPY_SETTINGS)
+    COPY_STATUS.update(
+        {
+            "last_result": status,
+            "last_message": message,
+            "last_event_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+
+
+def process_paper_copy_event(event: TraderEvent) -> None:
+    with PAPER_LOCK:
+        if not COPY_CONTROL["auto_trade_enabled"] or _copy_event_processed(event.event_id):
+            return
+        settings = COPY_SETTINGS
+        monitor = HYPERLIQUID_MONITOR.snapshot()
+        monitored_wallets = {
+            str(trader.get("source_trader_id", "")).lower()
+            for trader in monitor["traders"][:15]
+        }
+        rejection = candidate_rejection(
+            event,
+            settings,
+            monitored_wallets,
+            now_ms=int(datetime.now(timezone.utc).timestamp() * 1000),
+        )
+        if rejection is not None:
+            _record_copy_result(event, "skipped", rejection)
+            return
+    try:
+        symbol = destination_symbol(event.instrument)
+        entry_price, quote_source, quote_timestamp_ms = fresh_copy_open_quote(symbol, event.direction)
+        slippage_percent = abs(entry_price - event.price) / event.price * 100
+        if slippage_percent > MAX_COPY_ENTRY_SLIPPAGE_PERCENT:
+            raise ValueError(
+                f"Entry quote moved {slippage_percent:.2f}% from the source fill; "
+                f"the maximum allowed is {MAX_COPY_ENTRY_SLIPPAGE_PERCENT:.2f}%."
+            )
+    except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+        with PAPER_LOCK:
+            if COPY_CONTROL["auto_trade_enabled"] and not _copy_event_processed(event.event_id):
+                _record_copy_result(event, "skipped", str(exc))
+        return
+
+    with PAPER_LOCK:
+        if not COPY_CONTROL["auto_trade_enabled"] or _copy_event_processed(event.event_id):
+            return
+        latest_monitor = HYPERLIQUID_MONITOR.snapshot()
+        latest_wallets = {
+            str(trader.get("source_trader_id", "")).lower()
+            for trader in latest_monitor["traders"][:15]
+        }
+        rejection = candidate_rejection(
+            event,
+            COPY_SETTINGS,
+            latest_wallets,
+            now_ms=int(datetime.now(timezone.utc).timestamp() * 1000),
+        )
+        if rejection is not None:
+            _record_copy_result(event, "skipped", rejection)
+            return
+        try:
+            order = PAPER_SESSION.submit_risk_sized_paper_copy(
+                "bybit" if quote_source.startswith("bybit_") else "binance",
+                symbol,
+                event.direction,
+                entry_price,
+                COPY_SETTINGS.stop_loss_percent,
+                COPY_SETTINGS.take_profit_percent,
+                COPY_SETTINGS.leverage,
+                event.timestamp_ms - event.timestamp_ms % COPY_POSITION_MONITOR_INTERVAL_MS,
+                source_event_id=event.event_id,
+                source_trader_id=event.source_trader_id,
+            )
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+            _record_copy_result(event, "skipped", str(exc))
+            return
+        saved_order = next(item for item in PAPER_SESSION.orders if item["order_id"] == order["order_id"])
+        saved_order["entry_quote_source"] = quote_source
+        saved_order["entry_quote_timestamp_ms"] = quote_timestamp_ms
+        order["entry_quote_source"] = quote_source
+        order["entry_quote_timestamp_ms"] = quote_timestamp_ms
+        position = next(item for item in PAPER_SESSION.positions if item["order_id"] == order["order_id"])
+        position["entry_quote_source"] = quote_source
+        position["entry_quote_timestamp_ms"] = quote_timestamp_ms
+        _record_copy_result(
+            event,
+            "opened",
+            f"Opened risk-sized paper {event.direction} {symbol} from a verified live fill.",
+            order,
+        )
+
+
+def enqueue_paper_copy_event(event: TraderEvent) -> None:
+    with PAPER_LOCK:
+        if (
+            not COPY_CONTROL["auto_trade_enabled"]
+            or event.delivery_source != "websocket"
+            or event.event_type != "position_opened"
+            or event.source_trader_id not in COPY_SETTINGS.selected_wallets
+        ):
+            return
+    if not COPY_EVENT_WORKER.submit(event):
+        LOGGER.error("Paper-copy queue is full; skipped verified fill %s.", event.event_id)
+        with PAPER_LOCK:
+            COPY_STATUS.update(
+                {
+                    "last_result": "skipped",
+                    "last_message": "Paper-copy queue is full; this fill was not processed.",
+                    "last_event_at": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+
+
+COPY_EVENT_WORKER = PaperCopyEventWorker(process_paper_copy_event)
+HYPERLIQUID_MONITOR = HyperliquidMonitor(event_callback=enqueue_paper_copy_event)
+
+
+def monitor_open_paper_copies_once() -> None:
+    with PAPER_LOCK:
+        jobs = {
+            (str(position.get("exchange", "")).lower(), str(position.get("symbol", "")).upper())
+            for position in PAPER_SESSION.positions
+            if position.get("status") == "open"
+            and position.get("source_event_id")
+            and position.get("exchange")
+            and position.get("symbol")
+        }
+
+    interval = "1"
+    interval_ms = INTERVAL_MILLISECONDS[interval]
+    for exchange, symbol in jobs:
+        warning_key = f"{exchange}:{symbol}"
+        try:
+            client = MARKET_CLIENTS.get(exchange)
+            if client is None or exchange not in {"bybit", "binance"}:
+                raise ValueError(f"No supported paper market feed is available for {exchange} {symbol}.")
+            venue_interval = BINANCE_INTERVALS.get(interval, interval) if exchange == "binance" else interval
+            candles = client.candles(symbol, venue_interval, 120, None)
+            confirmed_candles = closed_candles(
+                candles,
+                interval_ms,
+                int(datetime.now(timezone.utc).timestamp() * 1000),
+            )
+            if not confirmed_candles:
+                raise RuntimeError(f"No fully closed 1-minute candles are available for {symbol}.")
+
+            with PAPER_LOCK:
+                still_open = any(
+                    position.get("status") == "open"
+                    and position.get("source_event_id")
+                    and str(position.get("exchange", "")).lower() == exchange
+                    and str(position.get("symbol", "")).upper() == symbol
+                    for position in PAPER_SESSION.positions
+                )
+                if not still_open:
+                    continue
+                result = PAPER_SESSION.evaluate(exchange, symbol, confirmed_candles, interval_ms)
+                PAPER_SESSION.save(PAPER_STATE_FILE)
+                warnings = dict(COPY_STATUS.get("monitoring_warnings", {}))
+                if result.get("monitoring_gap"):
+                    warnings[warning_key] = str(result.get("reason", "Paper position monitoring detected a candle gap."))
+                else:
+                    warnings.pop(warning_key, None)
+                COPY_STATUS["monitoring_warnings"] = warnings
+        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+            with PAPER_LOCK:
+                warnings = dict(COPY_STATUS.get("monitoring_warnings", {}))
+                message = str(exc)
+                if warnings.get(warning_key) != message:
+                    LOGGER.warning("Paper-copy position monitoring failed for %s: %s", warning_key, exc)
+                warnings[warning_key] = message
+                COPY_STATUS["monitoring_warnings"] = warnings
+
+
+def _paper_copy_position_monitor(stop_event: Event) -> None:
+    while not stop_event.is_set():
+        try:
+            monitor_open_paper_copies_once()
+        except Exception:
+            LOGGER.exception("Paper-copy position monitor failed.")
+        if stop_event.wait(COPY_POSITION_MONITOR_PERIOD_SECONDS):
+            return
+
+
 def live_copy_accounts() -> tuple[list[ActiveCopyAccount], float]:
     """Mark synthetic demo positions concurrently using only fresh public quotes."""
 
@@ -362,6 +613,15 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         request = urlsplit(self.path)
+        if request.path == "/api/copy/settings":
+            with PAPER_LOCK:
+                payload = {
+                    "settings": COPY_SETTINGS.as_dict(),
+                    "control": dict(COPY_CONTROL),
+                    "copy_status": dict(COPY_STATUS),
+                }
+            self._send(200, json.dumps(payload).encode(), "application/json; charset=utf-8")
+            return
         if request.path in ("/", "/index.html", "/Trading%20Bot.html"):
             self._send(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
             return
@@ -508,6 +768,20 @@ class AppHandler(BaseHTTPRequestHandler):
             if end_ms is not None:
                 self._send(409, b'{"error":"Paper evaluation is disabled for historical chart data."}', "application/json; charset=utf-8")
                 return
+            with PAPER_LOCK:
+                copied_position = next(
+                    (
+                        position
+                        for position in PAPER_SESSION.positions
+                        if position.get("status") == "open"
+                        and position.get("source_event_id")
+                        and str(position.get("symbol", "")).upper() == symbol
+                    ),
+                    None,
+                )
+            if copied_position is not None:
+                exchange = str(copied_position["exchange"]).lower()
+                interval = "1"
             client = MARKET_CLIENTS.get(exchange)
             if client is None:
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
@@ -656,9 +930,6 @@ class AppHandler(BaseHTTPRequestHandler):
             try:
                 with PAPER_LOCK:
                     synchronize_daily_profit_lock()
-                    COPY_CONTROL["auto_trade_enabled"] = False
-                    COPY_CONTROL["close_request"] = False
-                    COPY_CONTROL["last_action"] = "Hyperliquid fills are monitored for paper analysis only; automatic copies are disabled."
             except (OSError, ValueError) as exc:
                 self._send(500, json.dumps({"error": f"Could not synchronize paper profit policy: {exc}"}).encode(), "application/json; charset=utf-8")
                 return
@@ -693,6 +964,7 @@ class AppHandler(BaseHTTPRequestHandler):
             self._send(404, b"Not found", "text/plain; charset=utf-8")
 
     def do_POST(self) -> None:  # noqa: N802
+        global COPY_SETTINGS
         request = urlsplit(self.path)
         if request.path == "/api/paper/order":
             try:
@@ -1034,6 +1306,58 @@ class AppHandler(BaseHTTPRequestHandler):
                 status_code = 502
                 self._send(status_code, json.dumps({"error": safe_message}).encode(), "application/json; charset=utf-8")
             return
+        if request.path == "/api/copy/settings":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid paper-copy settings"}', "application/json; charset=utf-8")
+                return
+            expected_fields = {
+                "selected_wallets",
+                "stop_loss_percent",
+                "take_profit_percent",
+                "leverage",
+            }
+            if not isinstance(payload, dict) or set(payload) != expected_fields:
+                self._send(400, b'{"error":"Paper-copy settings fields are invalid"}', "application/json; charset=utf-8")
+                return
+            try:
+                settings = PaperCopySettings.from_payload(
+                    payload,
+                    processed_event_ids=COPY_SETTINGS.processed_event_ids,
+                )
+            except ValueError as exc:
+                self._send(400, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
+                return
+            with PAPER_LOCK:
+                if COPY_CONTROL["auto_trade_enabled"]:
+                    self._send(409, b'{"error":"Pause auto-trade before changing copy settings"}', "application/json; charset=utf-8")
+                    return
+                monitored_wallets = {
+                    str(trader.get("source_trader_id", "")).lower()
+                    for trader in HYPERLIQUID_MONITOR.snapshot()["traders"][:15]
+                }
+                if any(wallet not in monitored_wallets for wallet in settings.selected_wallets):
+                    self._send(409, b'{"error":"Selected wallets must be in the currently monitored top-15 list"}', "application/json; charset=utf-8")
+                    return
+                try:
+                    save_settings(PAPER_COPY_SETTINGS_FILE, settings)
+                except (OSError, ValueError) as exc:
+                    self._send(500, json.dumps({"error": f"Could not save paper-copy settings: {exc}"}).encode(), "application/json; charset=utf-8")
+                    return
+                COPY_SETTINGS = settings
+                response = {
+                    "settings": COPY_SETTINGS.as_dict(),
+                    "control": dict(COPY_CONTROL),
+                    "copy_status": dict(COPY_STATUS),
+                }
+                self._send(200, json.dumps(response).encode(), "application/json; charset=utf-8")
+            return
+
         if request.path != "/api/copy/control":
             self._send(404, b"Not found", "text/plain; charset=utf-8")
             return
@@ -1064,14 +1388,36 @@ class AppHandler(BaseHTTPRequestHandler):
                 }).encode(), "application/json; charset=utf-8")
                 return
             if enabled:
-                self._send(409, json.dumps({
-                    "error": "Automatic copies are disabled until verified Hyperliquid events are integrated with paper risk sizing.",
-                    "control": {**COPY_CONTROL, "auto_trade_enabled": False},
-                }).encode(), "application/json; charset=utf-8")
-                return
+                if not COPY_SETTINGS.selected_wallets:
+                    self._send(409, json.dumps({
+                        "error": "Select at least one monitored wallet and save paper-copy settings before enabling auto-trade.",
+                        "control": {**COPY_CONTROL, "auto_trade_enabled": False},
+                    }).encode(), "application/json; charset=utf-8")
+                    return
+                monitor = HYPERLIQUID_MONITOR.snapshot()
+                monitored_wallets = {
+                    str(trader.get("source_trader_id", "")).lower()
+                    for trader in monitor["traders"][:15]
+                }
+                if not set(COPY_SETTINGS.selected_wallets).issubset(monitored_wallets):
+                    self._send(409, json.dumps({
+                        "error": "A selected wallet is no longer in the monitored top-15 list. Update wallet selection before enabling.",
+                        "control": {**COPY_CONTROL, "auto_trade_enabled": False},
+                    }).encode(), "application/json; charset=utf-8")
+                    return
+                if not monitor["monitor"].get("connected"):
+                    self._send(409, json.dumps({
+                        "error": "Wait for the verified Hyperliquid fill stream to connect before enabling auto-trade.",
+                        "control": {**COPY_CONTROL, "auto_trade_enabled": False},
+                    }).encode(), "application/json; charset=utf-8")
+                    return
             COPY_CONTROL["auto_trade_enabled"] = enabled
             COPY_CONTROL["close_request"] = False
-            COPY_CONTROL["last_action"] = "New paper copies enabled." if enabled else "New copies paused; open positions remain available for manual close."
+            COPY_CONTROL["last_action"] = (
+                "Paper copying enabled for new verified position opens from selected wallets."
+                if enabled
+                else "New paper copies paused; open positions remain available for manual close."
+            )
             response = {"mode": "paper", "control": COPY_CONTROL}
             self._send(200, json.dumps(response).encode(), "application/json; charset=utf-8")
 
@@ -1081,6 +1427,14 @@ class AppHandler(BaseHTTPRequestHandler):
 
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
     server = ThreadingHTTPServer((host, port), AppHandler)
+    monitor_stop = Event()
+    monitor_thread = Thread(
+        target=_paper_copy_position_monitor,
+        args=(monitor_stop,),
+        name="paper-copy-position-monitor",
+        daemon=True,
+    )
+    monitor_thread.start()
     print(f"A.Y.O. AI Trading & Agent Command Centre running at http://{host}:{port}")
     print("Paper mode plus explicitly confirmed Bybit testnet orders; live orders are disabled.")
     try:
@@ -1088,6 +1442,8 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
     except KeyboardInterrupt:
         print("\nStopping Trading Bot app.")
     finally:
+        monitor_stop.set()
+        monitor_thread.join(timeout=2)
         server.server_close()
 
 
