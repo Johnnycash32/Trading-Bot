@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy, deepcopy
@@ -19,11 +20,17 @@ from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMar
 from .paper_session import PaperExecutionSession
 from .private_accounts import private_account_snapshot
 from .strategy import MovingAverageCrossStrategy
+from trader_sources.chart_provider import ChartProvider
 from trader_sources import HyperliquidMonitor
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOGGER = logging.getLogger(__name__)
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
+AGENT_AVATAR_FILES = {
+    f"/ui/assets/agents/{name}.jpg": name
+    for name in ("raccoon", "eagle", "hawk", "lion", "cheetah", "hare")
+}
 PAPER_STATE_FILE = PROJECT_ROOT / ".paper-state.json"
 BROKER_REQUESTS_FILE = PROJECT_ROOT / ".broker-requests.json"
 BROKER_REQUESTS = BrokerRequestStore(BROKER_REQUESTS_FILE)
@@ -37,6 +44,7 @@ PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
 COPY_LAB = CopyStrategyLab()
 HYPERLIQUID_MONITOR = HyperliquidMonitor()
+CHART_PROVIDER = ChartProvider()
 COPY_CONTROL = {"auto_trade_enabled": False, "close_request": False, "last_action": "Monitoring remains active; new paper copies are paused."}
 PAPER_AVAILABLE_BALANCE = 8_420.50
 SYMBOL_PATTERN = re.compile(r"^[A-Z0-9]{2,20}$")
@@ -357,6 +365,11 @@ class AppHandler(BaseHTTPRequestHandler):
         if request.path in ("/", "/index.html", "/Trading%20Bot.html"):
             self._send(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
             return
+        if request.path in AGENT_AVATAR_FILES:
+            avatar_name = AGENT_AVATAR_FILES[request.path]
+            avatar_file = UI_FILE.parent / "assets" / "agents" / f"{avatar_name}.jpg"
+            self._send(200, avatar_file.read_bytes(), "image/jpeg")
+            return
         if request.path == "/api/status":
             payload = {
                 "mode": "paper",
@@ -390,6 +403,65 @@ class AppHandler(BaseHTTPRequestHandler):
             except (OSError, RuntimeError, ValueError) as exc:
                 message = json.dumps({"error": str(exc)}).encode()
                 self._send(500, message, "application/json; charset=utf-8")
+            return
+        if request.path.startswith("/api/chart/"):
+            query = parse_qs(request.query)
+            symbol = request.path.removeprefix("/api/chart/").upper()
+            interval = query.get("interval", ["1"])[0]
+            history_date = query.get("history_date", [None])[0]
+            preferred_source = query.get("source", [None])[0]
+            if not SYMBOL_PATTERN.fullmatch(symbol):
+                self._send(400, b'{"error":"Invalid chart symbol"}', "application/json; charset=utf-8")
+                return
+            try:
+                source, candles, errors = CHART_PROVIDER.candles(
+                    symbol,
+                    interval,
+                    limit=100,
+                    end_ms=history_end_ms(history_date),
+                    preferred_source=preferred_source,
+                )
+                latest = candles[-1]
+                ticker = {
+                    "exchange": source,
+                    "symbol": symbol,
+                    "last": latest.close,
+                    "bid": None,
+                    "ask": None,
+                    "change_percent": None,
+                    "timestamp_ms": latest.timestamp_ms,
+                }
+                ticker_source = "candle_close"
+                for venue in ("bybit", "binance"):
+                    client = MARKET_CLIENTS.get(venue)
+                    if client is None:
+                        continue
+                    try:
+                        quote = client.ticker(symbol)
+                        ticker = quote.__dict__
+                        ticker_source = venue
+                        break
+                    except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+                        LOGGER.warning("Chart quote provider %s failed for %s: %s", venue, symbol, exc)
+                self._send(200, json.dumps({
+                    "exchange": source,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "ticker": ticker,
+                    "candles": [candle.as_dict() for candle in candles],
+                    "market_data": {
+                        "candle_source": source,
+                        "ticker_source": ticker_source,
+                        "fallback": source != "binance",
+                        "ticker_unavailable": ticker_source == "candle_close",
+                        "candle_errors": errors,
+                        "ticker_errors": [],
+                        "provider_priority": list(CHART_PROVIDER.priority),
+                    },
+                }).encode(), "application/json; charset=utf-8")
+            except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError, OverflowError) as exc:
+                message = json.dumps({"error": f"Chart feed temporarily unavailable. Retrying. {exc}"}).encode()
+                self._send(502, message, "application/json; charset=utf-8")
             return
         if request.path == "/api/market":
             query = parse_qs(request.query)
@@ -552,11 +624,33 @@ class AppHandler(BaseHTTPRequestHandler):
                 self._send(500, json.dumps({"error": f"Could not synchronize paper profit policy: {exc}"}).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/copy/candidates":
-            candidates = []
-            for profile in demo_profiles():
-                assessment = COPY_LAB.assess(profile, CopySettings(preferred_symbols=("BTCUSDT", "ETHUSDT", "SOLUSDT")))
-                candidates.append({"profile": profile.__dict__, "assessment": assessment.as_dict()})
-            self._send(200, json.dumps({"mode": "paper", "candidates": candidates}).encode(), "application/json; charset=utf-8")
+            try:
+                traders = HYPERLIQUID_MONITOR.source.discover_traders(limit=20)
+                self._send(200, json.dumps({
+                    "mode": "paper",
+                    "source": "Hyperliquid public leaderboard",
+                    "discovery_source": "public_leaderboard_undocumented",
+                    "candidates": [
+                        {
+                            "profile": {
+                                "profile_id": trader["source_trader_id"],
+                                "display_name": trader["display_name"],
+                                "exchange": "Hyperliquid",
+                                "account_value": trader["account_value"],
+                                "month_pnl": trader["month_pnl"],
+                                "month_roi": trader["month_roi"],
+                            },
+                            "assessment": {
+                                "eligible": False,
+                                "evidence_score": None,
+                                "reasons": ["Leaderboard performance is discovery data, not a risk assessment or copy recommendation."],
+                            },
+                        }
+                        for trader in traders
+                    ],
+                }).encode(), "application/json; charset=utf-8")
+            except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
+                self._send(502, json.dumps({"error": f"Hyperliquid leaderboard unavailable: {exc}"}).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/copy/active":
             try:
@@ -593,7 +687,10 @@ class AppHandler(BaseHTTPRequestHandler):
             except (OSError, RuntimeError, ValueError) as exc:
                 self._send(500, json.dumps({"error": str(exc)}).encode(), "application/json; charset=utf-8")
             return
-        self._send(404, b"Not found", "text/plain; charset=utf-8")
+        if request.path.startswith("/api/"):
+            self._send(404, b'{"error":"API endpoint not found"}', "application/json; charset=utf-8")
+        else:
+            self._send(404, b"Not found", "text/plain; charset=utf-8")
 
     def do_POST(self) -> None:  # noqa: N802
         request = urlsplit(self.path)

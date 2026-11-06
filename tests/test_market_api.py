@@ -43,6 +43,113 @@ def sample_ticker(exchange: str = "bybit") -> Ticker:
 
 
 class MarketApiTests(unittest.TestCase):
+    def test_chart_route_uses_ordered_provider_and_returns_normalized_json(self) -> None:
+        class FakeChartProvider:
+            priority = ("binance", "kraken", "okx", "bybit", "bitget", "hyperliquid")
+
+            def candles(self, symbol, interval, limit, end_ms, preferred_source):
+                self.assert_called = (symbol, interval, limit, end_ms, preferred_source)
+                return "okx", [
+                    type("Candle", (), {
+                        "timestamp_ms": 1_700_000_000_000,
+                        "close": 101.0,
+                        "as_dict": lambda candle: {
+                            "time": candle.timestamp_ms,
+                            "timestamp_ms": candle.timestamp_ms,
+                            "open": 99.0, "high": 102.0, "low": 98.0, "close": candle.close, "volume": 42.0,
+                        },
+                    })()
+                ], ["binance: unavailable"]
+
+        provider = FakeChartProvider()
+        with patch.object(server, "CHART_PROVIDER", provider), patch.object(server, "MARKET_CLIENTS", {}):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with urlopen(f"http://127.0.0.1:{http_server.server_port}/api/chart/SOLUSDT?interval=5&source=okx") as response:
+                    body = response.read().decode()
+                    payload = json.loads(body)
+                    self.assertEqual(response.status, 200)
+                    self.assertIn("application/json", response.headers["Content-Type"])
+                    self.assertEqual(payload["market_data"]["candle_source"], "okx")
+                    self.assertEqual(payload["candles"][0]["time"], 1_700_000_000_000)
+                    self.assertEqual(payload["market_data"]["provider_priority"], list(FakeChartProvider.priority))
+                    self.assertEqual(provider.assert_called, ("SOLUSDT", "5", 100, None, "okx"))
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
+    def test_missing_api_route_returns_json_instead_of_html_or_plain_text(self) -> None:
+        http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+        thread = Thread(target=http_server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            try:
+                urlopen(f"http://127.0.0.1:{http_server.server_port}/api/missing")
+            except Exception as error:
+                response = error
+            self.assertEqual(response.code, 404)
+            self.assertIn("application/json", response.headers["Content-Type"])
+            self.assertEqual(json.loads(response.read()), {"error": "API endpoint not found"})
+        finally:
+            http_server.shutdown()
+            http_server.server_close()
+            thread.join(timeout=2)
+
+    def test_agent_portraits_are_served_from_the_allowlist(self) -> None:
+        http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+        thread = Thread(target=http_server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            for name in ("raccoon", "eagle", "hawk", "lion", "cheetah", "hare"):
+                with urlopen(f"http://127.0.0.1:{http_server.server_port}/ui/assets/agents/{name}.jpg") as response:
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(response.headers["Content-Type"], "image/jpeg")
+                    self.assertEqual(response.read(2), b"\xff\xd8")
+
+            try:
+                urlopen(f"http://127.0.0.1:{http_server.server_port}/ui/assets/agents/unknown.jpg")
+            except Exception as error:
+                response = error
+            self.assertEqual(response.code, 404)
+        finally:
+            http_server.shutdown()
+            http_server.server_close()
+            thread.join(timeout=2)
+
+    def test_public_copy_candidates_are_real_leaderboard_rows_not_synthetic_profiles(self) -> None:
+        class FakeSource:
+            def discover_traders(self, limit):
+                self.limit = limit
+                return [{
+                    "source_trader_id": "0x" + "1" * 40,
+                    "display_name": "Wallet",
+                    "account_value": 1000.0,
+                    "month_pnl": 25.0,
+                    "month_roi": 0.02,
+                }]
+
+        class FakeMonitor:
+            source = FakeSource()
+
+        with patch.object(server, "HYPERLIQUID_MONITOR", FakeMonitor()):
+            http_server = ThreadingHTTPServer(("127.0.0.1", 0), server.AppHandler)
+            thread = Thread(target=http_server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                with urlopen(f"http://127.0.0.1:{http_server.server_port}/api/copy/candidates") as response:
+                    payload = json.loads(response.read())
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(payload["candidates"][0]["profile"]["month_pnl"], 25.0)
+                    self.assertIsNone(payload["candidates"][0]["assessment"]["evidence_score"])
+                    self.assertFalse(payload["candidates"][0]["assessment"]["eligible"])
+            finally:
+                http_server.shutdown()
+                http_server.server_close()
+                thread.join(timeout=2)
+
     def test_paper_evaluation_uses_only_candles_that_have_closed(self) -> None:
         candles = [
             Candle(60_000, 99, 102, 98, 101, 42),

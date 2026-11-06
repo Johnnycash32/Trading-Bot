@@ -11,11 +11,12 @@ This is a paper-first application; production/live broker order routing is not e
 - Independent risk validation and conservative limits.
 - Position sizing based on account equity and stop distance.
 - Read-only Bybit and Binance futures plus Coinbase spot ticker/candle adapters.
-- Optional public WebSocket candle transport with heartbeat/reconnect behavior; REST remains the fallback.
+- Public crypto chart REST candle failover in Binance, Kraken, OKX, Bybit, Bitget, and Hyperliquid order, with normalized timestamps and explicit provider failure logs.
+- Separate public chart WebSocket failover in Binance, Kraken, OKX, then Bybit order; Hyperliquid is skipped when generic candle subscriptions are unsupported. Paper fills continue to use their separate trader-event stream.
 - A transparent moving-average crossover backtest with fees and slippage.
 - An explainable behavioral decision layer with evidence, signal, chart, risk, paper-execution, and notification agents.
 - Approval-aware paper behavior for large trades, auto-trading-off state, duplicate signals, position capacity, and risk gates.
-- A public lead monitor that discovers Hyperliquid wallet addresses and displays individual fills from its user-specific public feed; the separate copy-research lab still uses clearly labeled synthetic examples.
+- A public lead monitor and discovery panel that use Hyperliquid leaderboard wallet addresses and display individual fills from its user-specific public feed; no synthetic profiles are presented as real traders.
 - A paper-only Hyperliquid adapter with REST backfill, WebSocket monitoring, position-transition inference, reconnection, and fill deduplication; automatic copying is disabled until events are safely integrated with paper risk sizing.
 - Optional read-only Bybit private-position monitoring with Lion-policy filtering; no live orders, transfers, withdrawals, or wallet scraping.
 - A broker directory with locally saved support requests and an explicitly confirmed Bybit testnet-only market-order path. Testnet orders use a dedicated testnet API key and never target the production API.
@@ -30,7 +31,9 @@ The adapter exposes verified source data for paper analysis only. A verified fil
 
 ## Market data coverage
 
-Public crypto adapters provide Bybit linear-futures, Binance USD-M futures, and Coinbase USD-spot data. An optional Twelve Data adapter can display mapped Forex, stock, index, commodity, and crypto symbols when a server-side API key and a plan covering the instrument, real-time/delayed status, and intended use are available. The catalog is not proof of feed coverage: exchange/provider symbol availability, plan entitlements, market hours, quotas, and licensing still apply. The adapter currently maps spot gold and silver (`XAUUSD`, `XAGUSD`); commodity futures such as `CL1!` and `GC1!` intentionally fail with a visible unsupported-mapping message. No feed is used to evaluate paper trades except the explicitly supported Bybit/Binance perpetual markets.
+The crypto chart route `/api/chart/{symbol}` requests candles from public REST sources in this order: Binance spot, Kraken, OKX, Bybit spot, Bitget spot, then Hyperliquid. Failed sources are logged and skipped; a source-specific request can be used after WebSocket failover to reload candles from the active venue. The browser's independent chart WebSocket chain is Binance spot, Kraken, OKX, and Bybit spot. Hyperliquid is not used as a generic WebSocket candle provider; its user-specific fill WebSocket remains separate. These chart feeds provide market candles, not trader activity or supported trade-execution venues.
+
+The existing market adapters continue to provide Bybit linear-futures, Binance USD-M futures, and Coinbase USD-spot data. An optional Twelve Data adapter can display mapped Forex, stock, index, commodity, and crypto symbols when a server-side API key and a plan covering the instrument, real-time/delayed status, and intended use are available. The catalog is not proof of feed coverage: exchange/provider symbol availability, plan entitlements, market hours, quotas, and licensing still apply. The adapter currently maps spot gold and silver (`XAUUSD`, `XAGUSD`); commodity futures such as `CL1!` and `GC1!` intentionally fail with a visible unsupported-mapping message. No feed is used to evaluate paper trades except the explicitly supported Bybit/Binance perpetual markets.
 
 To configure Twelve Data, add this line to the ignored local `.env` file and restart the app:
 
@@ -148,6 +151,8 @@ Every paper evaluation returns a decision from the behavioral layer:
 The animal roles are intentionally observable: Raccoon collects public evidence, Eagle dispatches the strategy signal, Hawk examines chart structure, Lion enforces limits, Cheetah represents paper execution, and Hare delivers the decision. Confidence is a transparent research score, not a probability of profit.
 
 Hare's bell in the dashboard header opens a compact, scrollable news and activity panel. Its labeled Corner alerts switch turns brief browser pop-up alerts on or off; off is muted gray and on is green, and the switch choice is saved in the browser. The in-panel news and activity feeds remain available either way. Hare dispatches notable paper lifecycle, risk rejection, and agent-failure events; routine monitor and duplicate-signal entries are grouped to keep the feed readable. Activity rows open their full event details, and the unread badge clears when the panel is opened.
+
+The six dashboard mascots use optimized portrait references in `ui/assets/agents/` with lightweight CSS motion; the Animations on/off control or `?agentAnimations=off` disables it. The existing frontend controller consumes behavioral-agent states and paper activity snapshots, ignores unknown events, and maps only paper rejection/order events to characters. The Python server serves only the six allowlisted image files; this adds no trading API or event payloads and changes no trading or risk logic. Animations respect reduced-motion preferences and pause when the page or agent room is not visible.
 
 ## Research references
 
