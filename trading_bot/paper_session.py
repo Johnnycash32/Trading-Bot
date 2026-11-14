@@ -60,6 +60,7 @@ class PaperExecutionSession:
     _last_order_candle: dict[str, int] = field(default_factory=dict)
     _last_evaluated_candle: dict[str, int] = field(default_factory=dict)
     behavior_engine: BehaviorEngine = field(default_factory=BehaviorEngine)
+    hibernation_mode: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         if not self.balance_history:
@@ -357,6 +358,7 @@ class PaperExecutionSession:
             "events": self.events,
             "last_order_candle": self._last_order_candle,
             "last_evaluated_candle": self._last_evaluated_candle,
+            "hibernation_mode": self.hibernation_mode,
         }
         temporary_path = path.with_suffix(path.suffix + ".tmp")
         temporary_path.write_text(json.dumps(payload, allow_nan=False, indent=2), encoding="utf-8")
@@ -394,6 +396,7 @@ class PaperExecutionSession:
                 _last_order_candle={str(symbol): int(timestamp) for symbol, timestamp in order_candles.items()},
                 _last_evaluated_candle={str(symbol): int(timestamp) for symbol, timestamp in evaluated_candles.items()},
             )
+            session.hibernation_mode = bool(payload.get("hibernation_mode", False))
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"Invalid paper state values in {path}: {exc}") from exc
         order_numbers = [
@@ -649,6 +652,74 @@ class PaperExecutionSession:
             target_amount=status["target_amount"],
         )
         return True
+
+    def check_and_liquidate_on_target(self, current_prices: dict[str, float]) -> None:
+        """Smart liquidation when daily profit target is met.
+        
+        If target is met and not already liquidated:
+        - Close winning positions (price >= entry for LONG, price <= entry for SHORT)
+        - Move stop loss to breakeven for losing positions, log WAITING_FOR_BREAKEVEN
+        - Set hibernation_mode = True
+        """
+        daily_profit = self.daily_profit_status()
+        if not daily_profit["target_met"]:
+            return
+        
+        if self.hibernation_mode:
+            return
+        
+        open_positions = self._open_positions()
+        if not open_positions:
+            self.hibernation_mode = True
+            return
+        
+        any_liquidated = False
+        
+        for position in open_positions:
+            symbol = position["symbol"]
+            if symbol not in current_prices:
+                continue
+            
+            current_price = current_prices[symbol]
+            entry_price = float(position["entry_price"])
+            side = position["side"]
+            
+            is_profitable = (
+                (side == Side.LONG.value and current_price >= entry_price) or
+                (side == Side.SHORT.value and current_price <= entry_price)
+            )
+            
+            if is_profitable:
+                # Close winning position at current market price
+                self.close_position(
+                    str(position["order_id"]),
+                    current_price,
+                    reason="TARGET_MET_PROFIT_LOCK",
+                    price_source="smart_liquidation",
+                    quote_timestamp_ms=int(datetime.now(timezone.utc).timestamp() * 1000),
+                )
+                any_liquidated = True
+            else:
+                # Move stop loss to breakeven for losing positions
+                position["stop_loss"] = entry_price
+                # Also update the corresponding order
+                for order in self.orders:
+                    if order["order_id"] == position["order_id"]:
+                        order["stop_loss"] = entry_price
+                        break
+                self._record_event(
+                    "WAITING_FOR_BREAKEVEN",
+                    symbol=symbol,
+                    side=side,
+                    order_id=position["order_id"],
+                    entry_price=entry_price,
+                    current_price=current_price,
+                    unrealized_pnl=position.get("unrealized_pnl", 0.0),
+                )
+        
+        self.hibernation_mode = True
+        if any_liquidated:
+            self._record_event("SMART_LIQUIDATION_COMPLETE", liquidated_positions=len(open_positions))
 
     def snapshot(self, symbol: str | None = None, mark_price: float | None = None) -> dict[str, object]:
         positions = [position for position in self.positions if position["status"] == "open" and (symbol is None or position["symbol"] == symbol)]
