@@ -1,2 +1,0 @@
-trader_sources
-trading_bot
