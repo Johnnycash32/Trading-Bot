@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: trading-bot
+Version: 0.1.0
+Summary: Paper-first, risk-controlled trading application foundation
+Requires-Python: >=3.11
+Requires-Dist: websocket-client>=1.8
