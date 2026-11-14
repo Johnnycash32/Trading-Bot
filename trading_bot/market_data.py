@@ -151,6 +151,204 @@ class CoinbaseMarketData(PublicMarketDataClient):
         ]
 
 
+class AlphaVantageMarketData(PublicMarketDataClient):
+    """Free Alpha Vantage feed for forex, stocks, commodities, indices. Free tier: 5 req/min, 500/day."""
+
+    base_url = "https://www.alphavantage.co"
+    exchange = "alphavantage"
+    INTERVALS = {
+        "1": "1min",
+        "5": "5min",
+        "15": "15min",
+        "30": "30min",
+        "60": "60min",
+        "D": "daily",
+        "W": "weekly",
+        "M": "monthly",
+    }
+    FOREX_SYMBOLS = {
+        "EURUSD": "EUR/USD",
+        "GBPUSD": "GBP/USD",
+        "USDJPY": "USD/JPY",
+        "USDCHF": "USD/CHF",
+        "AUDUSD": "AUD/USD",
+        "USDCAD": "USD/CAD",
+        "NZDUSD": "NZD/USD",
+        "EURGBP": "EUR/GBP",
+        "EURJPY": "EUR/JPY",
+        "GBPJPY": "GBP/JPY",
+    }
+    COMMODITY_SYMBOLS = {
+        "XAUUSD": "XAU/USD",
+        "XAGUSD": "XAG/USD",
+        "WTIUSD": "WTI/USD",
+        "BRENTUSD": "BRENT/USD",
+    }
+    INDEX_SYMBOLS = {
+        "SPX": "SPX",
+        "DJI": "DJI",
+        "NDX": "NDX",
+        "VIX": "VIX",
+    }
+    CACHE_TTL_SECONDS = 60
+
+    def __init__(
+        self,
+        api_key: str | None = None,
+        loader: JsonLoader = load_json,
+    ) -> None:
+        super().__init__(loader)
+        self._api_key = api_key.strip() if api_key and api_key.strip() else self._load_api_key()
+        self._response_cache: dict[str, tuple[float, Any]] = {}
+
+    @staticmethod
+    def _load_api_key() -> str | None:
+        key = os.environ.get("ALPHA_VANTAGE_API_KEY", "").strip()
+        if key:
+            return key
+        env_path = Path(__file__).resolve().parents[1] / ".env"
+        try:
+            lines = env_path.read_text(encoding="utf-8-sig").splitlines()
+        except FileNotFoundError:
+            return None
+        except OSError as exc:
+            raise RuntimeError(f"Could not read the local environment file: {exc}") from exc
+        for line in lines:
+            entry = line.strip()
+            if entry.startswith("export "):
+                entry = entry[7:].lstrip()
+            name, separator, raw_value = entry.partition("=")
+            if not separator or name.strip() != "ALPHA_VANTAGE_API_KEY":
+                continue
+            value = raw_value.strip()
+            if value.startswith(("'", '"')):
+                closing_quote = value.find(value[0], 1)
+                if closing_quote != -1:
+                    value = value[1:closing_quote]
+            elif " #" in value:
+                value = value.split(" #", 1)[0].rstrip()
+            return value or None
+        return None
+
+    @property
+    def configured(self) -> bool:
+        return self._api_key is not None
+
+    @staticmethod
+    def _provider_symbol(symbol: str, asset_class: str) -> str:
+        normalized = symbol.strip().upper()
+        if asset_class == "forex":
+            return AlphaVantageMarketData.FOREX_SYMBOLS.get(normalized, normalized)
+        if asset_class == "crypto":
+            return normalized
+        if asset_class == "stocks":
+            return normalized
+        if asset_class == "indices":
+            return AlphaVantageMarketData.INDEX_SYMBOLS.get(normalized, normalized)
+        if asset_class == "commodities":
+            return AlphaVantageMarketData.COMMODITY_SYMBOLS.get(normalized, normalized)
+        raise ValueError(f"Unsupported asset class: {asset_class}.")
+
+    def _request(self, path: str, params: dict[str, str]) -> Any:
+        if not self._api_key:
+            raise RuntimeError("Set ALPHA_VANTAGE_API_KEY in the local .env file to enable this market feed.")
+        request_params = {**params, "apikey": self._api_key}
+        cache_key = f"{path}?{urlencode({key: value for key, value in request_params.items() if key != 'apikey'})}"
+        now = monotonic()
+        cached = self._response_cache.get(cache_key)
+        if cached and now - cached[0] < self.CACHE_TTL_SECONDS:
+            return cached[1]
+        payload = self._get(self.base_url, path, request_params)
+        if isinstance(payload, dict) and payload.get("Error Message"):
+            raise ValueError(f"Alpha Vantage: {payload['Error Message']}")
+        if isinstance(payload, dict) and payload.get("Note"):
+            raise ValueError(f"Alpha Vantage rate limit: {payload['Note']}")
+        self._response_cache[cache_key] = (now, payload)
+        return payload
+
+    @staticmethod
+    def _timestamp_ms(value: object) -> int:
+        try:
+            timestamp = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Alpha Vantage returned an invalid candle timestamp.") from exc
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        return int(timestamp.timestamp() * 1000)
+
+    def ticker(self, symbol: str = "EURUSD", asset_class: str = "forex") -> Ticker:
+        provider_symbol = self._provider_symbol(symbol, asset_class)
+        if asset_class == "forex":
+            payload = self._request("/query", {"function": "CURRENCY_EXCHANGE_RATE", "from_currency": provider_symbol.split("/")[0], "to_currency": provider_symbol.split("/")[1]})
+            rate_data = payload.get("Realtime Currency Exchange Rate", {})
+            last = float(rate_data.get("5. Exchange Rate", 0))
+            change = float(rate_data.get("9. Change Percent", "0%").replace("%", "")) if rate_data.get("9. Change Percent") else None
+            timestamp = int(rate_data.get("6. Last Refreshed", "0").replace("-", "").replace(":", "").replace(" ", "")) * 1000
+        elif asset_class == "crypto":
+            payload = self._request("/query", {"function": "CRYPTO_INTRADAY", "symbol": provider_symbol, "market": "USD", "interval": "1min"})
+            series = payload.get("Time Series Crypto (1min)", {})
+            latest = next(iter(series.values())) if series else {}
+            last = float(latest.get("4. close", 0))
+            change = None
+            timestamp = None
+        else:
+            payload = self._request("/query", {"function": "GLOBAL_QUOTE", "symbol": provider_symbol})
+            quote = payload.get("Global Quote", {})
+            last = float(quote.get("05. price", 0))
+            change = float(quote.get("10. change percent", "0%").replace("%", "")) if quote.get("10. change percent") else None
+            timestamp = None
+        return Ticker(self.exchange, symbol, last, None, None, change, timestamp)
+
+    def candles(
+        self,
+        symbol: str = "EURUSD",
+        interval: str = "60",
+        limit: int = 100,
+        end_ms: int | None = None,
+        asset_class: str = "forex",
+    ) -> list[Candle]:
+        try:
+            provider_interval = self.INTERVALS[interval]
+        except KeyError as exc:
+            raise ValueError(f"Alpha Vantage does not support the {interval} chart interval.") from exc
+        provider_symbol = self._provider_symbol(symbol, asset_class)
+        if asset_class == "forex":
+            function = "FX_INTRADAY" if interval != "D" else "FX_DAILY"
+            params = {"function": function, "from_symbol": provider_symbol.split("/")[0], "to_symbol": provider_symbol.split("/")[1], "interval": provider_interval, "outputsize": "compact"}
+        elif asset_class == "crypto":
+            params = {"function": "CRYPTO_INTRADAY", "symbol": provider_symbol, "market": "USD", "interval": provider_interval, "outputsize": "compact"}
+        else:
+            function = "TIME_SERIES_INTRADAY" if interval != "D" else "TIME_SERIES_DAILY"
+            params = {"function": function, "symbol": provider_symbol, "interval": provider_interval, "outputsize": "compact"}
+        if end_ms is not None:
+            end_date = datetime.fromtimestamp(end_ms / 1000, timezone.utc)
+            params["end_date"] = end_date.strftime("%Y-%m-%d")
+        payload = self._request("/query", params)
+        series_key = next((k for k in payload.keys() if "Time Series" in k or "Time Series" in k), None)
+        if not series_key:
+            raise ValueError("Alpha Vantage returned an invalid time-series response.")
+        series = payload[series_key]
+        candles: list[Candle] = []
+        for ts_str, row in sorted(series.items()):
+            try:
+                ts = datetime.fromisoformat(ts_str.replace(" ", "T"))
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+                timestamp_ms = int(ts.timestamp() * 1000)
+                open_price = float(row.get("1. open", 0))
+                high_price = float(row.get("2. high", 0))
+                low_price = float(row.get("3. low", 0))
+                close_price = float(row.get("4. close", 0))
+                volume = float(row.get("5. volume", 0)) if row.get("5. volume") else None
+                if not isfinite(open_price) or not isfinite(high_price) or not isfinite(low_price) or not isfinite(close_price):
+                    continue
+                candles.append(Candle(timestamp_ms, open_price, high_price, low_price, close_price, volume))
+            except (KeyError, TypeError, ValueError, OverflowError):
+                continue
+        candles.sort(key=lambda c: c.timestamp_ms)
+        return candles[-limit:] if limit else candles
+
+
 class TwelveDataMarketData(PublicMarketDataClient):
     """Optional read-only multi-asset chart feed; credentials stay server-side."""
 
@@ -351,7 +549,7 @@ class TwelveDataMarketData(PublicMarketDataClient):
 
 
 class YahooFinanceMarketData(PublicMarketDataClient):
-    """Free Yahoo Finance chart/quote feed for US equities. No API key required."""
+    """Free Yahoo Finance chart/quote feed for US equities, forex, indices, commodities. No API key required."""
 
     base_url = "https://query1.finance.yahoo.com"
     exchange = "yahoo"
@@ -379,9 +577,50 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         "W": "5y",
         "M": "max",
     }
+    FOREX_SYMBOLS = {
+        "EURUSD": "EURUSD=X",
+        "GBPUSD": "GBPUSD=X",
+        "USDJPY": "USDJPY=X",
+        "USDCHF": "USDCHF=X",
+        "AUDUSD": "AUDUSD=X",
+        "USDCAD": "USDCAD=X",
+        "NZDUSD": "NZDUSD=X",
+        "EURGBP": "EURGBP=X",
+        "EURJPY": "EURJPY=X",
+        "GBPJPY": "GBPJPY=X",
+    }
+    COMMODITY_SYMBOLS = {
+        "XAUUSD": "GC=F",
+        "XAGUSD": "SI=F",
+        "WTIUSD": "CL=F",
+        "BRENTUSD": "BZ=F",
+    }
+    INDEX_SYMBOLS = {
+        "SPX": "^GSPC",
+        "DJI": "^DJI",
+        "NDX": "^NDX",
+        "VIX": "^VIX",
+        "RUT": "^RUT",
+    }
 
-    def ticker(self, symbol: str = "AAPL") -> Ticker:
-        payload = self._get(self.base_url, f"/v8/finance/chart/{symbol.upper()}", {"interval": "1m", "range": "1d"})
+    @staticmethod
+    def _provider_symbol(symbol: str, asset_class: str = "stocks") -> str:
+        normalized = symbol.strip().upper()
+        if asset_class == "forex":
+            return YahooFinanceMarketData.FOREX_SYMBOLS.get(normalized, f"{normalized}=X")
+        if asset_class == "crypto":
+            return normalized
+        if asset_class == "stocks":
+            return normalized
+        if asset_class == "indices":
+            return YahooFinanceMarketData.INDEX_SYMBOLS.get(normalized, normalized)
+        if asset_class == "commodities":
+            return YahooFinanceMarketData.COMMODITY_SYMBOLS.get(normalized, normalized)
+        raise ValueError(f"Unsupported asset class: {asset_class}.")
+
+    def ticker(self, symbol: str = "AAPL", asset_class: str = "stocks") -> Ticker:
+        provider_symbol = self._provider_symbol(symbol, asset_class)
+        payload = self._get(self.base_url, f"/v8/finance/chart/{provider_symbol}", {"interval": "1m", "range": "1d"})
         result = payload["chart"]["result"][0]
         meta = result["meta"]
         last = float(meta.get("regularMarketPrice", meta.get("previousClose", 0)))
@@ -395,6 +634,7 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         interval: str = "60",
         limit: int = 100,
         end_ms: int | None = None,
+        asset_class: str = "stocks",
     ) -> list[Candle]:
         try:
             yf_interval = self.INTERVALS[interval]
@@ -402,11 +642,12 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         except KeyError as exc:
             raise ValueError(f"Yahoo Finance does not support the {interval} chart interval.") from exc
 
+        provider_symbol = self._provider_symbol(symbol, asset_class)
         params = {"interval": yf_interval, "range": yf_range}
         if end_ms is not None:
             params["period2"] = str(int(end_ms / 1000))
 
-        payload = self._get(self.base_url, f"/v8/finance/chart/{symbol.upper()}", params)
+        payload = self._get(self.base_url, f"/v8/finance/chart/{provider_symbol}", params)
         result = payload["chart"]["result"][0]
         timestamps = result["timestamp"]
         quotes = result["indicators"]["quote"][0]

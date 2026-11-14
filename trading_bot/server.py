@@ -17,7 +17,7 @@ from .broker_connections import BrokerRequestStore, BybitTestnetAccount, BybitTe
 from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .exchanges.paper import PaperExchange
 from .gemini_agent import GeminiAnalysisAgent, gemini_config
-from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMarketData, TwelveDataMarketData, YahooFinanceMarketData
+from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMarketData, TwelveDataMarketData, YahooFinanceMarketData, AlphaVantageMarketData
 from .paper_copy import (
     PaperCopyEventWorker,
     PaperCopySettings,
@@ -51,6 +51,7 @@ MARKET_CLIENTS = {
     "coinbase": CoinbaseMarketData(),
     "twelvedata": TwelveDataMarketData(),
     "yahoo": YahooFinanceMarketData(),
+    "alphavantage": AlphaVantageMarketData(),
 }
 PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
@@ -118,66 +119,63 @@ def market_payload(
     end_ms: int | None = None,
     asset_class: str = "crypto",
 ) -> dict[str, object]:
-    """Fetch chart candles with venue failover and treat the live ticker as optional."""
+    """Fetch chart candles with venue failover and treat the live ticker as optional.
+    
+    Provider selection by asset class:
+    - crypto: bybit, binance, coinbase (free public)
+    - forex: yahoo (free), alphavantage (free tier), twelvedata (needs key)
+    - stocks: yahoo (free), alphavantage (free tier), twelvedata (needs key)
+    - indices: yahoo (free), alphavantage (free tier), twelvedata (needs key)
+    - commodities: yahoo (free), alphavantage (free tier), twelvedata (needs key)
+    """
+    
+    # Select providers based on asset class with fallback priority
+    if asset_class == "crypto":
+        venues = [exchange, *(v for v in ("bybit", "binance", "coinbase") if v != exchange)]
+        use_asset_class_param = False
+    elif asset_class == "forex":
+        venues = [exchange, *(v for v in ("yahoo", "alphavantage", "twelvedata") if v != exchange)]
+        use_asset_class_param = True
+    elif asset_class == "stocks":
+        venues = [exchange, *(v for v in ("yahoo", "alphavantage", "twelvedata") if v != exchange)]
+        use_asset_class_param = True
+    elif asset_class == "indices":
+        venues = [exchange, *(v for v in ("yahoo", "alphavantage", "twelvedata") if v != exchange)]
+        use_asset_class_param = True
+    elif asset_class == "commodities":
+        venues = [exchange, *(v for v in ("yahoo", "alphavantage", "twelvedata") if v != exchange)]
+        use_asset_class_param = True
+    else:
+        venues = [exchange, *(v for v in ("bybit", "binance", "coinbase") if v != exchange)]
+        use_asset_class_param = False
 
-    if exchange == "twelvedata":
-        client = MARKET_CLIENTS.get(exchange)
-        if not isinstance(client, TwelveDataMarketData):
-            raise RuntimeError("Twelve Data feed is not configured in the market client.")
-        candles = client.candles(symbol, interval, 120, end_ms, asset_class=asset_class)
-        if not candles:
-            raise RuntimeError("Twelve Data returned no chart candles.")
-        ticker_errors: list[str] = []
-        try:
-            ticker: dict[str, object] = client.ticker(symbol, asset_class=asset_class).__dict__
-            ticker_source = exchange
-            ticker_unavailable = False
-        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
-            ticker_errors.append(str(exc))
-            ticker = {
-                "exchange": exchange,
-                "symbol": symbol,
-                "last": candles[-1].close,
-                "bid": None,
-                "ask": None,
-                "change_percent": None,
-                "timestamp_ms": candles[-1].timestamp_ms,
-            }
-            ticker_source = "candle_close"
-            ticker_unavailable = True
-        return {
-            "exchange": exchange,
-            "symbol": symbol,
-            "interval": interval,
-            "ticker": ticker,
-            "candles": [candle.__dict__ for candle in candles],
-            "market_data": {
-                "candle_source": exchange,
-                "ticker_source": ticker_source,
-                "fallback": False,
-                "ticker_unavailable": ticker_unavailable,
-                "candle_errors": [],
-                "ticker_errors": ticker_errors,
-            },
-        }
-
-    venues = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
     candle_errors: list[str] = []
     candle_source = exchange
     candles = None
+    
     for venue in venues:
         client = MARKET_CLIENTS.get(venue)
         if client is None:
             continue
-        venue_interval = BINANCE_INTERVALS.get(interval, interval) if venue == "binance" else interval
         try:
-            candles = client.candles(symbol, venue_interval, 120, end_ms)
+            if use_asset_class_param and hasattr(client, 'candles'):
+                # Check if client supports asset_class parameter
+                import inspect
+                sig = inspect.signature(client.candles)
+                if 'asset_class' in sig.parameters:
+                    candles = client.candles(symbol, interval, 120, end_ms, asset_class=asset_class)
+                else:
+                    candles = client.candles(symbol, interval, 120, end_ms)
+            else:
+                venue_interval = BINANCE_INTERVALS.get(interval, interval) if venue == "binance" else interval
+                candles = client.candles(symbol, venue_interval, 120, end_ms)
             if not candles:
                 raise ValueError(f"{venue} returned no candles")
             candle_source = venue
             break
         except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
             candle_errors.append(f"{venue}: {exc}")
+    
     if candles is None:
         raise RuntimeError("No exchange returned chart candles (" + "; ".join(candle_errors) + ").")
 
@@ -187,11 +185,21 @@ def market_payload(
     ticker_venues = [venue for venue in venues if venue in MARKET_CLIENTS]
     for venue in ticker_venues:
         try:
-            ticker = MARKET_CLIENTS[venue].ticker(symbol)
+            client = MARKET_CLIENTS[venue]
+            if use_asset_class_param and hasattr(client, 'ticker'):
+                import inspect
+                sig = inspect.signature(client.ticker)
+                if 'asset_class' in sig.parameters:
+                    ticker = client.ticker(symbol, asset_class=asset_class)
+                else:
+                    ticker = client.ticker(symbol)
+            else:
+                ticker = client.ticker(symbol)
             ticker_source = venue
             break
         except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
             ticker_errors.append(f"{venue}: {exc}")
+    
     if ticker is None:
         latest_candle = candles[-1]
         ticker = {
