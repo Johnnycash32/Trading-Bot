@@ -1,0 +1,129 @@
+A.Y.O. TRADING BOT - READ-ONLY PROGRESS AUDIT
+Audit date: 2026-11-07
+
+AUDIT SCOPE
+Inspected the current Git branch, project files, recent history and diffs, and read-only local API responses. No existing files were modified, deleted, moved, or rewritten during the audit. No commit or push was made for the audit. This text file is a copy of the report requested afterward.
+
+PROJECT OVERVIEW
+A.Y.O. has progressed beyond its original paper-dashboard concept into a Python-served, single-page trading research and simulation app. It has public market-data integrations, a risk-checked paper-trading engine, wallet-fill monitoring, and a narrow paper-only copy-trading flow.
+
+It is not a production live-trading platform. The project has no database, user authentication, production deployment configuration, or live exchange order path. There is a separate, explicitly confirmed Bybit testnet order path, which can submit actual testnet orders.
+
+The workspace is on branch feature/real-trader-discovery, clean and synchronized with origin at commit 30b25a59277a92a8976e6b599c997d20adfeb5eb. The local app responded on http://127.0.0.1:8766/ during the audit. Its copy settings showed auto-trade Off and no wallets selected.
+
+IMPLEMENTED FEATURES
+
+Frontend
+The app is one responsive dashboard, not a set of separate pages. Its top and mobile navigation link to dashboard sections:
+- Market/chart and asset watchlist
+- Paper trade ticket, risk panel, positions and trade history
+- Six-agent room and behavior-gate summary
+- Trader intelligence and public copy research
+- Hyperliquid public lead monitor
+- Optional Bybit private-account monitor
+- Broker directory and testnet setup/order panel
+- Hare's notification and activity panel
+
+The dark, exchange-terminal-style dashboard in ui/dashboard.html provides:
+- Market search, asset-class/symbol selectors, exchange feed selection, and chart intervals.
+- Canvas-based candle, line, and area charts, with public-feed REST fallback and browser WebSocket updates.
+- Indicators calculated in the browser: volume, SMA, EMA, Bollinger Bands, RSI, Stoch RSI, MACD, ATR and VWAP.
+- Drawing tools including trend and horizontal lines, Fibonacci levels, brush, text notes and measurement. Drawings are in-memory; persistence across reloads is not apparent.
+- Paper market and limit tickets, a paper positions/history view, trade cancellation/close controls, and a collapsible paper dock.
+- Six local portrait assets and CSS animations for the agent mascots. Motion can be disabled, observes reduced-motion preferences, and pauses when the page/agent room is not visible. This is CSS animation, not Three.js/R3F.
+- A public copy wallet-selection and settings UI, plus a separate testnet broker flow.
+
+The market selector includes Forex, stocks, indices and commodities, but that is not equivalent to execution support: most such assets are chart-only and the paper ticket is restricted to supported crypto perpetual feeds.
+
+Backend and API
+The Python backend is a standard-library ThreadingHTTPServer, with code organized into trading_bot/ and trader_sources/. Main routing and server startup are in trading_bot/server.py.
+
+Available GET routes include:
+- /api/status, /api/agents
+- /api/chart/{symbol}, /api/market, /api/market/quote
+- /api/paper/evaluate, /api/paper/scan, /api/paper/state
+- /api/copy/candidates, /api/copy/active, /api/copy/settings
+- /api/account/summary, /api/private/positions, /api/brokers
+
+POST routes include paper order/close, broker support requests, Bybit testnet checks/orders, local or Gemini analysis, and copy settings/control.
+
+There is no SQL/NoSQL database or migration system. Paper session data, copy settings, and locally saved broker requests use ignored JSON files, including .paper-state.json, .paper-copy-settings.json and .broker-requests.json. Paper state has a version field, but no general migration framework was found.
+
+Trading and market data
+- Bybit and Binance: Public market data is implemented for Bybit linear futures and Binance USD-M futures. Public candle and ticker adapters do not place orders.
+- Other market data: Coinbase spot and optional Twelve Data chart adapters are present. Twelve Data requires a server-side key and appropriate provider coverage/licensing.
+- Chart failover: A REST chart provider tries Binance, Kraken, OKX, Bybit, Bitget and Hyperliquid. The browser has a separate public WebSocket failover chain. These chart feeds must not be confused with executable futures data or trader-specific activity.
+- Paper trading: The local engine supports risk-checked simulated market entries, limit orders filled by candle touch, paper P&L/history, stop/target handling, trailing-stop behavior, and manual closes using fresh public quotes. Paper stops are not exchange-hosted protection and require the app/data monitoring to be operating.
+- Strategy/backtesting: The backend includes a moving-average crossover strategy with trend confirmation and pullback signals, and a cost-aware backtest function. I found no dashboard workflow or API endpoint for running/displaying backtests.
+- Risk controls: Default backend limits in trading_bot/models.py are 0.5% equity risk per trade, 2% maximum daily loss, three open positions, 2x maximum leverage and 25% maximum notional. The paper-copy flow uses this existing risk engine. A separate daily-profit target policy pauses automatic entries and applies stricter limits after its target is met; it is a simulation policy, not a profit guarantee.
+- Copy trading: Hyperliquid public leaderboard discovery and per-wallet fill monitoring are implemented. The paper-copy path accepts only fresh, source-verified WebSocket position opens from selected monitored wallets; it rejects backfills, snapshots, increases, reductions, closes, reversals, unsupported symbols and stale events. Entry requires a fresh Bybit/Binance perpetual quote within a 1% deviation of the source fill. Defaults are 1x leverage, 2% stop and 4.5% target, with editable server-validated settings. Copied positions are monitored server-side on closed one-minute candles. Source reductions/closes are not mirrored.
+- Live trading: No production/mainnet order path was found. The separate Bybit testnet connector can submit a manually confirmed testnet market order when configured with a key that has trading permission. It is not paper simulation, but it is isolated to Bybit's fixed testnet URL.
+
+AI AGENTS AND AUTOMATION
+The six named agents - Raccoon, Eagle, Hawk, Lion, Cheetah and Hare - are an observable behavior/animation layer, not six independently running AI services. The local BehaviorEngine assigns explainable states and reasons; the animation controller maps a subset of those states and paper lifecycle events to the portraits. Several states are supported by the frontend vocabulary but are not routinely emitted by current backend events.
+
+- Local paper-agent review: Descriptive analysis based on public market candles and the local moving-average strategy; it does not approve orders.
+- Gemini: Optional, on-demand market analysis. The API reported it as configured in the current local app. The code sends public ticker/candle data when explicitly requested and says account details and keys are not sent to Gemini.
+- Automated paper evaluation: The UI periodically requests evaluation for the selected chart symbol; the backend may simulate a paper entry when strategy and risk checks pass.
+- Copy automation: A queue-backed worker processes eligible Hyperliquid fills while enabled. The server-side copy-position monitor checks open copied paper positions independently of the chart selection.
+
+These are not unattended production trading bots.
+
+RECENT DEVELOPMENT
+The latest commits and their changes are:
+1. 30b25a5 - added verified paper-copy settings and event processing, risk-sized paper entries, API/UI controls, position monitoring, documentation and tests.
+2. 7e96e0f - restored the Auto-trade control in the public lead monitor.
+3. f32eab3 - added six agent portraits, CSS animation support and chart-provider failover.
+
+Earlier branch work added Hyperliquid public monitoring and the 15-wallet subscription limit. Relative to main, the current branch changes 38 files; it also removes .env.example, leaving no tracked environment template.
+
+The latest recorded test run for this branch reported 132 tests passing, with Python compile and Git diff checks passing. Tests were not rerun during the audit to keep it read-only.
+
+FEATURES IN PROGRESS OR INCOMPLETE
+- Copy-trading feed availability: During the local browser check, the monitor reported that the clearinghouse position did not confirm a fill transition. This is a fail-closed verification condition, so it blocks copying rather than treating the event as valid. Hyperliquid and some market-data requests have also shown connectivity/provider errors in this environment. The copy code exists, but live-feed reliability was not demonstrated in this audit.
+- Market availability: Public feeds depend on external providers, symbol coverage and network connectivity. The dashboard can report unavailable data; the chart does not guarantee offline market data.
+- Non-crypto assets: Several catalog entries are placeholders for future feed coverage. Chart-only symbols cannot be paper-traded through the current crypto execution adapters.
+- Backtesting: A Python backtest module and tests exist, but no UI/API integration was found.
+- Broker directory: Bybit is the only implemented broker connection. Most other broker entries and "request support" are directory/local-request features, not account integrations. Support requests are saved locally, not sent to brokers.
+- Legacy/sample code: Synthetic demo profile/position helpers and the "Demo only" active-copy presentation remain in code. The current public lead-monitor flow uses Hyperliquid data, but these helpers can confuse future maintenance if mistaken for production functionality.
+- UI placeholders: The "Trader intelligence" feed contains static sample entries. Initial dashboard metrics include sample values; account equity/available balance/P&L are later updated from paper state, but the displayed drawdown and risk-commander figures are static. More seriously, the UI/status sample says an 18% daily-loss limit while the backend default is 2%. Some bottom chart controls only update their status label; they do not implement full compare/log-scale/auto-scale/settings behavior.
+- Documentation drift: The README's "Planned layers" still describes backtesting as the current phase and copy controls, testnet adapters and a React/Three.js frontend as future work, although some corresponding Python/HTML features now exist. It should not be treated as an accurate current roadmap.
+
+SECURITY AND TRADING CONTROLS
+- .env and local paper state are ignored by Git and were not tracked. No secret values are included in this report. The code reads provider, Gemini, Bybit testnet and optional read-only Bybit credentials from server-side environment/local configuration.
+- The Bybit testnet connector uses a fixed testnet URL and checks API-key read-only status before allowing an order. The private Bybit monitor verifies that the key is read-only and has no order/transfer methods.
+- There is no user authentication or authorization around the HTTP API. The server defaults to binding 127.0.0.1, which is appropriate only for local use; exposing it to a network would expose paper state and controls, and could expose the explicitly enabled testnet order route.
+- The server uses plain HTTP, with no evident TLS, CSRF, origin checks, user sessions or deployment-level access controls.
+- Some GET routes are stateful: /api/paper/evaluate can create or update paper state; /api/paper/state may synchronize policy and persist changes; /api/copy/active starts the monitor. They should not be treated as harmless cacheable reads in a hosted deployment.
+- Local JSON files are convenient for development but need durable storage, access control, backups, concurrency/recovery planning and possibly a database before multi-user hosting. No secrets manager integration is present.
+
+DEPLOYMENT AND HATCHABLE COMPARISON
+The app works locally as a Python server plus one HTML dashboard. The project has a minimal pyproject.toml with Python 3.11+ and websocket-client; it has no frontend package/build system and no Docker, Azure, Hatchable or other deployment manifests.
+
+For hosting, it would need at least:
+1. A supported Python backend deployment target and a deliberate frontend/static-asset serving strategy.
+2. Authentication/authorization, HTTPS, request-origin/CSRF protections and restricted access to paper/testnet controls.
+3. Durable state storage or a database, with a migration plan and backup/recovery behavior.
+4. Server-side secret configuration and environment-specific Bybit testnet settings; verify that no mainnet credential is used.
+5. Outbound network/WebSocket access to the selected market providers, Hyperliquid and Gemini as applicable.
+6. Runtime health checks, logging/monitoring, worker lifecycle management and a deployment smoke test.
+
+The workspace contains a sibling Trading Bot.html that is explicitly a static visual concept with sample metrics and no connected trading services. The local app is substantially more functional than that prototype. What is missing from the deployed Hatchable version could not be verified: no Hatchable deployment URL or deployment project/export was present or shared for this audit, so a remote feature-by-feature comparison would be speculation.
+
+IMPORTANT FILES
+- ui/dashboard.html - single-page dashboard, chart, paper ticket, agent animations and copy controls.
+- trading_bot/server.py - HTTP routes, market/copy integration and server lifecycle.
+- trading_bot/paper_session.py - paper orders, positions, state and exits.
+- trading_bot/paper_copy.py and trader_sources/hyperliquid_source.py - copy eligibility, queued events, Hyperliquid discovery/fill verification.
+- trading_bot/market_data.py and trader_sources/chart_provider.py - market adapters and REST chart failover.
+- trading_bot/risk.py and trading_bot/behavior.py - risk validation and behavioral decisions.
+- trading_bot/broker_connections.py and trading_bot/private_accounts.py - Bybit testnet and read-only account paths.
+- tests/ - unit/API tests for the engine, adapters, copy flow and broker paths.
+
+RECOMMENDED NEXT PRIORITIES
+1. Correct the misleading static risk/status figures and remove or clearly label sample intelligence/metrics.
+2. Restore healthy Hyperliquid verification and market-data connectivity; verify copy flow end-to-end before enabling it.
+3. Add authentication, TLS and request protections before any non-local deployment; keep production order routing disabled.
+4. Decide on deployment architecture and durable state storage, then create environment/deployment documentation and a maintained config template.
+5. Integrate the backtest into a UI/API flow and update the README roadmap to reflect actual implemented scope.
+6. Obtain the Hatchable URL/export and compare that deployed app directly against this local dashboard before claiming which features are absent.

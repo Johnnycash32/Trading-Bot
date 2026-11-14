@@ -348,3 +348,90 @@ class TwelveDataMarketData(PublicMarketDataClient):
             candles.append(candle)
         candles.sort(key=lambda candle: candle.timestamp_ms)
         return candles
+
+
+class YahooFinanceMarketData(PublicMarketDataClient):
+    """Free Yahoo Finance chart/quote feed for US equities. No API key required."""
+
+    base_url = "https://query1.finance.yahoo.com"
+    exchange = "yahoo"
+    INTERVALS = {
+        "1": "1m",
+        "5": "5m",
+        "15": "15m",
+        "30": "30m",
+        "60": "1h",
+        "120": "2h",
+        "240": "4h",
+        "D": "1d",
+        "W": "1wk",
+        "M": "1mo",
+    }
+    RANGES = {
+        "1": "1d",
+        "5": "1d",
+        "15": "5d",
+        "30": "1mo",
+        "60": "1mo",
+        "120": "3mo",
+        "240": "6mo",
+        "D": "2y",
+        "W": "5y",
+        "M": "max",
+    }
+
+    def ticker(self, symbol: str = "AAPL") -> Ticker:
+        payload = self._get(self.base_url, f"/v8/finance/chart/{symbol.upper()}", {"interval": "1m", "range": "1d"})
+        result = payload["chart"]["result"][0]
+        meta = result["meta"]
+        last = float(meta.get("regularMarketPrice", meta.get("previousClose", 0)))
+        change = float(meta.get("regularMarketChangePercent", 0))
+        timestamp = int(meta.get("regularMarketTime", 0)) * 1000
+        return Ticker(self.exchange, symbol.upper(), last, None, None, change, timestamp)
+
+    def candles(
+        self,
+        symbol: str = "AAPL",
+        interval: str = "60",
+        limit: int = 100,
+        end_ms: int | None = None,
+    ) -> list[Candle]:
+        try:
+            yf_interval = self.INTERVALS[interval]
+            yf_range = self.RANGES[interval]
+        except KeyError as exc:
+            raise ValueError(f"Yahoo Finance does not support the {interval} chart interval.") from exc
+
+        params = {"interval": yf_interval, "range": yf_range}
+        if end_ms is not None:
+            params["period2"] = str(int(end_ms / 1000))
+
+        payload = self._get(self.base_url, f"/v8/finance/chart/{symbol.upper()}", params)
+        result = payload["chart"]["result"][0]
+        timestamps = result["timestamp"]
+        quotes = result["indicators"]["quote"][0]
+
+        candles: list[Candle] = []
+        for i, ts in enumerate(timestamps):
+            try:
+                open_price = quotes["open"][i]
+                high_price = quotes["high"][i]
+                low_price = quotes["low"][i]
+                close_price = quotes["close"][i]
+                volume = quotes["volume"][i]
+                if None in (open_price, high_price, low_price, close_price):
+                    continue
+                candle = Candle(
+                    timestamp_ms=int(ts) * 1000,
+                    open=float(open_price),
+                    high=float(high_price),
+                    low=float(low_price),
+                    close=float(close_price),
+                    volume=float(volume) if volume is not None else None,
+                )
+                candles.append(candle)
+            except (IndexError, TypeError, ValueError):
+                continue
+
+        candles.sort(key=lambda c: c.timestamp_ms)
+        return candles[-limit:] if limit else candles

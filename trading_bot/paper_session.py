@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from .behavior import BehaviorEngine
+from .day_trader_skill import DayTraderStrategy, DayTraderSignal, DayTraderSetup
 from .market_data import Candle
 from .models import Rejection, RiskLimits, Side, TradeProposal
 from .risk import RiskEngine
@@ -49,6 +50,7 @@ class PaperExecutionSession:
     account_equity: float = 10_000.0
     risk_engine: RiskEngine = field(default_factory=RiskEngine)
     strategy: MovingAverageCrossStrategy = field(default_factory=MovingAverageCrossStrategy)
+    day_trader_strategy: DayTraderStrategy = field(default_factory=DayTraderStrategy)
     exchange: PaperExchange = field(default_factory=PaperExchange)
     orders: list[dict[str, object]] = field(default_factory=list)
     history: list[dict[str, object]] = field(default_factory=list)
@@ -822,33 +824,77 @@ class PaperExecutionSession:
                 "closed_positions": [],
                 **self.snapshot(symbol, current_candle.close),
             }
-        signal = self.strategy.signal(candles)
-        signal_source = "moving_average_crossover"
+
+        is_equity = exchange.lower() == "yahoo"
+        day_trader_signal: DayTraderSignal | None = None
+
+        if is_equity:
+            day_trader_signal = self.day_trader_strategy.signal(candles)
+            if day_trader_signal and day_trader_signal.signal is not Signal.HOLD:
+                signal = day_trader_signal.signal
+                signal_source = f"day_trader_{day_trader_signal.setup.value}"
+                entry = day_trader_signal.entry_price or current_candle.close
+                stop_loss = day_trader_signal.stop_loss
+                take_profit = day_trader_signal.take_profit
+            else:
+                signal = self.strategy.signal(candles)
+                signal_source = "moving_average_crossover"
+                if signal is Signal.HOLD:
+                    signal = self.strategy.pullback_signal(candles)
+                    signal_source = "trend_pullback"
+        else:
+            signal = self.strategy.signal(candles)
+            signal_source = "moving_average_crossover"
+            if signal is Signal.HOLD:
+                signal = self.strategy.pullback_signal(candles)
+                signal_source = "trend_pullback"
+
         if signal is Signal.HOLD:
-            signal = self.strategy.pullback_signal(candles)
-            signal_source = "trend_pullback"
-        if signal is Signal.HOLD:
-            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()))
-            reason = "No crossover or trend-pullback recovery signal."
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()), day_trader_signal=day_trader_signal)
+            reason = day_trader_signal.reason if day_trader_signal else "No crossover, trend-pullback, or day-trader signal."
             self._record_event("monitor", symbol=symbol, signal=signal.value, reason=reason)
             return {"status": "hold", "signal": signal.value, "reason": reason, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, current_candle.close)}
         if self._last_order_candle.get(symbol) == current_candle.timestamp_ms:
-            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()))
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()), day_trader_signal=day_trader_signal)
             self._record_event("duplicate_signal", symbol=symbol, signal=signal.value, reason="This candle already produced a paper entry.")
             return {"status": "hold", "signal": signal.value, "reason": "This candle already produced a paper entry.", "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, current_candle.close)}
 
-        entry = current_candle.close
-        recent = candles[-min(14, len(candles)):]
-        average_range = sum(candle.high - candle.low for candle in recent) / len(recent)
-        stop_distance = max(average_range, entry * 0.002)
-        round_trip_cost_per_unit = entry * (self.FEE_RATE + self.SLIPPAGE_RATE) * 2
-        reward_distance = (stop_distance + round_trip_cost_per_unit) * 1.5
+        if is_equity and day_trader_signal and day_trader_signal.signal is not Signal.HOLD:
+            entry = day_trader_signal.entry_price or current_candle.close
+            stop_loss = day_trader_signal.stop_loss
+            take_profit = day_trader_signal.take_profit
+            if stop_loss is not None and take_profit is not None:
+                stop_distance = abs(entry - stop_loss)
+            else:
+                recent = candles[-min(14, len(candles)):]
+                average_range = sum(candle.high - candle.low for candle in recent) / len(recent)
+                stop_distance = max(average_range, entry * 0.002)
+                round_trip_cost_per_unit = entry * (self.FEE_RATE + self.SLIPPAGE_RATE) * 2
+                reward_distance = (stop_distance + round_trip_cost_per_unit) * 1.5
+                if signal is Signal.LONG:
+                    stop_loss = entry - stop_distance
+                    take_profit = entry + reward_distance
+                else:
+                    stop_loss = entry + stop_distance
+                    take_profit = entry - reward_distance
+        else:
+            entry = current_candle.close
+            recent = candles[-min(14, len(candles)):]
+            average_range = sum(candle.high - candle.low for candle in recent) / len(recent)
+            stop_distance = max(average_range, entry * 0.002)
+            round_trip_cost_per_unit = entry * (self.FEE_RATE + self.SLIPPAGE_RATE) * 2
+            reward_distance = (stop_distance + round_trip_cost_per_unit) * 1.5
+            if signal is Signal.LONG:
+                stop_loss = entry - stop_distance
+                take_profit = entry + reward_distance
+            else:
+                stop_loss = entry + stop_distance
+                take_profit = entry - reward_distance
+
         if signal is Signal.LONG:
             side = Side.LONG
-            stop_loss, take_profit = entry - stop_distance, entry + reward_distance
         else:
             side = Side.SHORT
-            stop_loss, take_profit = entry + stop_distance, entry - reward_distance
 
         proposal = TradeProposal(
             exchange=exchange,
@@ -867,11 +913,11 @@ class PaperExecutionSession:
         self._last_order_candle[symbol] = current_candle.timestamp_ms
         decision = self.risk_engine.validate(proposal)
         if isinstance(decision, Rejection):
-            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()), risk_approved=False, risk_reason=decision.reason)
+            behavior = self.behavior_engine.assess(signal, candles, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()), risk_approved=False, risk_reason=decision.reason, day_trader_signal=day_trader_signal)
             self._record_event("paper_rejected", symbol=symbol, signal=signal.value, code=decision.code, reason=decision.reason)
             return {"status": "rejected", "signal": signal.value, "code": decision.code, "reason": decision.reason, "behavioral": behavior.as_dict(), "closed_positions": closed, **self.snapshot(symbol, entry)}
 
-        behavior = self.behavior_engine.assess(signal, candles, risk_reward_ratio=decision.risk_reward_ratio, notional=decision.notional, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()))
+        behavior = self.behavior_engine.assess(signal, candles, risk_reward_ratio=decision.risk_reward_ratio, notional=decision.notional, account_equity=self.account_equity, current_daily_loss=self._current_daily_loss(), open_positions=len(self._open_positions()), day_trader_signal=day_trader_signal)
         if behavior.decision == "reject":
             reason = behavior.reasons[0] if behavior.reasons else "Behavior risk gate rejected the paper entry."
             self._record_event("paper_rejected", symbol=symbol, signal=signal.value, code="behavior_gate", reason=reason)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from .day_trader_skill import DayTraderSignal, DayTraderSetup
 from .market_data import Candle
 from .strategy import Signal
 
@@ -28,15 +29,27 @@ class BehaviorAssessment:
     approval_required: bool
     reasons: list[str]
     agents: list[dict[str, str]]
+    day_trader_signal: DayTraderSignal | None = None
+    day_trader_setup: DayTraderSetup | None = None
 
     def as_dict(self) -> dict[str, Any]:
-        return {
+        result = {
             "decision": self.decision,
             "confidence": round(self.confidence, 3),
             "approval_required": self.approval_required,
             "reasons": self.reasons,
             "agents": self.agents,
         }
+        if self.day_trader_signal:
+            result["day_trader"] = {
+                "setup": self.day_trader_signal.setup.value,
+                "confidence": round(self.day_trader_signal.confidence, 3),
+                "reason": self.day_trader_signal.reason,
+                "entry": self.day_trader_signal.entry_price,
+                "stop": self.day_trader_signal.stop_loss,
+                "target": self.day_trader_signal.take_profit,
+            }
+        return result
 
 
 class BehaviorEngine:
@@ -77,6 +90,7 @@ class BehaviorEngine:
         risk_approved: bool = True,
         risk_reason: str | None = None,
         auto_trading_enabled: bool = False,
+        day_trader_signal: DayTraderSignal | None = None,
     ) -> BehaviorAssessment:
         confidence = self._confidence(signal, candles, risk_reward_ratio)
         reasons: list[str] = []
@@ -111,6 +125,8 @@ class BehaviorEngine:
         else:
             decision = "paper_simulate"
 
+        day_trader_setup = day_trader_signal.setup if day_trader_signal else None
+
         agents = [
             {"name": "Raccoon", "role": "evidence scout", "state": "monitoring" if signal is Signal.HOLD else "scanned", "note": "Collected public candle evidence."},
             {"name": "Eagle", "role": "signal dispatcher", "state": "waiting" if signal is Signal.HOLD else "qualified", "note": f"Signal={signal.value}; confidence={confidence:.0%}."},
@@ -119,4 +135,11 @@ class BehaviorEngine:
             {"name": "Cheetah", "role": "paper executor", "state": "standby" if blocked else "paper-ready", "note": "No live order route is enabled."},
             {"name": "Hare", "role": "notification runner", "state": "alerting" if reasons else "ready", "note": reasons[-1] if reasons else "Decision delivered."},
         ]
-        return BehaviorAssessment(decision, confidence, approval_required, reasons, agents)
+        if day_trader_signal:
+            agents.append({
+                "name": "Owl",
+                "role": "day-trader specialist",
+                "state": "triggered",
+                "note": f"{day_trader_signal.setup.value.replace('_', ' ').title()}: {day_trader_signal.reason}",
+            })
+        return BehaviorAssessment(decision, confidence, approval_required, reasons, agents, day_trader_signal, day_trader_setup)

@@ -17,7 +17,7 @@ from .broker_connections import BrokerRequestStore, BybitTestnetAccount, BybitTe
 from .copy_trading import ActiveCopyAccount, ActivePosition, CopySettings, CopyStrategyLab, demo_active_accounts, demo_profiles
 from .exchanges.paper import PaperExchange
 from .gemini_agent import GeminiAnalysisAgent, gemini_config
-from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMarketData, TwelveDataMarketData
+from .market_data import BinanceMarketData, BybitMarketData, Candle, CoinbaseMarketData, TwelveDataMarketData, YahooFinanceMarketData
 from .paper_copy import (
     PaperCopyEventWorker,
     PaperCopySettings,
@@ -50,6 +50,7 @@ MARKET_CLIENTS = {
     "binance": BinanceMarketData(),
     "coinbase": CoinbaseMarketData(),
     "twelvedata": TwelveDataMarketData(),
+    "yahoo": YahooFinanceMarketData(),
 }
 PAPER_SESSION = PaperExecutionSession.load(PAPER_STATE_FILE)
 PAPER_LOCK = RLock()
@@ -787,7 +788,12 @@ class AppHandler(BaseHTTPRequestHandler):
                 self._send(400, b'{"error":"Unsupported exchange"}', "application/json; charset=utf-8")
                 return
             try:
-                venue_interval = BINANCE_INTERVALS.get(interval, interval) if exchange == "binance" else interval
+                if exchange == "binance":
+                    venue_interval = BINANCE_INTERVALS.get(interval, interval)
+                elif exchange == "yahoo":
+                    venue_interval = interval
+                else:
+                    venue_interval = interval
                 candles = client.candles(symbol, venue_interval, 120, end_ms)
                 interval_ms = INTERVAL_MILLISECONDS.get(interval)
                 confirmed_candles = closed_candles(
@@ -833,8 +839,9 @@ class AppHandler(BaseHTTPRequestHandler):
             symbols = [symbol for symbol in symbols if symbol not in excluded]
             client = MARKET_CLIENTS.get(exchange)
             interval_ms = INTERVAL_MILLISECONDS.get(interval)
-            if client is None or exchange not in {"bybit", "binance"}:
-                self._send(400, b'{"error":"Choose a supported perpetual market feed for paper signal scanning."}', "application/json; charset=utf-8")
+            is_equity = exchange.lower() == "yahoo"
+            if client is None or (exchange not in {"bybit", "binance"} and not is_equity):
+                self._send(400, b'{"error":"Choose a supported market feed for paper signal scanning."}', "application/json; charset=utf-8")
                 return
             if interval not in PAPER_INTERVALS or interval_ms is None:
                 self._send(400, b'{"error":"Unsupported candle interval"}', "application/json; charset=utf-8")
@@ -845,7 +852,12 @@ class AppHandler(BaseHTTPRequestHandler):
 
             def preview_symbol(symbol: str) -> dict[str, object]:
                 try:
-                    venue_interval = BINANCE_INTERVALS.get(interval, interval) if exchange == "binance" else interval
+                    if exchange == "binance":
+                        venue_interval = BINANCE_INTERVALS.get(interval, interval)
+                    elif exchange == "yahoo":
+                        venue_interval = interval
+                    else:
+                        venue_interval = interval
                     candles = client.candles(symbol, venue_interval, 120, None)
                     confirmed = closed_candles(candles, interval_ms, int(datetime.now(timezone.utc).timestamp() * 1000))
                     if not confirmed:
@@ -860,6 +872,7 @@ class AppHandler(BaseHTTPRequestHandler):
                         preview_session.events = deepcopy(PAPER_SESSION.events)
                         preview_session._last_order_candle = deepcopy(PAPER_SESSION._last_order_candle)
                         preview_session._last_evaluated_candle = deepcopy(PAPER_SESSION._last_evaluated_candle)
+                        preview_session.day_trader_strategy = deepcopy(PAPER_SESSION.day_trader_strategy)
                     result = preview_session.evaluate(exchange, symbol, confirmed, interval_ms)
                     behavior = result.get("behavioral", {})
                     if result.get("status") != "simulated" or not isinstance(behavior, dict) or behavior.get("decision") != "paper_simulate":
