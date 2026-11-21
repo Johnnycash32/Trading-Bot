@@ -233,7 +233,11 @@ def market_payload(
 
 
 def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
-    """Resolve a fresh executable-side public quote, preferring the position venue."""
+    """Resolve a fresh executable-side public quote, preferring the position venue.
+
+    Falls back to the last closed 1-minute candle close when live exchange
+    quotes are stale or unavailable so positions can still be closed.
+    """
 
     exchange = str(position.get("exchange", "")).lower()
     symbol = str(position.get("symbol", ""))
@@ -259,6 +263,19 @@ def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
             return float(price), f"{venue}_{'bid' if side == 'long' else 'ask'}", timestamp_ms
         except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
             errors.append(f"{venue}: {exc}")
+
+    # Fallback to the most recent closed 1-minute candle close.
+    try:
+        candles = closed_candles(MARKET_CLIENTS[exchange].candles(symbol, "1m", 120, None), 60_000, now_ms)
+        if not candles:
+            raise ValueError("no closed candles available")
+        last = candles[-1]
+        price = last.close
+        if price is None or not isfinite(price) or price <= 0:
+            raise ValueError("candle close price invalid")
+        return float(price), "candle_close", int(last.timestamp_ms)
+    except Exception as exc:
+        errors.append(f"candle_close_fallback: {exc}")
 
     raise RuntimeError("No fresh executable close quote is available (" + "; ".join(errors) + ").")
 
