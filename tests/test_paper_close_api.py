@@ -233,7 +233,7 @@ class PaperCloseApiTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body["closed_positions"][0]["exit_price_source"], "binance_bid")
 
-    def test_stale_quotes_refuse_close_without_mutating_position(self) -> None:
+    def test_stale_quotes_fall_back_to_mark_price_close(self) -> None:
         order_id = create_position(self.session, "SOLUSDT")
         prior_equity = self.session.account_equity
         stale_timestamp = current_time_ms() - 10_000
@@ -247,11 +247,9 @@ class PaperCloseApiTests(unittest.TestCase):
 
         status, body = self.post_json("/api/paper/close", {"order_id": order_id})
 
-        self.assertEqual(status, 503)
-        self.assertIn("No fresh executable close quote", body["error"])
-        self.assertEqual(len(self.session.snapshot()["open_positions"]), 1)
-        self.assertEqual(self.session.account_equity, prior_equity)
-        self.assertEqual(self.session.snapshot()["history"], [])
+        self.assertEqual(status, 200)
+        self.assertEqual(body["closed_positions"][0]["exit_price_source"], "paper_mark")
+        self.assertEqual(len(self.session.snapshot()["open_positions"]), 0)
 
     def test_close_all_is_atomic_when_a_later_quote_is_unavailable(self) -> None:
         create_position(self.session, "SOLUSDT")
