@@ -14,3 +14,8 @@ secrets/
 .paper-copy-settings.json
 .paper-copy-settings.json.tmp
 .broker-requests.json
+# Python build artifacts
+*.egg-info/
+.venv/
+__pycache__/
+uv.lock
