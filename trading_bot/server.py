@@ -236,47 +236,57 @@ def fresh_close_quote(position: dict[str, object]) -> tuple[float, str, int]:
     """Resolve a fresh executable-side public quote, preferring the position venue.
 
     Falls back to the last closed 1-minute candle close when live exchange
-    quotes are stale or unavailable so positions can still be closed.
+    quotes are stale or unavailable, and to the position mark/entry price
+    when the exchange has no public ticker client.
     """
 
     exchange = str(position.get("exchange", "")).lower()
     symbol = str(position.get("symbol", ""))
     side = str(position.get("side", "")).lower()
-    if exchange not in MARKET_CLIENTS or not SYMBOL_PATTERN.fullmatch(symbol) or side not in {"long", "short"}:
+    if not SYMBOL_PATTERN.fullmatch(symbol) or side not in {"long", "short"}:
         raise ValueError(f"Open order {position.get('order_id', 'unknown')} has invalid market details.")
 
-    sources = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
-    errors: list[str] = []
+    mark_price = float(position.get("mark_price") or position.get("entry_price") or 0)
     now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
-    for venue in sources:
-        try:
-            ticker = MARKET_CLIENTS[venue].ticker(symbol)
-            timestamp_ms = ticker.timestamp_ms
-            if timestamp_ms is None:
-                raise ValueError("quote has no exchange timestamp")
-            age_ms = now_ms - timestamp_ms
-            if age_ms < -CLOSE_QUOTE_FUTURE_TOLERANCE_MS or age_ms > CLOSE_QUOTE_MAX_AGE_MS:
-                raise ValueError(f"quote is stale ({age_ms} ms old)")
-            price = ticker.bid if side == "long" else ticker.ask
-            if price is None or not isfinite(price) or price <= 0:
-                raise ValueError(f"quote has no valid {side}-close price")
-            return float(price), f"{venue}_{'bid' if side == 'long' else 'ask'}", timestamp_ms
-        except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
-            errors.append(f"{venue}: {exc}")
 
-    # Fallback to the most recent closed 1-minute candle close.
+    if exchange in MARKET_CLIENTS:
+        sources = [exchange, *(venue for venue in ("bybit", "binance", "coinbase") if venue != exchange)]
+        errors: list[str] = []
+        for venue in sources:
+            try:
+                ticker = MARKET_CLIENTS[venue].ticker(symbol)
+                timestamp_ms = ticker.timestamp_ms
+                if timestamp_ms is None:
+                    raise ValueError("quote has no exchange timestamp")
+                age_ms = now_ms - timestamp_ms
+                if age_ms < -CLOSE_QUOTE_FUTURE_TOLERANCE_MS or age_ms > CLOSE_QUOTE_MAX_AGE_MS:
+                    raise ValueError(f"quote is stale ({age_ms} ms old)")
+                price = ticker.bid if side == "long" else ticker.ask
+                if price is None or not isfinite(price) or price <= 0:
+                    raise ValueError(f"quote has no valid {side}-close price")
+                return float(price), f"{venue}_{'bid' if side == 'long' else 'ask'}", timestamp_ms
+            except (OSError, RuntimeError, ValueError, KeyError, TypeError, IndexError) as exc:
+                errors.append(f"{venue}: {exc}")
+
+    # Fallback: last closed 1-minute candle close for the position's exchange.
     try:
-        candles = closed_candles(MARKET_CLIENTS[exchange].candles(symbol, "1m", 120, None), 60_000, now_ms)
-        if not candles:
-            raise ValueError("no closed candles available")
-        last = candles[-1]
-        price = last.close
-        if price is None or not isfinite(price) or price <= 0:
-            raise ValueError("candle close price invalid")
-        return float(price), "candle_close", int(last.timestamp_ms)
+        if exchange in MARKET_CLIENTS:
+            candles = closed_candles(MARKET_CLIENTS[exchange].candles(symbol, "1m", 120, None), 60_000, now_ms)
+        else:
+            candles = []
+        if candles:
+            last = candles[-1]
+            price = last.close
+            if price is not None and isfinite(price) and price > 0:
+                return float(price), "candle_close", int(last.timestamp_ms)
     except Exception as exc:
         errors.append(f"candle_close_fallback: {exc}")
 
+    # Final fallback: position mark price (paper-only, no live quote).
+    if mark_price > 0:
+        return mark_price, "paper_mark", now_ms
+
+    errors.append("no price source available")
     raise RuntimeError("No fresh executable close quote is available (" + "; ".join(errors) + ").")
 
 
