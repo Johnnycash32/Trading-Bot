@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+import secrets
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy, deepcopy
 from dataclasses import replace
@@ -35,6 +37,10 @@ from trader_sources.base import TraderEvent
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOGIN_FILE = PROJECT_ROOT / "ui" / "login.html"
+LOGIN_TOKEN = "orbitiq-secure-token-xyz"
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "orbitiq123")
 LOGGER = logging.getLogger(__name__)
 UI_FILE = PROJECT_ROOT / "ui" / "dashboard.html"
 AGENT_AVATAR_FILES = {
@@ -661,6 +667,9 @@ class AppHandler(BaseHTTPRequestHandler):
         if request.path in ("/", "/index.html", "/Trading%20Bot.html"):
             self._send(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
             return
+        if request.path == "/login":
+            self._send(200, LOGIN_FILE.read_bytes(), "text/html; charset=utf-8")
+            return
         if request.path in AGENT_AVATAR_FILES:
             avatar_name = AGENT_AVATAR_FILES[request.path]
             avatar_file = UI_FILE.parent / "assets" / "agents" / f"{avatar_name}.jpg"
@@ -1014,6 +1023,26 @@ class AppHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         global COPY_SETTINGS
         request = urlsplit(self.path)
+        if request.path == "/api/login":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid login request"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid login request"}', "application/json; charset=utf-8")
+                return
+            username = str(payload.get("username", ""))
+            password = str(payload.get("password", ""))
+            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN}).encode(), "application/json; charset=utf-8")
+                return
+            self._send(401, json.dumps({"status": "error", "message": "Invalid credentials"}).encode(), "application/json; charset=utf-8")
+            return
         if request.path == "/api/paper/order":
             try:
                 length = int(self.headers.get("Content-Length", "0"))

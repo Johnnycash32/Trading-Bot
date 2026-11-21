@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBITIQ | Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="/ui/assets/favicon.svg">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--deep:#0b0e14;--card:rgba(21,26,35,0.7);--border:rgba(255,255,255,0.05);--ink:#f2f2f4;--muted:#8db8b8;--blue:#6aa8ff;--mint:#bde8d9}
+    body{background:var(--deep);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .login-card{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;padding:40px 32px;width:min(400px,92vw);box-shadow:0 25px 60px rgba(0,0,0,.5)}
+    .login-header{text-align:center;margin-bottom:32px}
+    .login-header .orbitiq-logo{width:64px;height:64px;margin:0 auto 16px}
+    .login-header h1{font-size:1.5rem;font-weight:900;letter-spacing:-.04em;color:var(--mint);margin-bottom:6px}
+    .login-header p{color:var(--muted);font-size:.85rem}
+    .form-group{margin-bottom:18px}
+    .form-group label{display:block;font-size:.75rem;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+    .form-group input{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--ink);font-size:.9rem;padding:10px 12px;outline:none}
+    .form-group input:focus{border-color:var(--blue)}
+    .form-group input::placeholder{color:#555}
+    .btn{width:100%;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.95rem;font-weight:800;padding:12px;cursor:pointer;outline:none;transition:transform .1s,filter .2s}
+    .btn:hover{filter:brightness(1.15)}
+    .btn:active{transform:scale(0.98)}
+    .btn.loading{pointer-events:none;opacity:.85;position:relative;overflow:hidden}
+    .btn.loading::after{content:'';position:absolute;inset:0;background:url('/ui/assets/animations/circle-loader.json') center/contain no-repeat}
+    .error{color:#ff7180;font-size:.8rem;margin-top:8px;display:none}
+    .footer{margin-top:28px;text-align:center;color:var(--muted);font-size:.78rem}
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-header">
+      <svg class="orbitiq-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(45 50 50)" stroke="currentColor" stroke-width="6.5"/>
+        <ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(-45 50 50)" stroke="currentColor" stroke-width="6.5"/>
+        <polygon points="50,37 63,50 50,63 37,50" fill="currentColor"/>
+      </svg>
+      <h1>ORBITIQ</h1>
+      <p>Intelligent Market Command Centre</p>
+    </div>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="admin" required autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" required autocomplete="current-password"/>
+      </div>
+      <div id="login-error" class="error">Invalid credentials</div>
+      <button type="submit" id="login-btn" class="btn">Sign In</button>
+    </form>
+    <div class="footer">Paper trading &amp; agent command centre &middot; No live orders</div>
+  </div>
+  <script>
+    const form=document.getElementById('login-form'),btn=document.getElementById('login-btn'),error=document.getElementById('login-error');
+    form.addEventListener('submit',async(e)=>{
+      e.preventDefault();
+      error.style.display='none';
+      btn.classList.add('loading');
+      btn.textContent='';
+      try{
+        const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+        const data=await res.json();
+        if(res.ok){
+          localStorage.setItem('orbitiq_token',data.token);
+          window.location.href='/';
+        }else{
+          error.textContent=data.message||'Invalid credentials';
+          error.style.display='block';
+        }
+      }catch(err){
+        error.textContent='Connection error';
+        error.style.display='block';
+      }finally{
+        btn.classList.remove('loading');
+        btn.textContent='Sign In';
+      }
+    });
+  </script>
+</body>
+</html>
