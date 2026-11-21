@@ -3,11 +3,14 @@ from __future__ import annotations
 import json
 import os
 import re
+import ssl
 from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+import certifi
 
 from .market_data import Candle, Ticker
 
@@ -15,6 +18,10 @@ from .market_data import Candle, Ticker
 DEFAULT_MODEL = "gemini-2.5-flash"
 MODEL_PATTERN = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 JsonRequester = Callable[[Request, float], dict[str, Any]]
+
+_SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
+_SSL_CONTEXT.minimum_version = ssl.TLSVersion.TLSv1_2
+_SSL_CONTEXT.maximum_version = ssl.TLSVersion.TLSv1_2
 
 
 def _read_dotenv(path: Path) -> dict[str, str]:
@@ -62,7 +69,7 @@ def gemini_config(
 
 
 def _request_json(request: Request, timeout: float) -> dict[str, Any]:
-    with urlopen(request, timeout=timeout) as response:
+    with urlopen(request, timeout=timeout, context=_SSL_CONTEXT) as response:
         payload = json.loads(response.read().decode("utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Gemini returned an invalid response.")
