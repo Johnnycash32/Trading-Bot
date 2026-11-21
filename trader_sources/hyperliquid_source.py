@@ -453,15 +453,32 @@ class HyperliquidSource(TraderEventSource):
                                 last_backfill_websocket_duplicate_id=event_id,
                                 last_backfill_websocket_duplicate_at=datetime.now(timezone.utc).isoformat(),
                             )
-                        event = self._make_event(
-                            normalized_address,
-                            fill,
-                            state,
-                            checked_at_ms,
-                            seen_ids,
-                            last_seen_ms,
-                            delivery_source,
-                        )
+                        # Retry clearinghouse state fetch when the fill transition
+                        # cannot be confirmed yet (propagation delay between WebSocket
+                        # userFills event and clearinghouseState reflecting the new position).
+                        event = None
+                        last_error: ValueError | None = None
+                        for attempt in range(3):
+                            try:
+                                event = self._make_event(
+                                    normalized_address,
+                                    fill,
+                                    state,
+                                    checked_at_ms,
+                                    seen_ids,
+                                    last_seen_ms,
+                                    delivery_source,
+                                )
+                                break
+                            except ValueError as exc:
+                                last_error = exc
+                                if "does not confirm the fill transition" not in str(exc):
+                                    raise
+                                if attempt < 2:
+                                    time.sleep(0.5)
+                                    state = self.clearinghouse_state(normalized_address)
+                                    checked_at_ms = int(time.time() * 1000)
+                                    state_cache[normalized_address] = (checked_at_ms, state)
                         if event is not None:
                             yield event
             except (HTTPError, URLError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError, websocket.WebSocketException, ConnectionError) as exc:
