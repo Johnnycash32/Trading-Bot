@@ -1094,6 +1094,9 @@ class AppHandler(BaseHTTPRequestHandler):
                 role = user["role"] if "role" in user.keys() else "user"
                 self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": user["name"], "role": role}).encode(), "application/json; charset=utf-8")
                 return
+            # Brute-force protection: delay failed login attempts
+            import time
+            time.sleep(1)
             self._send(401, json.dumps({"status": "error", "message": "Invalid username or password"}).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/signup":
