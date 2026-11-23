@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBITIQ | Developer</title>
+  <link rel="icon" type="image/svg+xml" href="/ui/assets/favicon.svg">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--deep:#0b0e14;--card:rgba(21,26,35,0.7);--border:rgba(255,255,255,0.05);--ink:#f2f2f4;--muted:#8db8b8;--blue:#6aa8ff;--mint:#bde8d9}
+    body{background:var(--deep);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;padding:40px 20px}
+    .container{max-width:680px;margin:0 auto}
+    .back{text-align:center;margin-bottom:24px}
+    .back a{color:var(--blue);text-decoration:none;font-size:.85rem;font-weight:700}
+    .back a:hover{text-decoration:underline}
+    .card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:36px 28px}
+    .avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#246b88,#174b68);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+    .name{text-align:center}
+    .name h1{font-size:1.5rem;font-weight:900;color:var(--mint);margin-bottom:4px}
+    .name p{color:var(--muted);font-size:.85rem}
+    .divider{height:1px;background:var(--border);margin:24px 0}
+    .bio p{color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:12px}
+    .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+    .tag{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:99px;color:var(--blue);font-size:.72rem;padding:5px 10px}
+    .cta{text-align:center;margin-top:24px}
+    .cta a{display:inline-block;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.9rem;font-weight:800;padding:12px 28px;text-decoration:none}
+    .cta a:hover{filter:brightness(1.15)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="back"><a href="/login">‹ Back to Sign In</a></div>
+    <div class="card">
+      <div class="avatar">👨‍💻</div>
+      <div class="name">
+        <h1>John</h1>
+        <p>Developer &amp; Creator of ORBITIQ</p>
+      </div>
+      <div class="divider"></div>
+      <div class="bio">
+        <p>John built ORBITIQ to bring intelligent, multi-agent trading analysis into a single command centre. With a focus on paper-first trading, hard risk limits, and evidence-based decision making, ORBITIQ combines real-time market data with AI-driven specialist agents — all without risking real capital.</p>
+        <p>The platform features live market feeds from Bybit, Binance, and Coinbase, public wallet copy trading via Hyperliquid, Gemini-powered analysis, and a six-agent system covering risk, speed, vision, precision, exploration, and rapid reporting.</p>
+      </div>
+      <div class="tags">
+        <span class="tag">Python</span>
+        <span class="tag">SQLite</span>
+        <span class="tag">AI / Gemini</span>
+        <span class="tag">Multi-Agent</span>
+        <span class="tag">Paper Trading</span>
+        <span class="tag">Risk Management</span>
+        <span class="tag">WebSocket</span>
+        <span class="tag">Glassmorphism UI</span>
+      </div>
+      <div class="cta"><a href="/login">Sign In to ORBITIQ</a></div>
+    </div>
+  </div>
+</body>
+</html>

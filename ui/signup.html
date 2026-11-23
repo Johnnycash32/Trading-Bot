@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBITIQ | Create Account</title>
+  <link rel="icon" type="image/svg+xml" href="/ui/assets/favicon.svg">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--deep:#0b0e14;--card:rgba(21,26,35,0.7);--border:rgba(255,255,255,0.05);--ink:#f2f2f4;--muted:#8db8b8;--blue:#6aa8ff;--mint:#bde8d9;--red:#ff7180}
+    body{background:var(--deep);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:min(420px,92vw);box-shadow:0 25px 60px rgba(0,0,0,.5)}
+    .header{text-align:center;margin-bottom:24px}
+    .header .orbitiq-logo{width:48px;height:48px;margin:0 auto 12px}
+    .header h1{font-size:1.4rem;font-weight:900;color:var(--mint);margin-bottom:4px}
+    .header p{color:var(--muted);font-size:.85rem}
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:.75rem;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+    .form-group input{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--ink);font-size:.9rem;padding:10px 12px;outline:none}
+    .form-group input:focus{border-color:var(--blue)}
+    .form-group input::placeholder{color:#555}
+    .btn{width:100%;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.95rem;font-weight:800;padding:12px;cursor:pointer;outline:none;transition:transform .1s,filter .2s}
+    .btn:hover{filter:brightness(1.15)}
+    .btn:active{transform:scale(0.98)}
+    .error{color:var(--red);font-size:.8rem;margin-top:8px;display:none}
+    .success{color:#46d39a;font-size:.8rem;margin-top:8px;display:none}
+    .switch{text-align:center;color:var(--muted);font-size:.8rem;margin-top:20px}
+    .switch a{color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer}
+    .switch a:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <svg class="orbitiq-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(45 50 50)" stroke="currentColor" stroke-width="6.5"/>
+        <ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(-45 50 50)" stroke="currentColor" stroke-width="6.5"/>
+        <polygon points="50,37 63,50 50,63 37,50" fill="currentColor"/>
+      </svg>
+      <h1>Create Account</h1>
+      <p>Join ORBITIQ — Intelligent Market Command Centre</p>
+    </div>
+    <form id="signup-form">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input id="name" type="text" placeholder="John Doe" required autocomplete="name"/>
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="you@example.com" required autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" required autocomplete="new-password"/>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input id="confirm-password" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" required autocomplete="new-password"/>
+      </div>
+      <div id="signup-error" class="error" role="alert"></div>
+      <div id="signup-success" class="success" role="status"></div>
+      <button type="submit" id="signup-btn" class="btn">Create Account</button>
+    </form>
+    <div class="switch">Already have an account? <a href="/login">Sign In</a></div>
+  </div>
+  <script>
+    const form=document.getElementById('signup-form'),btn=document.getElementById('signup-btn'),error=document.getElementById('signup-error'),success=document.getElementById('signup-success');
+    [document.getElementById('name'),document.getElementById('email'),document.getElementById('password'),document.getElementById('confirm-password')].forEach(i=>i.addEventListener('input',()=>{error.style.display='none';}));
+    form.addEventListener('submit',async(e)=>{
+      e.preventDefault();error.style.display='none';success.style.display='none';
+      const password=document.getElementById('password').value,confirm=document.getElementById('confirm-password').value;
+      if(password!==confirm){error.textContent='Passwords do not match';error.style.display='block';return;}
+      btn.disabled=true;btn.textContent='Creating Account…';
+      try{
+        const res=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('name').value,email:document.getElementById('email').value,password})});
+        const data=await res.json();
+        if(res.ok||res.status===201){success.textContent=data.message||'Account created. You can now sign in.';success.style.display='block';setTimeout(()=>{window.location.href='/login';},1500);}
+        else{error.textContent=data.message||'Could not create account';error.style.display='block';}
+      }catch(_){error.textContent='Connection error. Please try again.';error.style.display='block';}
+      finally{btn.disabled=false;btn.textContent='Create Account';}
+    });
+  </script>
+</body>
+</html>

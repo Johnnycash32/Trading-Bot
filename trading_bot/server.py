@@ -35,9 +35,15 @@ from trader_sources.chart_provider import ChartProvider
 from trader_sources import HyperliquidMonitor
 from trader_sources.base import TraderEvent
 
+from . import database
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LOGIN_FILE = PROJECT_ROOT / "ui" / "login.html"
+SIGNUP_FILE = PROJECT_ROOT / "ui" / "signup.html"
+ABOUT_FILE = PROJECT_ROOT / "ui" / "about.html"
+DEVELOPER_FILE = PROJECT_ROOT / "ui" / "developer.html"
+RESET_PASSWORD_FILE = PROJECT_ROOT / "ui" / "reset-password.html"
 LOGIN_TOKEN = "orbitiq-secure-token-xyz"
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "orbitiq123")
@@ -670,6 +676,21 @@ class AppHandler(BaseHTTPRequestHandler):
         if request.path == "/login":
             self._send(200, LOGIN_FILE.read_bytes(), "text/html; charset=utf-8")
             return
+        if request.path == "/signup":
+            self._send(200, SIGNUP_FILE.read_bytes(), "text/html; charset=utf-8")
+            return
+        if request.path == "/about":
+            self._send(200, ABOUT_FILE.read_bytes(), "text/html; charset=utf-8")
+            return
+        if request.path == "/developer":
+            self._send(200, DEVELOPER_FILE.read_bytes(), "text/html; charset=utf-8")
+            return
+        if request.path == "/reset-password":
+            self._send(200, RESET_PASSWORD_FILE.read_bytes(), "text/html; charset=utf-8")
+            return
+        if request.path == "/api/health":
+            self._send(200, json.dumps({"status": "ok", "uptime": "healthy"}).encode(), "application/json; charset=utf-8")
+            return
         if request.path in AGENT_AVATAR_FILES:
             avatar_name = AGENT_AVATAR_FILES[request.path]
             avatar_file = UI_FILE.parent / "assets" / "agents" / f"{avatar_name}.jpg"
@@ -1036,12 +1057,90 @@ class AppHandler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 self._send(400, b'{"error":"Invalid login request"}', "application/json; charset=utf-8")
                 return
-            username = str(payload.get("username", ""))
+            email = str(payload.get("email", payload.get("username", ""))).strip()
             password = str(payload.get("password", ""))
-            if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN}).encode(), "application/json; charset=utf-8")
+            user = database.get_user_by_email(email)
+            if user and database.verify_password(password, user["password_hash"]):
+                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": user["name"]}).encode(), "application/json; charset=utf-8")
                 return
-            self._send(401, json.dumps({"status": "error", "message": "Invalid credentials"}).encode(), "application/json; charset=utf-8")
+            if email == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": "John"}).encode(), "application/json; charset=utf-8")
+                return
+            self._send(401, json.dumps({"status": "error", "message": "Invalid username or password"}).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/signup":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid signup request"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid signup request"}', "application/json; charset=utf-8")
+                return
+            name = str(payload.get("name", "")).strip()
+            email = str(payload.get("email", "")).strip()
+            password = str(payload.get("password", ""))
+            if not name or not email or not password:
+                self._send(400, json.dumps({"status": "error", "message": "Name, email, and password are required"}).encode(), "application/json; charset=utf-8")
+                return
+            if database.get_user_by_email(email):
+                self._send(409, json.dumps({"status": "error", "message": "An account with that email already exists"}).encode(), "application/json; charset=utf-8")
+                return
+            try:
+                database.create_user(name, email, password)
+                self._send(201, json.dumps({"status": "success", "message": "Account created. You can now sign in."}).encode(), "application/json; charset=utf-8")
+            except Exception:
+                self._send(500, json.dumps({"status": "error", "message": "Could not create account"}).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/forgot-password":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid request"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid request"}', "application/json; charset=utf-8")
+                return
+            email = str(payload.get("email", "")).strip()
+            if not email:
+                self._send(400, json.dumps({"status": "error", "message": "Email is required"}).encode(), "application/json; charset=utf-8")
+                return
+            token = database.generate_reset_token(email)
+            if token:
+                reset_link = f"http://127.0.0.1:8765/reset-password?token={token}"
+                database.send_reset_email(email, reset_link)
+            self._send(200, json.dumps({"status": "success", "message": "If that email exists, a reset link has been sent."}).encode(), "application/json; charset=utf-8")
+            return
+        if request.path == "/api/reset-password":
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length <= 0 or length > 4096:
+                    self._send(400, b'{"error":"Invalid request size"}', "application/json; charset=utf-8")
+                    return
+                payload = json.loads(self.rfile.read(length))
+            except (ValueError, json.JSONDecodeError):
+                self._send(400, b'{"error":"Invalid request"}', "application/json; charset=utf-8")
+                return
+            if not isinstance(payload, dict):
+                self._send(400, b'{"error":"Invalid request"}', "application/json; charset=utf-8")
+                return
+            token = str(payload.get("token", ""))
+            new_password = str(payload.get("new_password", ""))
+            if not token or not new_password:
+                self._send(400, json.dumps({"status": "error", "message": "Token and new password are required"}).encode(), "application/json; charset=utf-8")
+                return
+            if database.reset_password_with_token(token, new_password):
+                self._send(200, json.dumps({"status": "success", "message": "Password updated. You can now sign in."}).encode(), "application/json; charset=utf-8")
+            else:
+                self._send(400, json.dumps({"status": "error", "message": "Invalid or expired reset token"}).encode(), "application/json; charset=utf-8")
             return
         if request.path == "/api/paper/order":
             try:
@@ -1503,6 +1602,7 @@ class AppHandler(BaseHTTPRequestHandler):
 
 
 def run(host: str = "127.0.0.1", port: int = 8765) -> None:
+    database.init_db()
     server = ThreadingHTTPServer((host, port), AppHandler)
     monitor_stop = Event()
     monitor_thread = Thread(
