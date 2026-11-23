@@ -9,18 +9,19 @@
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--deep:#0b0e14;--card:rgba(21,26,35,0.7);--border:rgba(255,255,255,0.05);--ink:#f2f2f4;--muted:#8db8b8;--blue:#6aa8ff;--mint:#bde8d9;--red:#ff7180}
     body{background:var(--deep);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px}
-    .login-card{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:32px 28px;width:min(420px,92vw);box-shadow:0 25px 60px rgba(0,0,0,.5);position:relative}
-    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .login-card{background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:28px 24px;width:min(420px,92vw);box-shadow:0 25px 60px rgba(0,0,0,.5)}
+    .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
     .back-btn{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:4px 8px}
     .back-btn:hover{color:var(--ink)}
     .bell-btn{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px}
     .bell-btn:hover{color:var(--ink)}
-    .greeting{text-align:center;margin-bottom:28px}
+    .greeting{text-align:center;margin-bottom:24px}
     .greeting .orbitiq-logo{width:48px;height:48px;margin:0 auto 12px}
-    .greeting h1{font-size:1.6rem;font-weight:900;letter-spacing:-.04em;color:var(--mint);margin-bottom:4px}
-    .greeting p{color:var(--muted);font-size:.85rem}
-    .form-group{margin-bottom:16px}
-    .form-group label{display:block;font-size:.75rem;font-weight:800;color:var(--muted);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+    .greeting .greeting-sub{font-size:.85rem;color:var(--muted);margin-bottom:2px}
+    .greeting h1{font-size:1.5rem;font-weight:900;letter-spacing:-.04em;color:var(--mint);margin-bottom:4px}
+    .greeting p{color:var(--muted);font-size:.78rem}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:.72rem;font-weight:800;color:var(--muted);margin-bottom:5px;letter-spacing:.08em;text-transform:uppercase}
     .form-group input{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--ink);font-size:.9rem;padding:10px 12px;outline:none}
     .form-group input:focus{border-color:var(--blue)}
     .form-group input::placeholder{color:#555}
@@ -28,27 +29,26 @@
     .password-wrap input{padding-right:42px;width:100%}
     .password-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 4px;position:absolute;right:10px;top:50%;transform:translateY(-50%);line-height:1}
     .password-toggle:hover{color:var(--ink)}
-    .form-options{display:flex;align-items:center;justify-content:space-between;margin-top:-6px;margin-bottom:14px}
-    .remember-me{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;cursor:pointer}
+    .form-options{display:flex;align-items:center;justify-content:space-between;margin-top:-4px;margin-bottom:12px}
+    .remember-me{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.76rem;cursor:pointer}
     .remember-me input{accent-color:var(--blue);width:15px;height:15px}
-    .forgot-link{background:none;border:none;color:var(--blue);font-size:.78rem;cursor:pointer;text-decoration:none}
+    .forgot-link{background:none;border:none;color:var(--blue);font-size:.76rem;cursor:pointer;text-decoration:none}
     .forgot-link:hover{text-decoration:underline}
-    .btn-primary{width:100%;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.95rem;font-weight:800;padding:12px;cursor:pointer;outline:none;transition:transform .1s,filter .2s;margin-bottom:10px}
+    .btn-primary{width:100%;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.95rem;font-weight:800;padding:12px;cursor:pointer;outline:none;transition:transform .1s,filter .2s;margin-bottom:8px}
     .btn-primary:hover{filter:brightness(1.15)}
     .btn-primary:active{transform:scale(0.98)}
     .btn-secondary{width:100%;background:#f5f5f7;border:none;border-radius:8px;color:#111;font-size:.95rem;font-weight:800;padding:12px;cursor:pointer;outline:none;transition:transform .1s,filter .2s}
     .btn-secondary:hover{filter:brightness(0.95)}
     .btn-secondary:active{transform:scale(0.98)}
-    .switch-user{text-align:center;color:var(--muted);font-size:.8rem;margin:16px 0 24px}
+    .switch-user{text-align:center;color:var(--muted);font-size:.78rem;margin:14px 0 20px}
     .switch-user a{color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer}
     .switch-user a:hover{text-decoration:underline}
-    .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--border);padding-top:20px}
-    .quick-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;text-decoration:none;color:var(--muted);transition:background .15s}
+    .quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;border-top:1px solid var(--border);padding-top:16px}
+    .quick-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 5px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:9px;text-align:center;cursor:pointer;text-decoration:none;color:var(--muted);transition:background .15s}
     .quick-item:hover{background:rgba(255,255,255,0.05);color:var(--ink)}
-    .quick-item .quick-icon{font-size:1.2rem}
-    .quick-item .quick-label{font-size:.62rem;font-weight:600}
-    .error{color:var(--red);font-size:.8rem;margin-top:8px;display:none}
-    .footer{margin-top:20px;text-align:center;color:var(--muted);font-size:.72rem}
+    .quick-item .quick-icon{font-size:1.1rem}
+    .quick-item .quick-label{font-size:.58rem;font-weight:600}
+    .error{color:var(--red);font-size:.8rem;margin-top:6px;display:none}
   </style>
 </head>
 <body>
@@ -63,13 +63,14 @@
         <ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(-45 50 50)" stroke="currentColor" stroke-width="6.5"/>
         <polygon points="50,37 63,50 50,63 37,50" fill="currentColor"/>
       </svg>
-      <h1 id="greeting-title">Welcome back, Trader</h1>
+      <div class="greeting-sub" id="greeting-sub">Welcome back,</div>
+      <h1 id="greeting-title">TRADER</h1>
       <p>Intelligent Market Command Centre</p>
     </div>
     <form id="login-form">
       <div class="form-group">
-        <label for="email">Email Address</label>
-        <input id="email" type="email" placeholder="admin" required autocomplete="email" oninput="document.getElementById('login-error').style.display='none'"/>
+        <label for="email">Email Address or Admin Username</label>
+        <input id="email" type="text" placeholder="admin" required autocomplete="username" oninput="document.getElementById('login-error').style.display='none'"/>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
@@ -84,7 +85,7 @@
       </div>
       <div id="login-error" class="error" role="alert"></div>
       <button type="submit" id="login-btn" class="btn-primary">Sign In with Password</button>
-      <button type="button" id="passkey-btn" class="btn-secondary" onclick="alert('Passkey sign-in requires a compatible device. Using password login instead.')">Sign In with Passkey 🔐</button>
+      <button type="button" id="passkey-btn" class="btn-secondary" onclick="alert('Biometric sign-in requires a compatible device with fingerprint or face recognition. Use password login instead.')">Sign In with Biometrics</button>
     </form>
     <div class="switch-user">Not you? <a id="switch-user-link">Switch User</a></div>
     <div class="quick-grid">
@@ -95,7 +96,6 @@
       <a href="/developer" class="quick-item" title="Developer"><span class="quick-icon">👨‍💻</span><span class="quick-label">Developer</span></a>
       <a href="/api/health" target="_blank" class="quick-item" title="API Status"><span class="quick-icon">💚</span><span class="quick-label">API Status</span></a>
     </div>
-    <div class="footer">Paper trading &amp; agent command centre &middot; No live orders</div>
   </div>
   <script>
     const form=document.getElementById('login-form'),btn=document.getElementById('login-btn'),error=document.getElementById('login-error');
@@ -103,12 +103,12 @@
     const forgotLink=document.getElementById('forgot-link'),rememberMe=document.getElementById('remember-me');
     const emailInput=document.getElementById('email'),greetingTitle=document.getElementById('greeting-title');
     const originalBtnText=btn.textContent;
-    const storedToken=localStorage.getItem('orbitiq_token')||sessionStorage.getItem('orbitiq_token');
-    if(storedToken){const storedName=localStorage.getItem('orbitiq_user_name');greetingTitle.textContent='Welcome back, '+(storedName||'Trader');}
+    const storedName=localStorage.getItem('orbitiq_user_name');
+    if(storedName){greetingTitle.textContent=storedName.toUpperCase();}
     pwdToggle.addEventListener('click',()=>{const show=pwdInput.type==='password';pwdInput.type=show?'text':'password';pwdToggle.textContent=show?'🙈':'👁';pwdToggle.setAttribute('aria-pressed',String(show));});
-    forgotLink.addEventListener('click',async()=>{const email=emailInput.value.trim();if(!email){alert('Enter your email address first.');return;}try{const res=await fetch('/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const data=await res.json();alert(data.message||'If that email exists, a reset link has been sent.');}catch(_){alert('If that email exists, a reset link has been sent.');}});
+    forgotLink.addEventListener('click',async()=>{const email=emailInput.value.trim();if(!email){alert('Enter your email address or admin username first.');return;}try{const res=await fetch('/api/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const data=await res.json();alert(data.message||'If that email exists, a reset link has been sent.');}catch(_){alert('If that email exists, a reset link has been sent.');}});
     document.getElementById('switch-user-link').addEventListener('click',()=>{emailInput.value='';pwdInput.value='';error.style.display='none';emailInput.focus();});
-    emailInput.addEventListener('input',()=>{if(emailInput.value.includes('@')){greetingTitle.textContent='Welcome back, '+emailInput.value.split('@')[0];}});
+    emailInput.addEventListener('input',()=>{const val=emailInput.value.trim();if(val&&val.includes('@')){greetingTitle.textContent=val.split('@')[0].toUpperCase();}});
     form.addEventListener('submit',async(e)=>{
       e.preventDefault();error.style.display='none';btn.disabled=true;btn.textContent='Authenticating…';
       try{
@@ -116,7 +116,14 @@
         let data={};try{data=await res.json();}catch(_){}
         if(res.ok){
           const token=data.token||'orbitiq-secure-token-xyz';
-          if(rememberMe.checked){localStorage.setItem('orbitiq_token',token);localStorage.setItem('orbitiq_user_name',data.name||emailInput.value.split('@')[0]);}else{sessionStorage.setItem('orbitiq_token',token);localStorage.removeItem('orbitiq_token');}
+          if(rememberMe.checked){
+            localStorage.setItem('orbitiq_token',token);
+            localStorage.setItem('orbitiq_user_name',data.name||emailInput.value.split('@')[0]);
+            if(data.role){localStorage.setItem('orbitiq_role',data.role);}
+          }else{
+            sessionStorage.setItem('orbitiq_token',token);
+            localStorage.removeItem('orbitiq_token');
+          }
           window.location.href='/';
         }else{error.textContent=data.message||'Invalid username or password';error.style.display='block';}
       }catch(_){error.textContent='Connection error. Please try again.';error.style.display='block';}

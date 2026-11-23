@@ -2243,7 +2243,12 @@
   <script>
     (() => {
       const token=localStorage.getItem('orbitiq_token')||sessionStorage.getItem('orbitiq_token');if(!token&&!location.pathname.endsWith('/login')){location.href='/login';}
-      document.getElementById('signout-btn')?.addEventListener('click',()=>{localStorage.removeItem('orbitiq_token');location.href='/login';});
+      const role=localStorage.getItem('orbitiq_role')||'user';
+      const userName=localStorage.getItem('orbitiq_user_name')||'Trader';
+      const profileNameEl=document.getElementById('profile-name');if(profileNameEl){profileNameEl.textContent=userName;}
+      const profileRoleEl=document.getElementById('profile-role');if(profileRoleEl){profileRoleEl.textContent=role==='admin'?'Administrator · Paper trading':'Trader · Paper trading';}
+      if(role==='admin'){const badge=document.createElement('span');badge.textContent='ADMIN';badge.style.cssText='background:#ed4053;color:#fff;font-size:.6rem;font-weight:900;padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle';const nameEl=document.getElementById('profile-name');if(nameEl)nameEl.appendChild(badge);}
+      document.getElementById('signout-btn')?.addEventListener('click',()=>{localStorage.removeItem('orbitiq_token');localStorage.removeItem('orbitiq_role');localStorage.removeItem('orbitiq_user_name');sessionStorage.removeItem('orbitiq_token');location.href='/login';});
       const stateLabels = {
         idle: 'Idle',
         alert: 'Alert',

@@ -33,6 +33,7 @@ def init_db() -> None:
                 password_hash TEXT NOT NULL,
                 reset_token TEXT,
                 reset_expires TEXT,
+                role TEXT DEFAULT 'user',
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
             """

@@ -1059,12 +1059,19 @@ class AppHandler(BaseHTTPRequestHandler):
                 return
             email = str(payload.get("email", payload.get("username", ""))).strip()
             password = str(payload.get("password", ""))
+
+            # Admin bypass: check .env credentials first (never checks DB)
+            env_admin_user = os.environ.get("ADMIN_USERNAME", "")
+            env_admin_pass = os.environ.get("ADMIN_PASSWORD", "")
+            if email == env_admin_user and password == env_admin_pass:
+                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": "Admin", "role": "admin"}).encode(), "application/json; charset=utf-8")
+                return
+
+            # User login: validate against SQLite DB
             user = database.get_user_by_email(email)
             if user and database.verify_password(password, user["password_hash"]):
-                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": user["name"]}).encode(), "application/json; charset=utf-8")
-                return
-            if email == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": "John"}).encode(), "application/json; charset=utf-8")
+                role = user["role"] if "role" in user.keys() else "user"
+                self._send(200, json.dumps({"status": "success", "token": LOGIN_TOKEN, "name": user["name"], "role": role}).encode(), "application/json; charset=utf-8")
                 return
             self._send(401, json.dumps({"status": "error", "message": "Invalid username or password"}).encode(), "application/json; charset=utf-8")
             return

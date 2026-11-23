@@ -16,15 +16,20 @@
     .card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:20px;padding:36px 28px}
     .avatar{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#246b88,#174b68);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
     .name{text-align:center}
-    .name h1{font-size:1.5rem;font-weight:900;color:var(--mint);margin-bottom:4px}
+    .name h1{font-size:1.4rem;font-weight:900;color:var(--mint);margin-bottom:4px}
     .name p{color:var(--muted);font-size:.85rem}
     .divider{height:1px;background:var(--border);margin:24px 0}
     .bio p{color:var(--muted);font-size:.85rem;line-height:1.7;margin-bottom:12px}
-    .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+    .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;margin-bottom:20px}
     .tag{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:99px;color:var(--blue);font-size:.72rem;padding:5px 10px}
-    .cta{text-align:center;margin-top:24px}
-    .cta a{display:inline-block;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.9rem;font-weight:800;padding:12px 28px;text-decoration:none}
+    .section-title{font-size:.9rem;font-weight:800;color:var(--ink);margin-top:20px;margin-bottom:8px}
+    .projects{list-style:none;padding:0}
+    .projects li{background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:.8rem;padding:10px 14px;margin-bottom:6px}
+    .projects li strong{color:var(--ink);display:block;font-size:.82rem}
+    .cta{text-align:center;margin-top:24px;display:flex;gap:10px;justify-content:center}
+    .cta a{display:inline-block;background:linear-gradient(135deg,#246b88,#174b68);border:none;border-radius:8px;color:#fff;font-size:.85rem;font-weight:800;padding:12px 24px;text-decoration:none}
     .cta a:hover{filter:brightness(1.15)}
+    .cta .secondary{background:#262630;color:#b8b8c5}
   </style>
 </head>
 <body>
@@ -33,25 +38,30 @@
     <div class="card">
       <div class="avatar">👨‍💻</div>
       <div class="name">
-        <h1>John</h1>
-        <p>Developer &amp; Creator of ORBITIQ</p>
+        <h1>Eludini John Olumide</h1>
+        <p>Software Developer &amp; Cybersecurity Engineer</p>
       </div>
       <div class="divider"></div>
       <div class="bio">
-        <p>John built ORBITIQ to bring intelligent, multi-agent trading analysis into a single command centre. With a focus on paper-first trading, hard risk limits, and evidence-based decision making, ORBITIQ combines real-time market data with AI-driven specialist agents — all without risking real capital.</p>
-        <p>The platform features live market feeds from Bybit, Binance, and Coinbase, public wallet copy trading via Hyperliquid, Gemini-powered analysis, and a six-agent system covering risk, speed, vision, precision, exploration, and rapid reporting.</p>
+        <p>Eludini John Olumide is a Software Developer and Cybersecurity Engineer with a focus on full-stack development (Python, Java, React, JavaScript) and offensive/defensive security operations. He is passionate about building resilient, secure applications and exploring the intersection of AI and trading systems.</p>
       </div>
+      <div class="section-title">Technical Expertise</div>
       <div class="tags">
-        <span class="tag">Python</span>
-        <span class="tag">SQLite</span>
-        <span class="tag">AI / Gemini</span>
-        <span class="tag">Multi-Agent</span>
-        <span class="tag">Paper Trading</span>
-        <span class="tag">Risk Management</span>
-        <span class="tag">WebSocket</span>
-        <span class="tag">Glassmorphism UI</span>
+        <span class="tag">Full-Stack Development (Python, Java, React, JavaScript)</span>
+        <span class="tag">Cybersecurity (Penetration Testing, Red/Blue Teaming)</span>
+        <span class="tag">AI &amp; Automation</span>
+        <span class="tag">Vulnerability Assessment</span>
       </div>
-      <div class="cta"><a href="/login">Sign In to ORBITIQ</a></div>
+      <div class="section-title">Key Projects</div>
+      <ul class="projects">
+        <li><strong>Trading-Bot</strong>Autonomous trading system with multi-agent AI analysis and paper trading simulation</li>
+        <li><strong>VulnScope</strong>Web vulnerability assessment platform for security auditing</li>
+        <li><strong>John Eludini Portfolio</strong>Personal portfolio showcasing development and security work</li>
+      </ul>
+      <div class="cta">
+        <a href="https://github.com/Johnnycash32" target="_blank">View GitHub Profile →</a>
+        <a href="/login" class="secondary">Back to Login</a>
+      </div>
     </div>
   </div>
 </body>
