@@ -38,6 +38,27 @@ from trader_sources.base import TraderEvent
 from . import database
 
 
+def _load_dotenv() -> None:
+    env_file = Path(__file__).resolve().parents[1] / ".env"
+    if not env_file.exists():
+        return
+    try:
+        for line in env_file.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except Exception:
+        pass
+
+
+_load_dotenv()
+
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LOGIN_FILE = PROJECT_ROOT / "ui" / "login.html"
 SIGNUP_FILE = PROJECT_ROOT / "ui" / "signup.html"
