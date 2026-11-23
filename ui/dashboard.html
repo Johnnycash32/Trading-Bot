@@ -2242,7 +2242,7 @@
   </script>
   <script>
     (() => {
-      const token=localStorage.getItem('orbitiq_token');if(!token&&!location.pathname.endsWith('/login')){location.href='/login';}
+      const token=localStorage.getItem('orbitiq_token')||sessionStorage.getItem('orbitiq_token');if(!token&&!location.pathname.endsWith('/login')){location.href='/login';}
       document.getElementById('signout-btn')?.addEventListener('click',()=>{localStorage.removeItem('orbitiq_token');location.href='/login';});
       const stateLabels = {
         idle: 'Idle',

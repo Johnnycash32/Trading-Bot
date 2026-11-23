@@ -26,6 +26,15 @@
     .btn.loading{pointer-events:none;opacity:.85;position:relative;overflow:hidden}
     .btn.loading::after{content:'';position:absolute;inset:0;background:url('/ui/assets/animations/circle-loader.json') center/contain no-repeat}
     .error{color:#ff7180;font-size:.8rem;margin-top:8px;display:none}
+    .form-options{display:flex;align-items:center;justify-content:space-between;margin-top:-6px;margin-bottom:14px}
+    .remember-me{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;cursor:pointer}
+    .remember-me input{accent-color:var(--blue);width:15px;height:15px}
+    .forgot-link{background:none;border:none;color:var(--blue);font-size:.78rem;cursor:pointer;text-decoration:none}
+    .forgot-link:hover{text-decoration:underline}
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:42px;width:100%}
+    .password-toggle{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 4px;position:absolute;right:10px;top:50%;transform:translateY(-50%);line-height:1}
+    .password-toggle:hover{color:var(--ink)}
     .footer{margin-top:28px;text-align:center;color:var(--muted);font-size:.78rem}
   </style>
 </head>
@@ -47,36 +56,64 @@
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input id="password" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" required autocomplete="current-password"/>
+        <div class="password-wrap">
+          <input id="password" type="password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" required autocomplete="current-password"/>
+          <button type="button" class="password-toggle" id="password-toggle" aria-label="Show password" aria-pressed="false">👁</button>
+        </div>
       </div>
-      <div id="login-error" class="error">Invalid credentials</div>
+      <div class="form-options">
+        <label class="remember-me"><input type="checkbox" id="remember-me" checked/>Remember me</label>
+        <button type="button" class="forgot-link" id="forgot-link">Forgot Password?</button>
+      </div>
+      <div id="login-error" class="error" role="alert"></div>
       <button type="submit" id="login-btn" class="btn">Sign In</button>
     </form>
     <div class="footer">Paper trading &amp; agent command centre &middot; No live orders</div>
   </div>
   <script>
     const form=document.getElementById('login-form'),btn=document.getElementById('login-btn'),error=document.getElementById('login-error');
+    const pwdInput=document.getElementById('password'),pwdToggle=document.getElementById('password-toggle');
+    const forgotLink=document.getElementById('forgot-link'),rememberMe=document.getElementById('remember-me');
+    const originalBtnText=btn.textContent;
+    pwdToggle.addEventListener('click',()=>{
+      const show=pwdInput.type==='password';
+      pwdInput.type=show?'text':'password';
+      pwdToggle.textContent=show?'🙈':'👁';
+      pwdToggle.setAttribute('aria-label',show?'Hide password':'Show password');
+      pwdToggle.setAttribute('aria-pressed',String(show));
+    });
+    forgotLink.addEventListener('click',()=>{
+      alert('Please contact your administrator to reset your password.');
+    });
+    [pwdInput,document.getElementById('username')].forEach(input=>input.addEventListener('input',()=>{error.style.display='none';}));
     form.addEventListener('submit',async(e)=>{
       e.preventDefault();
       error.style.display='none';
-      btn.classList.add('loading');
-      btn.textContent='';
+      btn.disabled=true;
+      btn.textContent='Authenticating…';
       try{
         const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
-        const data=await res.json();
+        let data={};
+        try{data=await res.json();}catch(_){}
         if(res.ok){
-          localStorage.setItem('orbitiq_token',data.token);
+          const token=data.token||'orbitiq-secure-token-xyz';
+          if(rememberMe.checked){
+            localStorage.setItem('orbitiq_token',token);
+          }else{
+            sessionStorage.setItem('orbitiq_token',token);
+            localStorage.removeItem('orbitiq_token');
+          }
           window.location.href='/';
         }else{
-          error.textContent=data.message||'Invalid credentials';
+          error.textContent=data.message||'Invalid username or password';
           error.style.display='block';
         }
       }catch(err){
-        error.textContent='Connection error';
+        error.textContent='Connection error. Please try again.';
         error.style.display='block';
       }finally{
-        btn.classList.remove('loading');
-        btn.textContent='Sign In';
+        btn.disabled=false;
+        btn.textContent=originalBtnText;
       }
     });
   </script>
