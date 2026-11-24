@@ -185,7 +185,8 @@ def market_payload(
     candle_errors: list[str] = []
     candle_source = exchange
     candles = None
-    
+    candle_limit = 120 if asset_class == "crypto" else 100
+
     for venue in venues:
         client = MARKET_CLIENTS.get(venue)
         if client is None:
@@ -196,12 +197,12 @@ def market_payload(
                 import inspect
                 sig = inspect.signature(client.candles)
                 if 'asset_class' in sig.parameters:
-                    candles = client.candles(symbol, interval, 120, end_ms, asset_class=asset_class)
+                    candles = client.candles(symbol, interval, candle_limit, end_ms, asset_class=asset_class)
                 else:
-                    candles = client.candles(symbol, interval, 120, end_ms)
+                    candles = client.candles(symbol, interval, candle_limit, end_ms)
             else:
                 venue_interval = BINANCE_INTERVALS.get(interval, interval) if venue == "binance" else interval
-                candles = client.candles(symbol, venue_interval, 120, end_ms)
+                candles = client.candles(symbol, venue_interval, candle_limit, end_ms)
             if not candles:
                 raise ValueError(f"{venue} returned no candles")
             candle_source = venue

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from math import isfinite
 from pathlib import Path
-from time import monotonic
+from time import monotonic, time
 from typing import Any, Callable
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -565,6 +565,10 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         "W": "1wk",
         "M": "1mo",
     }
+    INTERVAL_MINUTES = {
+        "1": 1, "5": 5, "15": 15, "30": 30, "60": 60,
+        "120": 120, "240": 240, "D": 1_440, "W": 10_080, "M": 43_200,
+    }
     RANGES = {
         "1": "1d",
         "5": "1d",
@@ -594,6 +598,17 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         "XAGUSD": "SI=F",
         "WTIUSD": "CL=F",
         "BRENTUSD": "BZ=F",
+        "HG1!": "HG=F",
+        "CL1!": "CL=F",
+        "NG1!": "NG=F",
+        "BRN1!": "BZ=F",
+        "GC1!": "GC=F",
+        "SI1!": "SI=F",
+        "KC1!": "KC=F",
+        "CT1!": "CT=F",
+        "ZS1!": "ZS=F",
+        "ZW1!": "ZW=F",
+        "ZC1!": "ZC=F",
     }
     INDEX_SYMBOLS = {
         "SPX": "^GSPC",
@@ -601,6 +616,12 @@ class YahooFinanceMarketData(PublicMarketDataClient):
         "NDX": "^NDX",
         "VIX": "^VIX",
         "RUT": "^RUT",
+        "NI225": "^N225",
+        "UKX": "^FTSE",
+        "DAX": "^GDAXI",
+        "CAC": "^FCHI",
+        "NIFTY": "^NSEI",
+        "HSI": "^HSI",
     }
 
     @staticmethod
@@ -620,7 +641,7 @@ class YahooFinanceMarketData(PublicMarketDataClient):
 
     def ticker(self, symbol: str = "AAPL", asset_class: str = "stocks") -> Ticker:
         provider_symbol = self._provider_symbol(symbol, asset_class)
-        payload = self._get(self.base_url, f"/v8/finance/chart/{provider_symbol}", {"interval": "1m", "range": "1d"})
+        payload = self._get(self.base_url, f"/v8/finance/chart/{provider_symbol}", {"interval": "1d", "range": "5d"})
         result = payload["chart"]["result"][0]
         meta = result["meta"]
         last = float(meta.get("regularMarketPrice", meta.get("previousClose", 0)))
@@ -638,14 +659,22 @@ class YahooFinanceMarketData(PublicMarketDataClient):
     ) -> list[Candle]:
         try:
             yf_interval = self.INTERVALS[interval]
-            yf_range = self.RANGES[interval]
+            self.RANGES[interval]
         except KeyError as exc:
             raise ValueError(f"Yahoo Finance does not support the {interval} chart interval.") from exc
 
         provider_symbol = self._provider_symbol(symbol, asset_class)
-        params = {"interval": yf_interval, "range": yf_range}
-        if end_ms is not None:
-            params["period2"] = str(int(end_ms / 1000))
+        params: dict[str, str] = {"interval": yf_interval}
+        if interval in self.INTERVAL_MINUTES and interval not in ("D", "W", "M"):
+            end_epoch = int(end_ms / 1000) if end_ms is not None else int(time())
+            span_seconds = self.INTERVAL_MINUTES[interval] * 60 * max(limit, 1)
+            span_seconds = int(span_seconds * 1.5) + 60
+            params["period1"] = str(max(0, end_epoch - span_seconds))
+            params["period2"] = str(end_epoch)
+        else:
+            params["range"] = self.RANGES[interval]
+            if end_ms is not None:
+                params["period2"] = str(int(end_ms / 1000))
 
         payload = self._get(self.base_url, f"/v8/finance/chart/{provider_symbol}", params)
         result = payload["chart"]["result"][0]

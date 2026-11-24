@@ -15,6 +15,8 @@
     @media(max-width:700px){.shell{display:block}.sidebar{min-height:auto;padding:17px}.logo{margin:0 0 13px}.nav{display:flex;gap:5px;overflow:auto}.nav-label,.mode{display:none}.nav a{white-space:nowrap}.topbar{padding:15px 16px}    .content{padding:22px 16px}.intro{align-items:start;display:block}.intro-note{text-align:left;margin-top:15px}.agents{grid-template-columns:1fr 1fr}.top-actions .button{display:none}}
     @media(max-width:470px){.metrics{grid-template-columns:1fr}.agents{grid-template-columns:1fr}.card{padding:16px}}
     /* Bybit-inspired trading terminal skin: dark canvas, compact market header, chart and order ticket. */
+    .emergency-btn{background:#ef4444;color:#fff;border:0;border-radius:8px;font-size:.72rem;font-weight:800;padding:8px 14px;cursor:pointer;transition:box-shadow .25s,background .2s}.emergency-btn:hover{background:#dc2626;box-shadow:0 0 10px rgba(239,68,68,0.5)}.profile-avatar{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#246b88,#174b68);border-radius:50%;height:32px;width:32px;color:#fff;font-size:.85rem;font-weight:800;text-decoration:none;cursor:pointer;transition:box-shadow .25s}.profile-avatar:hover{box-shadow:0 0 8px rgba(36,107,136,0.5)}
+    body.standard-user .admin-only{display:none!important}.chart-info-btn{background:transparent;border:1px solid #2e2e37;border-radius:50%;color:#8db8b8;cursor:help;font-size:.68rem;font-weight:900;height:18px;line-height:1;margin-left:6px;padding:0;width:18px;vertical-align:middle}.chart-info-btn:hover{color:#fff;border-color:#48a8c2}.chart-info-wrap{display:inline-flex;align-items:center;position:relative}.chart-info-tooltip{background:#174b68;border:1px solid rgba(226,245,239,.35);border-radius:8px;color:#e6f7f2;display:none;font-size:.74rem;line-height:1.5;max-width:280px;padding:9px 12px;position:absolute;top:26px;white-space:normal;z-index:30}.chart-info-tooltip.open{display:block}
     body{background:#0b0b0f;color:#f2f2f4}.shell{display:block;background:#0b0b0f}.sidebar{display:none}.main{background:#0b0b0f}.topbar{background:#0b0b0f;border-bottom:1px solid #24242b;padding:14px 22px}.topbar h1{color:#f5f5f7;font-size:1rem}    .content{max-width:1500px;padding:22px 22px 24px}.intro{align-items:center;background:#0b0b0f;border-bottom:1px solid #24242b;margin:0 -22px 0;padding:17px 22px}.intro h2{color:#f5f5f7;font-size:1.45rem;margin:4px 0}.intro p,.intro-note{color:#8e8e99;font-size:.75rem}.intro-note{max-width:none}.eyebrow{color:#a2a2ad;font-size:.68rem}.metrics{background:#101014;border-bottom:1px solid #24242b;display:grid;gap:0;grid-template-columns:repeat(4,1fr);margin:0 -22px 10px;padding:12px 22px}.metrics .card{background:transparent;border:0;border-radius:0;box-shadow:none;padding:5px 16px}.metrics .card+ .card{border-left:1px solid #292930}.metric-label,.small{color:#888893}.metric-value{color:#f4f4f5;font-size:1.2rem}.dashboard{display:grid;gap:10px;grid-template-columns:minmax(0,1.55fr) minmax(290px,.8fr)}.card{background:#111116;border:1px solid #292930;border-radius:5px;box-shadow:none;color:#eeeef1;padding:15px}.panel-title{border-bottom:1px solid #292930;margin:-15px -15px 12px;padding:12px 15px}.panel-title h3{color:#eeeef1;font-size:.9rem}.panel-title span{color:#858591;font-size:.7rem}.chart{background:#0d0d11;border-color:#25252c;border-radius:2px;min-height:400px}.grid-lines{background:repeating-linear-gradient(to bottom,transparent 0,transparent 57px,rgba(255,255,255,.055) 58px)}.chart svg polyline:first-child{stroke:#48a8c2}.chart-legend{display:none}.warning{background:#17130e;border-color:#55401f;color:#d9ae62;font-size:.7rem;margin-top:10px;padding:8px}.order-panel{grid-column:2;grid-row:1 / span 2}.order-panel h3{margin:0}.order-form{display:grid;gap:10px}.order-tabs{display:flex;gap:8px}.order-tabs span{background:#202026;border-radius:4px;color:#aaaab3;font-size:.75rem;padding:8px 12px}.order-tabs span.active{background:#2c2c35;color:#fff}.order-input{background:#1a1a20;border:1px solid #2e2e37;border-radius:4px;color:#bfc0c9;padding:11px}.order-input strong{color:#f3f3f4;float:right}.checks{color:#a4a4ae;display:grid;font-size:.74rem;gap:7px}.trade-buttons{display:grid;gap:8px;grid-template-columns:1fr 1fr}.trade-buttons button{border:0;border-radius:4px;color:#fff;font-weight:800;padding:12px}.trade-buttons .long{background:#16b979}.trade-buttons .short{background:#ed4053}.order-note{color:#858591;font-size:.7rem;line-height:1.4}.risk-row{border-bottom-color:#292930}.risk-head{color:#bdbdc5}.bar{background:#24242b}.agents,.feed{color:#ddd}.footer{background:#0b0b0f;color:#73737e;padding:16px 22px}.bottom-nav{display:flex}
     @media(max-width:800px){.top-actions .button{display:none}.content{padding:0 10px 70px}.intro{margin:0 -10px;padding:13px 10px}.intro-note{display:none}.metrics{margin:0 -10px 8px;padding:9px 5px}.metrics .card{padding:4px 8px}.metric-label{font-size:.65rem}.metric-value{font-size:1rem}.dashboard{display:flex;flex-direction:column}.dashboard .chart-card{order:1}.order-panel{order:2}.dashboard #positions{order:3}.dashboard #agents{order:4}.dashboard #intelligence,.dashboard #activity{order:5}.chart{min-height:280px}.order-panel{grid-column:auto;grid-row:auto}.agents{grid-template-columns:repeat(2,1fr)}.topbar{padding:12px 10px}}
     @media(max-width:480px){.metrics{grid-template-columns:repeat(2,1fr)}.metrics .card+ .card{border-left:0}.metrics .card:nth-child(n+3){border-top:1px solid #292930;padding-top:9px}.agents{grid-template-columns:1fr 1fr}.animal{height:40px;width:40px}.agent h4{font-size:.75rem}.agent p{font-size:.65rem}}
@@ -264,15 +266,15 @@
       <div class="mode"><strong>Paper trading mode</strong>Live market data concept · No real orders are being placed.</div>
     </aside>
     <main class="main"><div id="notification-toast" class="notification-toast" hidden></div>
-      <header class="topbar"><h1>Good morning, John</h1><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><button class="button danger" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')">Emergency stop</button><button class="hare-corner-toggle" id="hare-corner-toggle" type="button" aria-label="Open Hare news and activity" aria-expanded="false" aria-controls="hare-corner-panel"><span aria-hidden="true">🔔</span><span class="hare-corner-badge" id="hare-corner-badge" hidden>0</span></button></div></header>
+      <header class="topbar"><a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;"><svg class="orbitiq-logo" width="28" height="28" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(45 50 50)" stroke="currentColor" stroke-width="6.5"/><ellipse cx="50" cy="50" rx="40" ry="22" transform="rotate(-45 50 50)" stroke="currentColor" stroke-width="6.5"/><polygon points="50,37 63,50 50,63 37,50" fill="currentColor"/></svg><h1 style="font-size:1.1rem;font-weight:900;color:#f5f5f7;margin:0;">ORBITIQ</h1></a><div class="top-actions"><span class="pill" id="connection-status"><i class="dot"></i> Starting paper engine...</span><a href="/about" class="button" style="background:#262630;color:#b8b8c5;border:1px solid #3b3b47;border-radius:8px;font-size:.72rem;font-weight:700;padding:7px 12px;text-decoration:none;">About</a><button class="emergency-btn" type="button" onclick="alert('Emergency stop is paper-mode only. No live trading system is connected.')" title="Emergency stop">⏻ Emergency stop</button><a href="#profile" class="profile-avatar" title="Profile" aria-label="Go to profile">J</a><button class="hare-corner-toggle" id="hare-corner-toggle" type="button" aria-label="Open Hare news and activity" aria-expanded="false" aria-controls="hare-corner-panel"><span aria-hidden="true">🔔</span><span class="hare-corner-badge" id="hare-corner-badge" hidden>0</span></button></div></header>
       <div class="content" id="overview">
         <div class="intro"><div><div class="eyebrow">ORBITIQ · Orbit + IQ</div><h2>ORBITIQ</h2><p>Six specialist agents operating around one intelligent market command centre</p></div><div class="intro-note">ORBIT — the global network of markets, assets, and opportunities the platform observes. I.Q. — the intelligence analysing information, identifying patterns, and coordinating decisions. Execution remains paper-only and approval-gated.</div></div>
         <section class="metrics"><article class="card"><div class="metric-label">Paper equity</div><div class="metric-value" id="account-equity-value">$10,000.00</div><div class="small neutral" id="account-equity-note">Starting balance</div></article><article class="card"><div class="metric-label">Available balance</div><div class="metric-value" id="available-balance-value">$8,420.50</div><div class="small" id="available-balance-note">15.8% allocated · waiting for active P&amp;L</div></article><article class="card"><div class="metric-label">Paper P&amp;L</div><div class="metric-value positive" id="account-pnl-value">+$184.20</div><div class="small positive" id="account-pnl-note">Session result</div></article><article class="card"><div class="metric-label">Drawdown</div><div class="metric-value">2.1%</div><div class="small">Within 10% limit</div></article></section>
         <section class="dashboard" id="markets">
-          <div class="market-toolbar"><div class="symbol-search"><span class="toolbar-icon">⌕</span><input id="symbol-search" value="SOLUSDT" aria-label="Search market symbol" placeholder="Search symbol" /><button id="search-symbol" type="button">Load</button></div><select id="asset-class-select" class="asset-class" aria-label="Asset class"><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select><select id="asset-symbol-select" class="asset-symbol" aria-label="Asset symbol"></select><div class="asset-tabs" id="asset-tabs" aria-label="Available assets"></div><label class="exchange-picker">Feed <select id="exchange-select"><option value="bybit">Bybit public</option><option value="binance">Binance public</option><option value="twelvedata">Twelve Data · API key</option></select></label></div>
+          <div class="market-toolbar"><div class="symbol-search"><span class="toolbar-icon">⌕</span><input id="symbol-search" value="SOLUSDT" aria-label="Search market symbol" placeholder="Search symbol" /><button id="search-symbol" type="button">Load</button></div><select id="asset-class-select" class="asset-class" aria-label="Asset class"><option value="crypto">Crypto</option><option value="forex">Forex</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select><select id="asset-symbol-select" class="asset-symbol" aria-label="Asset symbol"></select><div class="asset-tabs" id="asset-tabs" aria-label="Available assets"></div><label class="exchange-picker admin-only">Feed <select id="exchange-select"><option value="bybit">Bybit public</option><option value="binance">Binance public</option><option value="yahoo">Yahoo Finance (free)</option><option value="twelvedata">Twelve Data · API key</option></select></label></div>
           <div class="chart-grid">
-            <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span>Chart feed</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button><button class="indicator-button" id="indicator-button" type="button">Indicators</button></span><div class="indicator-menu" id="indicator-menu"><div class="indicator-menu-title">Indicators, metrics, and strategies</div><div class="indicator-menu-grid" id="indicator-menu-grid"></div></div></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="chart-source-badge" class="chart-source-badge">Chart source: connecting</span><span id="market-updated"></span><span id="chart-refresh-status" class="chart-refresh">Auto refresh: starting</span><span id="paper-signal">Paper signal: waiting</span></div><div class="chart-shell"><div class="drawing-tools"><button title="Crosshair" aria-label="Crosshair">＋</button><button title="Trend line" aria-label="Trend line">╱</button><button title="Horizontal line" aria-label="Horizontal line">━</button><button title="Parallel channel" aria-label="Parallel channel">☷</button><button title="Fibonacci retracement" aria-label="Fibonacci retracement">⌁</button><button title="Brush" aria-label="Brush">◒</button><button title="Text note" aria-label="Text note">T</button><button title="Emoji marker" aria-label="Emoji marker">☺</button><button title="Measure" aria-label="Measure">⌑</button><button title="Zoom" aria-label="Zoom">⊕</button><button title="Magnet mode" aria-label="Magnet mode">♧</button><button title="Lock drawings" aria-label="Lock drawings">▣</button><button title="Toggle visibility" aria-label="Toggle visibility">◉</button><button title="Delete drawings" aria-label="Delete drawings">⌫</button></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public candlestick chart"></canvas><canvas id="sma-overlay" class="overlay"></canvas><canvas id="ema-overlay" class="overlay"></canvas><canvas id="bollinger-overlay" class="overlay"></canvas><canvas id="vwap-overlay" class="overlay"></canvas><canvas id="drawing-overlay" class="drawing-overlay" aria-label="Interactive chart drawing layer"></canvas></div></div><div class="chart-bottom-tools"><button title="Chart settings" aria-label="Chart settings">⚙</button><button title="Compare symbols" aria-label="Compare symbols">⊕ Compare</button><button title="Log scale" aria-label="Log scale">⌁ Log</button><button title="Auto scale" aria-label="Auto scale">↕ Auto</button><button title="Fullscreen" aria-label="Fullscreen">⛶</button><button class="chart-zoom-control" id="chart-zoom-out" type="button" aria-label="Zoom chart out" title="Zoom chart out">−</button><button class="chart-zoom-control" id="chart-zoom-in" type="button" aria-label="Zoom chart in" title="Zoom chart in">+</button><button class="chart-zoom-control" id="chart-zoom-reset" type="button" aria-label="Reset chart zoom" title="Reset chart zoom">Reset</button><label class="history-control" title="Historical chart date"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01"/></svg><span class="history-date-display" id="history-date-display"></span><input id="history-date" type="date" aria-label="Historical chart date" /></label><span id="chart-tool-status" class="chart-tool-status">Crosshair selected</span></div><div class="indicator-pane" data-indicator="volume"><span>Volume</span><div class="volume-bars"></div></div><div class="indicator-pane oscillator" data-indicator="stoch"><span>Stoch RSI</span><canvas id="stoch-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="rsi"><span>RSI 14</span><canvas id="rsi-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="macd"><span>MACD 12 26 9</span><canvas id="macd-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="atr"><span>ATR 14</span><canvas id="atr-chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Candles fail over across public read-only providers.</div></article>
-            <article class="card watchlist-card"><div class="panel-title"><h3>Watchlist</h3><span>Assets</span></div><div class="watchlist-tabs" role="tablist" aria-label="Watchlist asset class"><button type="button" class="active" data-asset-class="crypto" role="tab" aria-selected="true">Crypto</button><button type="button" data-asset-class="forex" role="tab" aria-selected="false">Forex</button><button type="button" data-asset-class="stocks" role="tab" aria-selected="false">Stocks</button><button type="button" data-asset-class="indices" role="tab" aria-selected="false">Indices</button><button type="button" data-asset-class="commodities" role="tab" aria-selected="false">Commodities</button></div><div class="watchlist-row header"><span>Symbol</span><span>Last</span><span>24h</span></div><div id="watchlist-assets"></div><div class="asset-summary"><span>Selected asset</span><strong id="watch-selected">SOLUSDT</strong><small id="watchlist-feed-note">Public crypto data · Paper mode</small></div></article>
+            <article class="card chart-card"><div class="panel-title"><h3><span id="market-symbol">SOLUSDT</span> ▾ <span class="chart-info-wrap"><button class="chart-info-btn" id="chart-info-btn" type="button" aria-label="About this chart">i</button><div class="chart-info-tooltip" id="chart-info-tooltip"></div></span> <span id="chart-feed-label">Chart feed</span></h3><span><button class="timeframe active" data-interval="1">1m</button><button class="timeframe" data-interval="5">5m</button><button class="timeframe" data-interval="15">15m</button><button class="timeframe" data-interval="60">1h</button><button class="timeframe" data-interval="240">4h</button><button class="indicator-button" id="indicator-button" type="button">Indicators</button></span><div class="indicator-menu" id="indicator-menu"><div class="indicator-menu-title">Indicators, metrics, and strategies</div><div class="indicator-menu-grid" id="indicator-menu-grid"></div></div></div><div class="market-quote"><strong id="market-price">Loading…</strong><span id="market-change">Public candle feed</span><span id="chart-source-badge" class="chart-source-badge admin-only">Chart source: connecting</span><span id="market-updated"></span><span id="chart-refresh-status" class="chart-refresh admin-only">Auto refresh: starting</span><span id="paper-signal">Paper signal: waiting</span></div><div class="chart-shell"><div class="drawing-tools"><button title="Crosshair" aria-label="Crosshair">＋</button><button title="Trend line" aria-label="Trend line">╱</button><button title="Horizontal line" aria-label="Horizontal line">━</button><button title="Parallel channel" aria-label="Parallel channel">☷</button><button title="Fibonacci retracement" aria-label="Fibonacci retracement">⌁</button><button title="Brush" aria-label="Brush">◒</button><button title="Text note" aria-label="Text note">T</button><button title="Emoji marker" aria-label="Emoji marker">☺</button><button title="Measure" aria-label="Measure">⌑</button><button title="Zoom" aria-label="Zoom">⊕</button><button title="Magnet mode" aria-label="Magnet mode">♧</button><button title="Lock drawings" aria-label="Lock drawings">▣</button><button title="Toggle visibility" aria-label="Toggle visibility">◉</button><button title="Delete drawings" aria-label="Delete drawings">⌫</button></div><div class="chart"><div class="grid-lines"></div><canvas id="price-chart" aria-label="Live public candlestick chart"></canvas><canvas id="sma-overlay" class="overlay"></canvas><canvas id="ema-overlay" class="overlay"></canvas><canvas id="bollinger-overlay" class="overlay"></canvas><canvas id="vwap-overlay" class="overlay"></canvas><canvas id="drawing-overlay" class="drawing-overlay" aria-label="Interactive chart drawing layer"></canvas></div></div><div class="chart-bottom-tools"><button title="Chart settings" aria-label="Chart settings">⚙</button><button title="Compare symbols" aria-label="Compare symbols">⊕ Compare</button><button title="Log scale" aria-label="Log scale">⌁ Log</button><button title="Auto scale" aria-label="Auto scale">↕ Auto</button><button title="Fullscreen" aria-label="Fullscreen">⛶</button><button class="chart-zoom-control" id="chart-zoom-out" type="button" aria-label="Zoom chart out" title="Zoom chart out">−</button><button class="chart-zoom-control" id="chart-zoom-in" type="button" aria-label="Zoom chart in" title="Zoom chart in">+</button><button class="chart-zoom-control" id="chart-zoom-reset" type="button" aria-label="Reset chart zoom" title="Reset chart zoom">Reset</button><label class="history-control" title="Historical chart date"><svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01"/></svg><span class="history-date-display" id="history-date-display"></span><input id="history-date" type="date" aria-label="Historical chart date" /></label><span id="chart-tool-status" class="chart-tool-status">Crosshair selected</span></div><div class="indicator-pane" data-indicator="volume"><span>Volume</span><div class="volume-bars"></div></div><div class="indicator-pane oscillator" data-indicator="stoch"><span>Stoch RSI</span><canvas id="stoch-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="rsi"><span>RSI 14</span><canvas id="rsi-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="macd"><span>MACD 12 26 9</span><canvas id="macd-chart"></canvas></div><div class="indicator-pane oscillator" data-indicator="atr"><span>ATR 14</span><canvas id="atr-chart"></canvas></div><div class="warning" id="market-status">Paper orders only. Candles fail over across public read-only providers.</div></article>
+            <article class="card watchlist-card"><div class="panel-title"><h3>Watchlist</h3><span>Assets</span></div><div class="watchlist-tabs" role="tablist" aria-label="Watchlist asset class"><button type="button" class="active" data-asset-class="crypto" role="tab" aria-selected="true">Crypto</button><button type="button" data-asset-class="forex" role="tab" aria-selected="false">Forex</button><button type="button" data-asset-class="stocks" role="tab" aria-selected="false">Stocks</button><button type="button" data-asset-class="indices" role="tab" aria-selected="false">Indices</button><button type="button" data-asset-class="commodities" role="tab" aria-selected="false">Commodities</button></div><div class="watchlist-row header"><span>Symbol</span><span>Last</span><span>24h</span></div><div id="watchlist-assets"></div><div class="asset-summary"><span>Selected asset</span><strong id="watch-selected">SOLUSDT</strong><small id="watchlist-feed-note" class="admin-only">Public crypto data · Paper mode</small></div></article>
           </div>
           <article class="card order-panel"><div class="state-empty">Loading the paper-only trade ticket…</div></article>
           <article class="card" id="positions"><div class="panel-title"><h3>Risk commander</h3><span>Policy status</span></div><div class="risk-row"><div class="risk-head"><span>Daily loss limit</span><b>18%</b></div><div class="bar"><span class="safe" style="width:18%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Open-position risk</span><b>34%</b></div><div class="bar"><span style="width:34%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Margin utilisation</span><b>42%</b></div><div class="bar"><span class="warn" style="width:42%"></span></div></div><div class="risk-row"><div class="risk-head"><span>Auto-trading</span><b class="neutral">OFF</b></div><div class="small">Analysis and monitoring can continue.</div></div></article>
@@ -380,6 +382,7 @@
       }
     }
     let selectedInterval = '1';
+    const isAdminUser = (localStorage.getItem('orbitiq_role') || 'user') === 'admin';
     let chartStyle = 'candles';
     const styleBar = document.createElement('span'); styleBar.className = 'chart-style-bar';
     ['candles', 'line', 'area'].forEach(style => { const button = document.createElement('button'); button.className = 'chart-style' + (style === chartStyle ? ' active' : ''); button.textContent = style[0].toUpperCase() + style.slice(1); button.dataset.style = style; button.addEventListener('click', () => { chartStyle = style; document.querySelectorAll('.chart-style').forEach(item => item.classList.toggle('active', item.dataset.style === style)); refreshMarkets(); }); styleBar.appendChild(button); });
@@ -398,7 +401,7 @@
     let selectedAssetClass = 'crypto';
     let paperEvaluationSuppressed = false;
     const coinbaseOption=document.createElement('option');coinbaseOption.value='coinbase';coinbaseOption.textContent='Coinbase public spot';document.getElementById('exchange-select').appendChild(coinbaseOption);
-    const volumePane=document.querySelector('.indicator-pane[data-indicator="volume"]');volumePane.classList.add('volume-pane');volumePane.innerHTML='<span id="volume-label">Volume · base units · waiting for feed</span><canvas id="volume-chart" class="volume-canvas" aria-label="Actual candle volume by time"></canvas>';
+    const volumePane=document.querySelector('.indicator-pane[data-indicator="volume"]');volumePane.classList.add('volume-pane');volumePane.innerHTML='<span id="volume-label" class="admin-only">Volume · base units · waiting for feed</span><canvas id="volume-chart" class="volume-canvas" aria-label="Actual candle volume by time"></canvas>';
     const chartBottomTools=document.querySelector('.chart-bottom-tools');const chartDateLabel=document.createElement('span');chartDateLabel.id='chart-date-readable';chartDateLabel.className='chart-date-readable';chartDateLabel.textContent='UTC date —';chartBottomTools.insertBefore(chartDateLabel,document.getElementById('chart-tool-status'));
     const historyDateInput=document.getElementById('history-date');
     const historyDateDisplay=document.getElementById('history-date-display');
@@ -416,15 +419,15 @@
       chartDateLabel.title='Dates are displayed as YYYY-MM-DD in UTC.';
     }
     function findAsset(symbol) { return Object.values(assetCatalog).flat().find(asset => asset[0] === symbol); }
-    function renderAssetCatalog(category) { selectedAssetClass = category; const select = document.getElementById('asset-symbol-select'); select.innerHTML = ''; assetCatalog[category].forEach(([symbol,name,supported]) => { const option = document.createElement('option'); option.value = symbol; const providerSelected=selectedExchange==='twelvedata'; option.textContent = `${symbol} · ${name}${supported||providerSelected ? '' : ' · feed needed'}`; option.title = supported ? `${name} · supported public crypto feed` : providerSelected?`${name} · provider entitlement and symbol availability apply`:`${name} · select a compatible provider to load candles`; select.appendChild(option); }); select.value = assetCatalog[category].some(asset => asset[0] === primarySymbol) ? primarySymbol : assetCatalog[category][0][0]; }
+    function renderAssetCatalog(category) { selectedAssetClass = category; const select = document.getElementById('asset-symbol-select'); select.innerHTML = ''; assetCatalog[category].forEach(([symbol,name,supported]) => { const option = document.createElement('option'); option.value = symbol; const providerSelected=selectedExchange==='twelvedata'||selectedExchange==='yahoo'; option.textContent = `${symbol} · ${name}${supported||providerSelected ? '' : ' · feed needed'}`; option.title = supported ? `${name} · supported public crypto feed` : providerSelected?`${name} · Yahoo Finance / provider feed available`:`${name} · select a compatible provider to load candles`; select.appendChild(option); }); select.value = assetCatalog[category].some(asset => asset[0] === primarySymbol) ? primarySymbol : assetCatalog[category][0][0]; }
     renderAssetCatalog('crypto');
     function renderWatchlistCategory(category) {
       const container=document.getElementById('watchlist-assets');
       const note=document.getElementById('watchlist-feed-note');
       if(!container)return;
       container.replaceChildren();
-      const supported=category==='crypto'||selectedExchange==='twelvedata';
-      const feedNote=category==='crypto'?'Bybit / Binance / Coinbase public crypto data · Paper mode':selectedExchange==='twelvedata'?'Twelve Data · subscription and symbol availability apply · display only':`${category[0].toUpperCase()+category.slice(1)} feed required · No prices fabricated`;
+      const supported=category==='crypto'||selectedExchange==='yahoo'||selectedExchange==='twelvedata';
+      const feedNote=category==='crypto'?'Bybit / Binance / Coinbase public crypto data · Paper mode':selectedExchange==='yahoo'?'Yahoo Finance · free public feed · display only':selectedExchange==='twelvedata'?'Twelve Data · subscription and symbol availability apply · display only':`${category[0].toUpperCase()+category.slice(1)} feed required · No prices fabricated`;
       if(note)note.textContent=feedNote;
       document.querySelectorAll('.watchlist-tabs [data-asset-class]').forEach(button=>{
         const active=button.dataset.assetClass===category;
@@ -831,9 +834,9 @@
       const hasReportedVolume=data.candles.some(candle=>candle.volume!==null&&Number.isFinite(Number(candle.volume)));
       document.getElementById('volume-label').textContent = hasReportedVolume?`Volume · reported units · ${data.market_data?.candle_source || data.exchange}`:`Volume · not reported by ${data.market_data?.candle_source || data.exchange}`;
       updateChartDate(data.candles);
-      const pairLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
+      const pairLabel=document.getElementById('chart-feed-label');
       const candleSource=data.market_data?.candle_source||data.exchange;
-      if(pairLabel)pairLabel.textContent=`${String(candleSource).toUpperCase()} chart feed`;
+      if(pairLabel)pairLabel.textContent=isAdminUser?`${String(candleSource).toUpperCase()} chart feed`:'Live chart';
       const sourceBadge=document.getElementById('chart-source-badge');
       if(sourceBadge&&!chartSocketManager?.source)sourceBadge.textContent=`Candles: ${String(candleSource).toUpperCase()} · live feed connecting`;
     }
@@ -854,7 +857,7 @@
       document.getElementById('market-change').textContent='No live feed';
       document.getElementById('market-updated').textContent='—';
       document.getElementById('market-symbol').textContent=symbol;
-      const feedLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
+      const feedLabel=document.getElementById('chart-feed-label');
       if(feedLabel)feedLabel.textContent=`${categoryName} feed required`;
       const headerBadge=document.getElementById('asset-header-badge');
       if(headerBadge)headerBadge.replaceWith(createAssetBrandBadge(symbol,true));
@@ -881,16 +884,15 @@
     async function loadMarket(symbol, prefix, preferredSource = null) {
       const status = document.getElementById(prefix + '-status');
       const asset = findAsset(symbol);
-      if (selectedExchange!=='twelvedata'&&selectedAssetClass!=='crypto') {
-        const message=`Select Twelve Data as the feed to load ${selectedAssetClass} candles; no compatible feed is selected.`;
-        const name=asset?.[1]||symbol;
-        if(prefix==='market')showUnavailableAssetFeed(symbol,message);
-        status.textContent=`${name} is catalogued; ${message}`;
-        return;
+      if (selectedAssetClass!=='crypto' && selectedExchange!=='yahoo' && selectedExchange!=='twelvedata') {
+        selectedExchange='yahoo';
+        document.getElementById('exchange-select').value='yahoo';
       }
-      if(asset&&!asset[2]&&selectedExchange!=='twelvedata') {
-        const message=`${asset[1]} requires the Twelve Data feed or a compatible provider.`;
-        if(prefix==='market')showUnavailableAssetFeed(symbol,message);
+      if(asset&&!asset[2]&&selectedExchange!=='twelvedata'&&selectedExchange!=='yahoo') {
+        const message=isAdminUser
+          ? `${asset[1]} requires Yahoo Finance feed or a compatible provider.`
+          : `Data temporarily unavailable for ${asset[1]}. Retrying...`;
+        if(prefix==='market')showUnavailableAssetFeed(symbol,isAdminUser?message:'');
         status.textContent=message;
         return;
       }
@@ -901,7 +903,7 @@
         const chartQuery = `?interval=${encodeURIComponent(selectedInterval)}${historyQuery}${preferredSource ? `&source=${encodeURIComponent(preferredSource)}` : ''}`;
         const url = selectedAssetClass === 'crypto'
           ? `/api/chart/${encodeURIComponent(symbol)}${chartQuery}`
-          : `/api/market?exchange=${selectedExchange}&symbol=${encodeURIComponent(symbol)}&interval=${selectedInterval}&asset_class=${encodeURIComponent(selectedAssetClass)}${historyQuery}`;
+          : `/api/market?exchange=${encodeURIComponent(selectedExchange)}&symbol=${encodeURIComponent(symbol)}&interval=${selectedInterval}&asset_class=${encodeURIComponent(selectedAssetClass)}${historyQuery}`;
         const response = await fetch(url);
         const data = await readJsonResponse(response, 'Chart feed'); if (!response.ok) throw new Error(data.error || 'Feed unavailable');
         if (prefix === 'market') {
@@ -924,11 +926,19 @@
           : marketData.ticker_source && marketData.ticker_source !== candleSource
             ? ` · price ticker from ${marketData.ticker_source}`
             : '';
-        status.textContent = historyDate
-          ? `Paper orders only. Historical candles ending ${historyDate} from ${candleSource}${sourceNote}.${tickerNote}`
-          : selectedExchange==='twelvedata'
-            ? `Display-only provider data from ${candleSource}; timing follows your provider plan · refreshed just now${tickerNote}`
-            : `Paper orders only. Public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
+        if (isAdminUser) {
+          status.textContent = historyDate
+            ? `Paper orders only. Historical candles ending ${historyDate} from ${candleSource}${sourceNote}.${tickerNote}`
+            : selectedExchange==='twelvedata'
+              ? `Display-only provider data from ${candleSource}; timing follows your provider plan · refreshed just now${tickerNote}`
+              : selectedExchange==='yahoo'
+                ? `Using Yahoo Finance feed · ${candleSource} candles · refreshed just now${tickerNote}`
+                : `Paper orders only. Public ${candleSource} candles · refreshed just now${sourceNote}.${tickerNote}`;
+        } else {
+          status.textContent = historyDate
+            ? `Paper orders only. Historical chart loaded · refreshed just now.`
+            : `Live chart updated · refreshed just now. Paper orders only.`;
+        }
         if(prefix==='market')updateTicketReference(Number(ticker.last||data.candles[data.candles.length-1].close));
       } catch (error) {
         if (prefix === 'market') {
@@ -943,22 +953,28 @@
               document.getElementById('market-change').textContent = 'Saved chart only · not live';
               document.getElementById('market-change').className = '';
               document.getElementById('market-updated').textContent = `Saved ${savedTime}`;
-              status.textContent = `Chart feed temporarily unavailable. Retrying... ${error.message} Showing saved ${cachedSource} candles from ${savedTime}; this chart and price are not live and are not used to close trades.`;
+              status.textContent = isAdminUser
+                ? `Chart feed temporarily unavailable. Retrying... ${error.message} Showing saved ${cachedSource} candles from ${savedTime}; this chart and price are not live and are not used to close trades.`
+                : `Data temporarily unavailable. Showing saved chart from ${savedTime} · not live. Retrying...`;
               return;
             } catch (cacheError) {
-              status.textContent = `Chart feed temporarily unavailable. Retrying... ${error.message} Saved chart could not be displayed: ${cacheError.message}`;
+              status.textContent = isAdminUser
+                ? `Chart feed temporarily unavailable. Retrying... ${error.message} Saved chart could not be displayed: ${cacheError.message}`
+                : 'Data temporarily unavailable. Retrying...';
               return;
             }
           }
-          showUnavailableAssetFeed(symbol,error.message);
+          showUnavailableAssetFeed(symbol, isAdminUser ? error.message : '');
         }
-        status.textContent = 'Chart feed temporarily unavailable. Retrying... ' + error.message + ' Paper dashboard remains available. No saved chart is available to display offline.';
+        status.textContent = isAdminUser
+          ? 'Chart feed temporarily unavailable. Retrying... ' + error.message + ' Paper dashboard remains available. No saved chart is available to display offline.'
+          : 'Data temporarily unavailable. Retrying... The paper dashboard remains available.';
       }
     }
     let lastTwelveDataWatchlistAt=0;
     let watchlistRetryTimer=0;
     async function loadWatchlist(attempt=1) {
-      if(selectedExchange==='twelvedata'){
+      if(selectedExchange==='twelvedata'||selectedExchange==='yahoo'){
         const now=Date.now();
         if(now-lastTwelveDataWatchlistAt<300000)return;
         lastTwelveDataWatchlistAt=now;
@@ -974,7 +990,7 @@
       await Promise.all(rows.map(async row=>{
         const symbol=row.dataset.symbol,price=row.querySelector('strong'),change=row.querySelector('em');
         if(!symbol||!price||!change)return;
-        if(selectedAssetClass!=='crypto'&&selectedExchange!=='twelvedata'){
+        if(selectedAssetClass!=='crypto'&&selectedExchange!=='twelvedata'&&selectedExchange!=='yahoo'){
           price.textContent='—';change.textContent='Feed needed';change.className='';
           return;
         }
@@ -988,7 +1004,7 @@
           change.className=Number.isFinite(changePercent)?(changePercent>=0?'positive':'negative'):'';
           row.title='';
         }catch(error){
-          price.textContent='—';change.textContent='Unavailable';change.className='negative';row.title=error.message;
+          price.textContent='—';change.textContent='Unavailable';change.className='negative';row.title=isAdminUser?error.message:'Data temporarily unavailable';
         }
       }));
     }
@@ -2163,7 +2179,7 @@
     }
     let chartRefreshTimer = null;
     let chartRefreshInFlight = false;
-    async function refreshChartLoop() { if (chartRefreshTimer) { clearTimeout(chartRefreshTimer); chartRefreshTimer = null; } if (document.visibilityState !== 'visible') { document.getElementById('chart-refresh-status').textContent = 'Auto refresh: paused'; return; } const refreshMs=selectedExchange==='twelvedata'?120000:5000; if (!chartRefreshInFlight) { chartRefreshInFlight = true; document.getElementById('chart-refresh-status').textContent = 'Auto refresh: updating'; try { await loadMarket(primarySymbol, 'market'); document.getElementById('chart-refresh-status').textContent = `Auto refresh: every ${refreshMs/1000}s`; } finally { chartRefreshInFlight = false; } } chartRefreshTimer = setTimeout(refreshChartLoop, refreshMs); }
+    async function refreshChartLoop() { if (chartRefreshTimer) { clearTimeout(chartRefreshTimer); chartRefreshTimer = null; } if (document.visibilityState !== 'visible') { document.getElementById('chart-refresh-status').textContent = 'Auto refresh: paused'; return; } const refreshMs=selectedExchange==='twelvedata'?120000:selectedExchange==='yahoo'?60000:5000; if (!chartRefreshInFlight) { chartRefreshInFlight = true; document.getElementById('chart-refresh-status').textContent = 'Auto refresh: updating'; try { await loadMarket(primarySymbol, 'market'); document.getElementById('chart-refresh-status').textContent = `Auto refresh: every ${refreshMs/1000}s`; } finally { chartRefreshInFlight = false; } } chartRefreshTimer = setTimeout(refreshChartLoop, refreshMs); }
     function setupChartWebSocket() {
       if (!chartSocketManager) {
         chartSocketManager = new ChartWebSocketManager(
@@ -2181,8 +2197,8 @@
             const badge=document.getElementById('chart-source-badge');
             badge.textContent=`Live: ${event.name}`;
             badge.classList.remove('unavailable');
-            const pairLabel=document.querySelector('.chart-card .panel-title h3 span:last-child');
-            if(pairLabel)pairLabel.textContent=`${event.name} live candles`;
+      const pairLabel=document.getElementById('chart-feed-label');
+            if(pairLabel)pairLabel.textContent=isAdminUser?`${event.name} live candles`:'Live chart';
             lastMarketCandles=[];
             document.querySelectorAll('.chart canvas,.indicator-pane canvas').forEach(canvas=>{const context=canvas.getContext('2d');if(context)context.clearRect(0,0,canvas.width,canvas.height);});
             loadMarket(primarySymbol,'market',event.source);
@@ -2204,14 +2220,26 @@
     function startChartRefreshLoop() { setupChartWebSocket(); if (document.visibilityState === 'visible') refreshChartLoop(); }
     function refreshMarkets() { loadMarket(primarySymbol, 'market'); loadWatchlist(); updateTicketExchangeAvailability(); evaluatePaper(primarySymbol); setupChartWebSocket(); startChartRefreshLoop(); }
     document.querySelectorAll('.timeframe').forEach(button => button.addEventListener('click', () => { selectedInterval = button.dataset.interval; document.querySelectorAll('.timeframe').forEach(item => item.classList.toggle('active', item.dataset.interval === selectedInterval)); refreshMarkets(); }));
-    function selectAsset(symbol, options = {}) { if (!options.automaticRecovery) lossRecoveryPaused=false; const category=Object.keys(assetCatalog).find(name=>assetCatalog[name].some(asset=>asset[0]===symbol)); if(category){selectedAssetClass=category;document.getElementById('asset-class-select').value=category;} primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; updateAssetSelectorBrand(); renderWatchlistCategory(selectedAssetClass); resetTicketPriceFields(); refreshMarkets(); }
+    function selectAsset(symbol, options = {}) { if (!options.automaticRecovery) lossRecoveryPaused=false; const category=Object.keys(assetCatalog).find(name=>assetCatalog[name].some(asset=>asset[0]===symbol)); if(category){selectedAssetClass=category;document.getElementById('asset-class-select').value=category;} primarySymbol = symbol; document.getElementById('symbol-search').value = symbol; renderAssetCatalog(selectedAssetClass); document.getElementById('asset-symbol-select').value = symbol; updateAssetSelectorBrand(); renderWatchlistCategory(selectedAssetClass); resetTicketPriceFields(); updateChartInfo(); refreshMarkets(); }
     document.getElementById('watchlist-assets').addEventListener('click',event=>{const row=event.target.closest('.asset-row');if(row)selectAsset(row.dataset.symbol);});
     document.querySelector('.watchlist-tabs').addEventListener('click',event=>{const button=event.target.closest('[data-asset-class]');if(button)selectAssetClass(button.dataset.assetClass);});
     function selectAssetClass(category) {
       if(!assetCatalog[category])return;
       selectedAssetClass=category;
       document.getElementById('asset-class-select').value=category;
+      if(category==='forex'){
+        selectedInterval='5';
+        document.querySelectorAll('.timeframe').forEach(b=>b.classList.toggle('active',b.dataset.interval==='5'));
+      }
+      if(category!=='crypto'&&selectedExchange!=='yahoo'&&selectedExchange!=='twelvedata'){
+        selectedExchange='yahoo';
+        document.getElementById('exchange-select').value='yahoo';
+      } else if(category==='crypto'&&selectedExchange==='yahoo'){
+        selectedExchange='bybit';
+        document.getElementById('exchange-select').value='bybit';
+      }
       const symbol=assetCatalog[category].some(asset=>asset[0]===primarySymbol)?primarySymbol:assetCatalog[category][0][0];
+      updateChartInfo();
       selectAsset(symbol);
     }
     document.getElementById('asset-class-select').addEventListener('change', event => selectAssetClass(event.target.value));
@@ -2220,6 +2248,23 @@
     document.getElementById('search-symbol').addEventListener('click', () => { const symbol = document.getElementById('symbol-search').value.trim().toUpperCase(); if (/^[A-Z0-9]{5,15}$/.test(symbol)) selectAsset(symbol); });
     document.getElementById('symbol-search').addEventListener('keydown', event => { if (event.key === 'Enter') document.getElementById('search-symbol').click(); });
     document.getElementById('exchange-select').addEventListener('change', event => { selectedExchange = event.target.value; renderAssetCatalog(selectedAssetClass); renderWatchlistCategory(selectedAssetClass); resetTicketPriceFields(); updateTicketExchangeAvailability(); refreshMarkets(); });
+    const chartInfoHelp={
+      crypto:'24/7 live crypto data with failover across major exchanges. Use the Trade Ticket below to paper trade based on these charts.',
+      forex:'Live exchange rates for global currencies. Use the Trade Ticket below to paper trade based on these charts.',
+      stocks:'Live data for top US equities. Click "Paper Long" or "Paper Short" in the Trade Ticket to simulate a trade.',
+      indices:'Live data for major global stock indices. Paper trade index moves with the Trade Ticket below.',
+      commodities:'Live prices for gold, silver, oil and more. Paper trade commodity moves with the Trade Ticket below.'
+    };
+    function updateChartInfo(){const el=document.getElementById('chart-info-tooltip');if(el)el.textContent=chartInfoHelp[selectedAssetClass]||'';}
+    function initChartInfo(){
+      const btn=document.getElementById('chart-info-btn');
+      const tip=document.getElementById('chart-info-tooltip');
+      if(!btn||!tip)return;
+      updateChartInfo();
+      btn.addEventListener('click',e=>{e.stopPropagation();tip.classList.toggle('open');});
+      document.addEventListener('click',()=>tip.classList.remove('open'));
+    }
+    initChartInfo();
     const toolbarIconPaths = { 'Crosshair':'<circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>', 'Trend line':'<path d="M4 18 10 12 14 15 21 6"/><path d="M17 6h4v4"/>', 'Horizontal line':'<path d="M3 12h18"/><path d="M6 8v8M18 8v8"/>', 'Parallel channel':'<path d="m4 17 7-7M8 21l7-7M9 10l5 5"/>', 'Fibonacci retracement':'<path d="M4 5h16M4 9h16M4 13h16M4 17h16M4 21h16"/><path d="m5 5 14 16"/>', 'Brush':'<path d="m14 4 6 6-9 9-6 1 1-6 8-10Z"/><path d="m12 6 6 6"/>', 'Text note':'<path d="M4 5h16M12 5v14M8 19h8"/>', 'Emoji marker':'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>', 'Measure':'<path d="m4 17 13-13 3 3L7 20H4v-3Z"/><path d="m9 15 2 2M12 12l2 2M15 9l2 2"/>', 'Zoom':'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5M10.5 7v7M7 10.5h7"/>', 'Magnet mode':'<path d="M6 4v8a6 6 0 0 0 12 0V4"/><path d="M6 4h4v8a2 2 0 0 0 4 0V4h4M6 8h4M14 8h4"/>', 'Lock drawings':'<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>', 'Toggle visibility':'<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/>', 'Delete drawings':'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', 'Chart settings':'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="11" cy="18" r="2"/>', 'Compare symbols':'<path d="M4 18V6M4 18h16"/><path d="m7 14 3-4 3 2 5-6"/>', 'Log scale':'<path d="M5 19V5M5 19h14"/><path d="M8 15h3M8 11h6M8 7h9"/>', 'Auto scale':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M12 7v10M9 10l3-3 3 3M9 14l3 3 3-3"/>', 'Fullscreen':'<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 1 2-2v-3"/>' };
     function toolbarIcon(title) { return `<svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${toolbarIconPaths[title] || ''}</svg>`; }
     document.querySelectorAll('.drawing-tools button,.chart-bottom-tools button:not(.chart-zoom-control)').forEach(button => { const label = button.title; const text = label === 'Compare symbols' ? 'Compare' : label === 'Log scale' ? 'Log' : label === 'Auto scale' ? 'Auto' : ''; button.innerHTML = toolbarIcon(label) + (text ? `<span>${text}</span>` : ''); });
@@ -2244,6 +2289,7 @@
     (() => {
       const token=localStorage.getItem('orbitiq_token')||sessionStorage.getItem('orbitiq_token');if(!token&&!location.pathname.endsWith('/login')){location.href='/login';}
       const role=localStorage.getItem('orbitiq_role')||'user';
+      if(role!=='admin')document.body.classList.add('standard-user');
       const userName=localStorage.getItem('orbitiq_user_name')||'Trader';
       const profileNameEl=document.getElementById('profile-name');if(profileNameEl){profileNameEl.textContent=userName;}
       const profileRoleEl=document.getElementById('profile-role');if(profileRoleEl){profileRoleEl.textContent=role==='admin'?'Administrator · Paper trading':'Trader · Paper trading';}
