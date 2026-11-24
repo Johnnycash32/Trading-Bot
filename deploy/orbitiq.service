@@ -1,0 +1,19 @@
+[Unit]
+Description=ORBITIQ Paper Trading Bot
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/Trading-Bot
+Environment="ORBITIQ_HOST=0.0.0.0"
+Environment="ORBITIQ_PORT=8765"
+EnvironmentFile=/home/ubuntu/Trading-Bot/.env
+ExecStart=/home/ubuntu/Trading-Bot/.venv/bin/python -m trading_bot.server
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

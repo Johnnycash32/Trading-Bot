@@ -1657,4 +1657,7 @@ def run(host: str = "127.0.0.1", port: int = 8765) -> None:
 
 
 if __name__ == "__main__":
-    run()
+    import os
+    host = os.environ.get("ORBITIQ_HOST", "127.0.0.1")
+    port = int(os.environ.get("ORBITIQ_PORT", "8765"))
+    run(host, port)
